@@ -1,9 +1,11 @@
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { webSocket } from "rxjs/webSocket";
 
 import Panzoom from '@panzoom/panzoom'
 
-import { Position } from '../position'
+import { Madrid } from '../madrid'
 import { Station } from '../station'
+import { Train } from '../train'
 
 
 @Component({
@@ -20,19 +22,26 @@ export class TrainComponent implements AfterViewInit {
 
   width = 1250;
   height = 1000;
-  stations: Station;
-  train: Position;
+  stations: Station[];
+  trains: Train[];
 
   constructor() {
-    this.stations = new Station(this.width, this.height);
-    this.train = new Position(this.width, this.height, this.stations.ppio.lat, this.stations.ppio.lon)
+    const madrid: Madrid = new Madrid(this.width, this.height)
+    this.stations = madrid.stations
+    this.trains = [new Train(1, madrid.ppio().position)]
+    const subject = webSocket("ws://localhost:8081/ws");
+    subject.subscribe(
+      msg => console.log('message received: ' + JSON.stringify(msg, undefined, 4)),
+      err => console.log(err),
+      () => console.log('complete')
+    );
   }
 
   ngAfterViewInit(): void {
     this.ctxStations = this.canvasStations.nativeElement.getContext('2d');
     this.ctx = this.canvas.nativeElement.getContext('2d');
-    this.drawStations(this.ctxStations);
-    this.drawTrain();
+    this.drawStations(this.ctxStations, this.stations);
+    this.drawTrains(this.trains);
     const panzoomStations = Panzoom(this.canvasStations.nativeElement, {
       maxScale: 10,
       canvas: true
@@ -52,36 +61,41 @@ export class TrainComponent implements AfterViewInit {
       panzoom.pan(pan.x, pan.y);
       panzoomStations.pan(pan.x, pan.y);
     })
-    this.moveTrain()
+    this.moveTrain(this.trains[0])
   }
 
-  drawStations(ctx: CanvasRenderingContext2D) {
+  drawStations(ctx: CanvasRenderingContext2D, stations: Station[]) {
     ctx.fillStyle = 'green';
-    ctx.fillRect(this.stations.ppio.x, this.stations.ppio.y, 2, 2);
-    ctx.fillRect(this.stations.opera.x, this.stations.opera.y, 2, 2);
-    ctx.fillRect(this.stations.sol.x, this.stations.sol.y, 2, 2);
-    ctx.fillRect(this.stations.atocha.x, this.stations.atocha.y, 2, 2);
-    ctx.fillRect(this.stations.ccasal.x, this.stations.ccasal.y, 2, 2);
-    ctx.strokeText('Ppio', this.stations.ppio.x, this.stations.ppio.y)
-    ctx.strokeText('Opera', this.stations.opera.x, this.stations.opera.y)
-    ctx.strokeText('Sol', this.stations.sol.x, this.stations.sol.y)
-    ctx.strokeText('Atocha', this.stations.atocha.x, this.stations.atocha.y)
-    ctx.strokeText('CCasal', this.stations.ccasal.x, this.stations.ccasal.y)
+    for (let station of stations) {
+      ctx.fillRect(station.position.x, station.position.y, 2, 2);
+      ctx.strokeText(station.name, station.position.x, station.position.y)
+      ctx.beginPath()
+      ctx.moveTo(station.position.x, station.position.y);
+      if (station.next !== undefined) {
+        ctx.fillStyle = 'white';
+        ctx.lineTo(station.next.position.x, station.next.position.y);
+        ctx.lineTo(station.next.position.x, station.next.position.y + 3);
+        ctx.lineTo(station.position.x, station.position.y + 3);
+        ctx.fill()
+        ctx.fillStyle = 'green';
+      }
+    }
   }
 
-  drawTrain() {
+  drawTrains(trains: Train[]) {
     this.ctx.fillStyle = 'red';
-    this.ctx.fillRect(this.train.x, this.train.y,4,4);
+    for (let train of trains) {
+      this.ctx.fillRect(train.position.x, train.position.y,4,4);
+    }
   }
 
-  moveTrain() {
-    this.ctx.clearRect(this.train.x, this.train.y,4,4.2);
-    this.train.x = this.train.x + 5
-    this.train.y = this.train.y - 1
-    this.drawTrain()
+  moveTrain(train: Train) {
+    this.ctx.clearRect(train.position.x, train.position.y,4,4.2);
+    train.position.x = train.position.x + 5
+    train.position.y = train.position.y - 1
+    this.drawTrains([train])
     setTimeout(() => {
-      console.log('sleep');
-      this.moveTrain();
+      this.moveTrain(train);
     }, 1000);
   }
 }

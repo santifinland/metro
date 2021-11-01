@@ -22,7 +22,9 @@ object Main extends App {
 
   while (true) {
     Thread.sleep(1000)
-    WebSocket.sendText(s"""{"bar": "goo"}""")
+    WebSocket.sendText(s"""{"train": "1", "station": "Opera", "slot": "station"}""")
+    Thread.sleep(1000)
+    WebSocket.sendText(s"""{"train": "1", "station": "Ppio", "slot": "station"}""")
   }
   readMessages()
 

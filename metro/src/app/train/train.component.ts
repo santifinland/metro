@@ -4,6 +4,7 @@ import { webSocket } from "rxjs/webSocket";
 import Panzoom from '@panzoom/panzoom'
 
 import { Madrid } from '../madrid'
+import { Position } from '../position'
 import { Station } from '../station'
 import { Train } from '../train'
 
@@ -28,13 +29,7 @@ export class TrainComponent implements AfterViewInit {
   constructor() {
     const madrid: Madrid = new Madrid(this.width, this.height)
     this.stations = madrid.stations
-    this.trains = [new Train(1, madrid.ppio().position)]
-    const subject = webSocket("ws://localhost:8081/ws");
-    subject.subscribe(
-      msg => console.log('message received: ' + JSON.stringify(msg, undefined, 4)),
-      err => console.log(err),
-      () => console.log('complete')
-    );
+    this.trains = [new Train("1", madrid.ppio().position)]
   }
 
   ngAfterViewInit(): void {
@@ -61,7 +56,23 @@ export class TrainComponent implements AfterViewInit {
       panzoom.pan(pan.x, pan.y);
       panzoomStations.pan(pan.x, pan.y);
     })
-    this.moveTrain(this.trains[0])
+    const subject = webSocket("ws://localhost:8081/ws");
+    subject.subscribe(
+      msg => {
+        const rawMsg: string = JSON.stringify(msg, undefined, 4);
+        const movement = JSON.parse(rawMsg);
+        console.log(movement.train);
+        console.log(movement.station);
+        console.log(movement.slot);
+        const station: Station | undefined = this.stations.find(x => x.name === movement.station)
+        if (station) {
+          console.log(station.name);
+          this.moveTrain(this.trains[0], station.position)
+        }
+      },
+      err => console.log(err),
+      () => console.log('complete')
+    );
   }
 
   drawStations(ctx: CanvasRenderingContext2D, stations: Station[]) {
@@ -89,13 +100,10 @@ export class TrainComponent implements AfterViewInit {
     }
   }
 
-  moveTrain(train: Train) {
-    this.ctx.clearRect(train.position.x, train.position.y,4,4.2);
-    train.position.x = train.position.x + 5
-    train.position.y = train.position.y - 1
-    this.drawTrains([train])
-    setTimeout(() => {
-      this.moveTrain(train);
-    }, 1000);
+  moveTrain(train: Train, position: Position) {
+    this.ctx.clearRect(train.position.x - 0.5, train.position.y - 0.5,5,5);
+    train.position.x = position.x;
+    train.position.y = position.y;
+    this.drawTrains([train]);
   }
 }

@@ -1,10 +1,10 @@
 import { Position } from './position'
 
 export class Train {
+  id: string;
   position: Position;
-  id: number;
 
-  constructor(id: number, position: Position) {
+  constructor(id: string, position: Position) {
     this.id = id;
     this.position = position;
   }

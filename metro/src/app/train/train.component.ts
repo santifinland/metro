@@ -29,7 +29,8 @@ export class TrainComponent implements AfterViewInit {
   constructor() {
     const madrid: Madrid = new Madrid(this.width, this.height)
     this.stations = madrid.stations
-    this.trains = [new Train("1", madrid.ppio().position)]
+    const opera: Station = this.stations.filter(s => s.name == "OPERA")[0]
+    this.trains = [new Train("1", opera.position)]
   }
 
   ngAfterViewInit(): void {
@@ -52,7 +53,6 @@ export class TrainComponent implements AfterViewInit {
       const pan = panzoom.getPan()
       pan.y = pan.y + 100 * event.deltaY > 0 ? 1 : -1;
       pan.x = pan.x + 100 * event.deltaY > 0 ? 1 : -1;
-      panzoomStations.pan(pan.x, pan.y);
       panzoom.pan(pan.x, pan.y);
       panzoomStations.pan(pan.x, pan.y);
     })

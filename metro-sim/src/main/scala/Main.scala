@@ -1,15 +1,38 @@
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
-import akka.stream.ActorMaterializer
+// Metro. SDMT
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+import akka.actor.{ActorSystem, Props}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
+import akka.stream.ActorMaterializer
+import akka.util.Timeout
+import Messages.{Move, Next}
+
+
 object Main extends App {
 
-  implicit val actorSystem = ActorSystem("system")
+  implicit val timeout: Timeout = Timeout(10.seconds)
+  implicit val actorSystem: ActorSystem = ActorSystem("system")
   implicit val materializer = ActorMaterializer()
+
+  val trainOne = actorSystem.actorOf(Props(classOf[Train], "BLUE"), "TrainOne")
+  val trainTwo = actorSystem.actorOf(Props(classOf[Train], "RED"), "TrainTwo")
+  val trainThree = actorSystem.actorOf(Props(classOf[Train], "YELLOW"), "TrainThree")
+  val jardin = actorSystem.actorOf(Props[Station], "Jardin")
+  val campo = actorSystem.actorOf(Props[Station], "Campo")
+  val batan = actorSystem.actorOf(Props[Station], "Batan")
+  val lago = actorSystem.actorOf(Props[Station], "Lago")
+  campo ! Next(batan)
+  batan ! Next(lago)
+  lago ! Next(campo)
+  trainOne ! Move(campo)
+  Thread.sleep(1)
+  trainTwo ! Move(campo)
+  trainThree ! Move(campo)
+
 
   val route = path("ws") {
     handleWebSocketMessages(WebSocket.listen())

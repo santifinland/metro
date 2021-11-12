@@ -7,16 +7,30 @@ import scala.util.{Failure, Success}
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, Materializer}
 import akka.util.Timeout
 import Messages.{Move, Next}
+import pureconfig._
+import pureconfig.generic.auto._
 
 
 object Main extends App {
 
+  // Read configuration
+  val conf = ConfigSource.default.load[MetroConf]
+  val metroConf = conf.toOption.get
+  print(metroConf.lines)
+
+  // Metro net lines info
+  val source = scala.io.Source.fromFile("data/tramos.json")
+  val metro: String = try source.mkString finally source.close()
+  val metroParser = new MetroParser(metro)
+  val res = metroParser.parseMetro(metro)
+  println(res)
+
   implicit val timeout: Timeout = Timeout(10.seconds)
   implicit val actorSystem: ActorSystem = ActorSystem("system")
-  implicit val materializer = ActorMaterializer()
+  implicit val materializer: Materializer = Materializer.matFromSystem
 
   val trainOne = actorSystem.actorOf(Props(classOf[Train], "BLUE"), "TrainOne")
   val trainTwo = actorSystem.actorOf(Props(classOf[Train], "RED"), "TrainTwo")
@@ -49,13 +63,4 @@ object Main extends App {
     Thread.sleep(1000)
     WebSocket.sendText(s"""{"train": "1", "station": "Ppio", "slot": "station"}""")
   }
-  readMessages()
-
-  def readMessages(): Unit =
-    for (ln <- io.Source.stdin.getLines) ln match {
-      case "" =>
-        actorSystem.terminate()
-        return
-      case other => WebSocket.sendText(other)
-    }
 }

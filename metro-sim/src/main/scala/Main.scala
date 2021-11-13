@@ -26,7 +26,6 @@ object Main extends App {
   val metro: String = try source.mkString finally source.close()
   val metroParser = new MetroParser(metro)
   val res = metroParser.parseMetro(metro)
-  println(res)
 
   implicit val timeout: Timeout = Timeout(10.seconds)
   implicit val actorSystem: ActorSystem = ActorSystem("system")

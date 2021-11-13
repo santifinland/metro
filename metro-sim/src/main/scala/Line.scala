@@ -1,6 +1,6 @@
 // Metro. SDMT
 
-import org.geolatte.geom.{G2D, Geometry, LineString, Point, Position}
+import org.geolatte.geom.{G2D, LineString}
 
 
 case class Line(features: LineFeatures, geometry: LineString[G2D])

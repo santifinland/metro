@@ -1,18 +1,12 @@
 // Metro. SDMT
 
-import scala.collection.SeqFactory
-
-import org.geolatte.geom
 import org.geolatte.geom._
-import org.geolatte.geom.{Geometry, LineString, Point, Position}
-import org.geolatte.geom.crs.{CoordinateReferenceSystem, Unit => U}
+import org.geolatte.geom.crs.{Unit => U}
 import org.geolatte.geom.crs.CoordinateReferenceSystems.{WGS84, addLinearSystem}
-import org.geolatte.geom.builder.DSL._
 import org.geolatte.geom.crs.CoordinateReferenceSystem
 import org.geolatte.geom.syntax.GeometryImplicits.{lineString, positionSeqBuilder, tupleToC2D, tupleToG2D}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json._
 
 case class Tramo(features: JsValue, geometries: JsValue)
@@ -39,11 +33,8 @@ class MetroParser(metro: String) {
       case _: JsError => None
     }
     if (features.isDefined && geometry.isDefined) {
-      implicit val crs: CoordinateReferenceSystem[G2D] =
-        addLinearSystem(WGS84, classOf[G2D], U.METER)
-      val tt: Seq[(Double, Double)] = geometry.get.coordinates.map(xs => (xs.head, xs.last))
-      import org.geolatte.geom.syntax.GeometryImplicits._
-      val ls = lineString(crs)(tt: _*)
+      implicit val crs: CoordinateReferenceSystem[G2D] = addLinearSystem(WGS84, classOf[G2D], U.METER)
+      val ls = lineString(crs)(geometry.get.coordinates.map(xs => (xs.head, xs.last)): _*)
       Some(Line(features.get, ls))
     } else {
       None

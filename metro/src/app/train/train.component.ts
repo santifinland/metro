@@ -21,8 +21,8 @@ export class TrainComponent implements AfterViewInit {
   public ctxStations!: CanvasRenderingContext2D;
   public ctx!: CanvasRenderingContext2D;
 
-  width = 1250;
-  height = 1000;
+  width = 1500;
+  height = 1500;
   stations: Station[];
   trains: Train[];
 
@@ -40,19 +40,19 @@ export class TrainComponent implements AfterViewInit {
     this.drawTrains(this.trains);
     const panzoomStations = Panzoom(this.canvasStations.nativeElement, {
       maxScale: 10,
-      canvas: true
+      canvas: true,
+      step: 0.2
     })
     const panzoom = Panzoom(this.canvas.nativeElement, {
       maxScale: 10,
-      canvas: true
+      canvas: true,
+      step: 0.2
     })
     this.canvas.nativeElement.parentElement.addEventListener('wheel', function (event: any) {
       if (!event.shiftKey) return
+      const pan = panzoom.getPan()
       panzoomStations.zoomWithWheel(event);
       panzoom.zoomWithWheel(event);
-      const pan = panzoom.getPan()
-      pan.y = pan.y + 100 * event.deltaY > 0 ? 1 : -1;
-      pan.x = pan.x + 100 * event.deltaY > 0 ? 1 : -1;
       panzoom.pan(pan.x, pan.y);
       panzoomStations.pan(pan.x, pan.y);
     })
@@ -66,7 +66,6 @@ export class TrainComponent implements AfterViewInit {
         console.log(movement.slot);
         const station: Station | undefined = this.stations.find(x => x.name === movement.station)
         if (station) {
-          console.log(station.name);
           this.moveTrain(this.trains[0], station.position)
         }
       },
@@ -78,17 +77,33 @@ export class TrainComponent implements AfterViewInit {
   drawStations(ctx: CanvasRenderingContext2D, stations: Station[]) {
     ctx.fillStyle = 'green';
     for (let station of stations) {
-      ctx.fillRect(station.position.x, station.position.y, 2, 2);
-      ctx.strokeText(station.name, station.position.x, station.position.y)
-      ctx.beginPath()
-      ctx.moveTo(station.position.x, station.position.y);
       if (station.next !== undefined) {
+        ctx.beginPath()
+        ctx.moveTo(station.position.x, station.position.y);
         ctx.fillStyle = 'white';
         ctx.lineTo(station.next.position.x, station.next.position.y);
         ctx.lineTo(station.next.position.x, station.next.position.y + 3);
         ctx.lineTo(station.position.x, station.position.y + 3);
         ctx.fill()
         ctx.fillStyle = 'green';
+        ctx.closePath();
+      }
+      if ((station.path.length > 0)) {
+        ctx.fillRect(station.position.x, station.position.y, 2, 2);
+        ctx.strokeText(station.name, station.position.x, station.position.y)
+        if (station.name === "EMPALME") {
+          console.log(station);
+        }
+        ctx.beginPath();
+        ctx.moveTo(station.path[0].x, station.path[0].y);
+        for (let p of station.path.slice(1)) {
+          ctx.lineTo(p.x, p.y);
+        }
+        for (let p of station.path.reverse()) {
+          ctx.lineTo(p.x + 2, p.y + 2);
+        }
+        ctx.fill();
+        ctx.closePath();
       }
     }
   }

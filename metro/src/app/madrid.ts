@@ -32,6 +32,7 @@ export class Madrid {
       const positiondos = new Position(width, height, s.geometry.coordinates[1], s.geometry.coordinates[0]);
       const station = this.stations.filter(station => station.name === s.properties.DENOMINACION)[0]
       if (station !== undefined) {
+        console.log("changing station position");
         station.position = positiondos
       }
       //if (s.properties.DENOMINACION === "LA GRANJA") {

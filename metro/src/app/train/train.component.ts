@@ -90,19 +90,22 @@ export class TrainComponent implements AfterViewInit {
       }
       if ((station.path.length > 0)) {
         ctx.fillRect(station.position.x, station.position.y, 2, 2);
+        ctx.lineWidth = 1;
         ctx.strokeText(station.name, station.position.x, station.position.y)
         if (station.name === "EMPALME") {
           console.log(station);
         }
+        ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(station.path[0].x, station.path[0].y);
         for (let p of station.path.slice(1)) {
           ctx.lineTo(p.x, p.y);
         }
-        for (let p of station.path.reverse()) {
-          ctx.lineTo(p.x + 2, p.y + 2);
-        }
-        ctx.fill();
+        ctx.stroke();
+        //for (let p of station.path.reverse()) {
+          //ctx.lineTo(p.x + 2, p.y + 2);
+        //}
+        //ctx.fill();
         ctx.closePath();
       }
     }

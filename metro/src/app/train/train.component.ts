@@ -17,9 +17,11 @@ import {Train} from '../train'
 export class TrainComponent implements AfterViewInit {
 
   @ViewChild('canvas_stations', {static: false, read: ElementRef}) canvasStations!: ElementRef;
-  @ViewChild('canvas', {static: false, read: ElementRef}) canvas!: ElementRef;
+  @ViewChild('canvas_paths', {static: false, read: ElementRef}) canvasPaths!: ElementRef;
+  @ViewChild('canvas_trains', {static: false, read: ElementRef}) canvasTrains!: ElementRef;
   public ctxStations!: CanvasRenderingContext2D;
   public ctx!: CanvasRenderingContext2D;
+  public ctxTrains!: CanvasRenderingContext2D;
 
   width = 3400;
   height = 2000;
@@ -37,27 +39,35 @@ export class TrainComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.ctxStations = this.canvasStations.nativeElement.getContext('2d');
-    this.ctx = this.canvas.nativeElement.getContext('2d');
+    this.ctx = this.canvasPaths.nativeElement.getContext('2d');
+    this.ctxTrains = this.canvasTrains.nativeElement.getContext('2d');
     this.drawPaths(this.ctx, this.paths);
     this.drawStations(this.ctxStations, this.stations);
-    this.drawTrains(this.trains);
+    this.drawTrains(this.ctxTrains, this.trains);
     const panzoomStations = Panzoom(this.canvasStations.nativeElement, {
       maxScale: 10,
       canvas: true,
       step: 0.2
     })
-    const panzoom = Panzoom(this.canvas.nativeElement, {
+    const panzoom = Panzoom(this.canvasPaths.nativeElement, {
       maxScale: 10,
       canvas: true,
       step: 0.2
     })
-    this.canvas.nativeElement.parentElement.addEventListener('wheel', function (event: any) {
+    const panzoomTrains = Panzoom(this.canvasTrains.nativeElement, {
+      maxScale: 10,
+      canvas: true,
+      step: 0.2
+    })
+    this.canvasTrains.nativeElement.parentElement.addEventListener('wheel', function (event: any) {
       if (!event.shiftKey) return
-      const pan = panzoom.getPan()
+      const pan = panzoomTrains.getPan()
       panzoomStations.zoomWithWheel(event);
+      panzoomTrains.zoomWithWheel(event);
       panzoom.zoomWithWheel(event);
       panzoom.pan(pan.x, pan.y);
       panzoomStations.pan(pan.x, pan.y);
+      panzoomTrains.pan(pan.x, pan.y);
     })
     const subject = webSocket("ws://localhost:8081/ws");
     subject.subscribe(
@@ -67,9 +77,11 @@ export class TrainComponent implements AfterViewInit {
         console.log(movement.train);
         console.log(movement.station);
         console.log(movement.slot);
-        const station: Station | undefined = this.stations.find(x => x.name === movement.station)
+        const station: Station | undefined = this.stations.find(x => x.name.toLowerCase() === movement.station.toLowerCase())
         if (station) {
-          this.moveTrain(this.trains[0], station.position)
+          console.log("tengo")
+          console.log(station.name)
+          this.moveTrain(this.ctxTrains, this.trains[0], station.position)
         }
       },
       err => console.log(err),
@@ -107,18 +119,21 @@ export class TrainComponent implements AfterViewInit {
 
   }
 
-  drawTrains(trains: Train[]) {
-    this.ctx.fillStyle = 'red';
+  drawTrains(ctx: CanvasRenderingContext2D, trains: Train[]) {
+    ctx.fillStyle = 'white';
     for (let train of trains) {
-      this.ctx.fillRect(train.position.x, train.position.y, 4, 4);
+      ctx.fillStyle = 'black';
+      ctx.fillRect(train.position.x, train.position.y, 4, 4);
+      ctx.fillStyle = 'red';
+      ctx.fillRect(train.position.x, train.position.y, 2, 2);
     }
   }
 
-  moveTrain(train: Train, position: Position) {
-    this.ctx.clearRect(train.position.x - 0.5, train.position.y - 0.5, 5, 5);
+  moveTrain(ctx: CanvasRenderingContext2D, train: Train, position: Position) {
+    ctx.clearRect(train.position.x - 0.5, train.position.y - 0.5, 5, 5);
     train.position.x = position.x;
     train.position.y = position.y;
-    this.drawTrains([train]);
+    this.drawTrains(ctx, [train]);
   }
 
   lineColors(line: string): string {

@@ -1,32 +1,47 @@
 // Metro. SDMT
 
-import au.id.jazzy.play.geojson.Crs._
-import au.id.jazzy.play.geojson.Geometry._
-import au.id.jazzy.play.geojson.LatLng
-import au.id.jazzy.play.geojson.LatLng.latLngFormat
-import au.id.jazzy.play.geojson.LineString.lineStringWrites
-import org.geolatte.geom.{Geometry, LineString, Point}
+import org.geolatte.geom._
+import org.geolatte.geom.crs.{Unit => U}
+import org.geolatte.geom.crs.CoordinateReferenceSystems.{WGS84, addLinearSystem}
+import org.geolatte.geom.crs.CoordinateReferenceSystem
+import org.geolatte.geom.syntax.GeometryImplicits.{lineString, positionSeqBuilder, tupleToC2D, tupleToG2D}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 
+case class Tramo(features: JsValue, geometries: JsValue)
 
 class MetroParser(metro: String) {
 
-  def parseMetro(metro: String): Seq[LineProperties] = {
+  def parseMetro(metro: String): Seq[Line] = {
     val raw: JsValue = Json.parse(metro)
     val features: Seq[JsValue] = (raw \ "features" \\ "properties").toSeq
-    features.flatMap(parseTramo)
+    val geometries: Seq[JsValue] = (raw \ "features" \\ "geometry").toSeq
+    val tt = features.lazyZip(geometries).flatMap((f, g) => parseTramo(f, g))
+    println(tt.length)
+    println(tt.head)
+    tt
   }
 
-  def parseTramo(features: JsValue): Option[LineProperties] = {
-    (features).validate(tramoReads) match {
-      case s: JsSuccess[LineProperties] => Some(s.value)
+  def parseTramo(f: JsValue, g: JsValue): Option[Line] = {
+    val features: Option[LineFeatures] = (f).validate(tramoReads) match {
+      case s: JsSuccess[LineFeatures] => Some(s.value)
       case _: JsError => None
+    }
+    val geometry: Option[LineGeometry] = (g).validate(geometryReads) match {
+      case s: JsSuccess[LineGeometry] => Some(s.value)
+      case _: JsError => None
+    }
+    if (features.isDefined && geometry.isDefined) {
+      implicit val crs: CoordinateReferenceSystem[G2D] = addLinearSystem(WGS84, classOf[G2D], U.METER)
+      val ls = lineString(crs)(geometry.get.coordinates.map(xs => (xs.head, xs.last)): _*)
+      Some(Line(features.get, ls))
+    } else {
+      None
     }
   }
 
-  implicit val tramoReads: Reads[LineProperties] = (
+  implicit val tramoReads: Reads[LineFeatures] = (
     (JsPath \ "NUMEROLINEAUSUARIO").read[String] and
       (JsPath \ "SENTIDO").read[String] and
       (JsPath \ "CODIGOESTACION").read[String] and
@@ -47,7 +62,12 @@ class MetroParser(metro: String) {
       (JsPath \ "IDFITINERARIO").read[String] and
       (JsPath \ "IDFESTACION").read[String] and
       (JsPath \ "IDFPOSTE").read[String] and
-      (JsPath \ "IDFANDEN").read[String] and
-      (JsPath \ "geometry" \ "coordinates").read[LineString[LatLng]]
-  )(LineProperties.apply _)
+      (JsPath \ "IDFANDEN").read[String]
+  )(LineFeatures.apply _)
+
+
+  implicit val geometryReads: Reads[LineGeometry] = (
+    (JsPath \ "type").read[String] and
+      (JsPath \ "coordinates").read[Seq[Seq[Double]]]
+    )(LineGeometry.apply _)
 }

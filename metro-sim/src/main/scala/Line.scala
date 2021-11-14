@@ -1,12 +1,11 @@
 // Metro. SDMT
 
-import org.geolatte.geom.{Geometry, LineString, Point}
+import org.geolatte.geom.{G2D, LineString}
 
 
-class Line(stations: Array[Station]) {
-}
+case class Line(features: LineFeatures, geometry: LineString[G2D])
 
-case class LineProperties(
+case class LineFeatures(
     numerolineausuario: String,
     sentido: String,
     codigoestacion: String,
@@ -27,6 +26,7 @@ case class LineProperties(
     idfitinerario: String,
     idfestacion: String,
     idfposte: String,
-    idfanden: String,
-    geometry: Any
+    idfanden: String
 )
+
+case class LineGeometry(geometryType: String, coordinates: Seq[Seq[Double]])

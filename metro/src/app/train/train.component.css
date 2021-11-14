@@ -6,6 +6,9 @@
 }
 
 .canvas {
-  margin-top: -1500px;
+  margin-top: -2000px;
 }
 
+.canvas-stations {
+  z-index: 1;
+}

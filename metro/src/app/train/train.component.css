@@ -5,10 +5,16 @@
   background: #CCC;
 }
 
-.canvas {
+.canvas-paths {
   margin-top: -2000px;
+  z-index: 0;
+}
+
+.canvas-trains {
+  z-index: 2;
 }
 
 .canvas-stations {
+  margin-top: -2000px;
   z-index: 1;
 }

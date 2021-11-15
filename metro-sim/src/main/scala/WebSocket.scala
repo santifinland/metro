@@ -1,3 +1,5 @@
+// Metro. SDMT
+
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.OverflowStrategy
@@ -9,7 +11,7 @@ object WebSocket {
 
   def listen(): Flow[Message, Message, NotUsed] = {
 
-    val inbound: Sink[Message, Any] = Sink.foreach(println(_))
+    val inbound: Sink[Message, Any] = Sink.ignore
     val outbound: Source[Message, SourceQueueWithComplete[Message]] = Source.queue[Message](16, OverflowStrategy.fail)
 
     Flow.fromSinkAndSourceMat(inbound, outbound)((_, outboundMat) => {
@@ -19,7 +21,6 @@ object WebSocket {
   }
 
   def sendText(text: String): Unit = {
-    //println(text)
     for (connection <- browserConnections) connection(TextMessage.Strict(text))
   }
 }

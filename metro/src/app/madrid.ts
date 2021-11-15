@@ -16,6 +16,8 @@ export class Madrid {
     this.height = height;
     this.stations = [];
     this.paths = [];
+
+    // Build paths
     for (let p of rawPaths.features) {
       const path: Position[] = []
       for (let c of p.geometry.coordinates) {
@@ -29,8 +31,9 @@ export class Madrid {
         p.properties.NUMEROLINEAUSUARIO, position, path, p.properties.SENTIDO, slots)
       this.paths.push(station)
     }
+
+    // Build stations
     for (let s of rawStations.features) {
-      console.log(s.properties.DENOMINACION)
       if (this.stations.filter(x => x.name === s.properties.DENOMINACION).length == 0) {
         const position = new Position(width, height, s.geometry.coordinates[1], s.geometry.coordinates[0]);
         const path: Position[] = []

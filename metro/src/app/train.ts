@@ -1,11 +1,12 @@
-import { Position } from './position'
 
 export class Train {
   id: string;
-  position: Position;
+  x: number;
+  y: number;
 
-  constructor(id: string, position: Position) {
+  constructor(id: string, x: number, y: number) {
     this.id = id;
-    this.position = position;
+    this.x = x;
+    this.y = y;
   }
 }

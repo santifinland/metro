@@ -3,7 +3,12 @@
 import org.geolatte.geom.{G2D, LineString}
 
 
-case class Line(features: LineFeatures, geometry: LineString[G2D])
+case class Line(features: LineFeatures, geometry: LineString[G2D]) {
+
+  lazy val pos: Position = new Position(geometry.getEndPosition.getLat, geometry.getEndPosition.getLon)
+  def x: Double = this.pos.x
+  def y: Double = this.pos.y
+}
 
 case class LineFeatures(
     numerolineausuario: String,

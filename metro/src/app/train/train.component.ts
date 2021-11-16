@@ -86,22 +86,14 @@ export class TrainComponent implements AfterViewInit {
         const m = JSON.parse(rawMsg);
 
         if (m.message === "newTrain") {
-          const station: Station | undefined = this.paths.find(x => x.id === m.station)
-          if (station) {
-            this.addTrain(m.train, station)
-          } else {
-            console.log("station no encontrada")
-          }
+          this.addTrain(m.train, m.x, m.y)
         }
 
         if (m.message === "moveTrain") {
-          const station: Station | undefined = this.paths.find(x => x.id === m.station)
-          if (station) {
-            for (let train of this.trains) {
-              if (train.id === m.train) {
-                train.x = station.position.x;
-                train.y = station.position.y;
-              }
+          for (let train of this.trains) {
+            if (train.id === m.train) {
+              train.x = m.x;
+              train.y = m.y;
             }
           }
         }
@@ -111,9 +103,8 @@ export class TrainComponent implements AfterViewInit {
     );
   }
 
-  addTrain(train: string, station: Station): void {
-    const t = new Train(train, station.position.x, station.position.y);
-    this.trains.push(t);
+  addTrain(train: string, x: number, y: number): void {
+    this.trains.push(new Train(train, x, y));
   }
 
 

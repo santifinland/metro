@@ -7,10 +7,12 @@ import akka.actor.{Actor, ActorRef}
 import Messages.{Free, Full, GetNext, Move, Next, Reserve, Reserved}
 
 
-class Train(color: String) extends Actor {
+class Train(lines: Seq[Line], color: String) extends Actor {
 
   var station: Option[ActorRef] = None
   var nextStation: Option[ActorRef] = None
+  var x: Double = 0
+  var y: Double = 0
 
   def receive: Receive = {
 
@@ -23,8 +25,10 @@ class Train(color: String) extends Actor {
       if (this.station.isEmpty) {
         this.station = Some(x.actorRef)
         this.printar(s" Train ${self.path.name} starting move at ${station.get.path.name}")
+        this.x = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.x
+        this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
         WebSocket.sendText(
-          s"""{"message": "newTrain", "train": ${self.path.name}, "station": "${this.station.get.path.name}"}""")
+          s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
         Thread.sleep(Random.between(1000, 3000))  // Waiting at the station
         this.station.get ! GetNext
 
@@ -35,7 +39,9 @@ class Train(color: String) extends Actor {
         Thread.sleep(Random.between(6000, 10000))  // Moving to next station
         this.printar(s"    Train ${self.path.name} llegando a ${nextStation.get.path.name}")
         this.station = this.nextStation
-        this.sendMovement(self.path.name)
+        this.x = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.x
+        this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
+        this.sendMovement()
         this.nextStation = None
         Thread.sleep(Random.between(1000, 3000))  // Waiting at the station
         this.station.get ! GetNext
@@ -65,9 +71,7 @@ class Train(color: String) extends Actor {
     case _ => println(x)
   }
 
-  def sendMovement(train: String): Unit = {
-    print(s"Sending movement for train ${train}")
+  def sendMovement(): Unit =
     WebSocket.sendText(
-      s"""{"message": "moveTrain", "train": ${self.path.name}, "station": "${this.station.get.path.name}"}""")
-  }
+      s"""{"message": "moveTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
 }

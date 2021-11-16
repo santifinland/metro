@@ -17,10 +17,7 @@ class MetroParser(metro: String) {
     val raw: JsValue = Json.parse(metro)
     val features: Seq[JsValue] = (raw \ "features" \\ "properties").toSeq
     val geometries: Seq[JsValue] = (raw \ "features" \\ "geometry").toSeq
-    val tt = features.lazyZip(geometries).flatMap((f, g) => parseTramo(f, g))
-    println(tt.length)
-    println(tt.head)
-    tt
+    features.lazyZip(geometries).flatMap((f, g) => parseTramo(f, g))
   }
 
   def parseTramo(f: JsValue, g: JsValue): Option[Line] = {

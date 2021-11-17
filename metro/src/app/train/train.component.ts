@@ -86,11 +86,15 @@ export class TrainComponent implements AfterViewInit {
         const m = JSON.parse(rawMsg);
 
         if (m.message === "newTrain") {
+          console.log("received new train")
+          console.log(m.train)
           this.addTrain(m.train, m.x, m.y)
         }
 
         if (m.message === "moveTrain") {
+          console.log("received train movement")
           for (let train of this.trains) {
+            console.log(m.train)
             if (train.id === m.train) {
               train.x = m.x;
               train.y = m.y;

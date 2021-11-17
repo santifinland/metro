@@ -2,7 +2,7 @@
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
@@ -63,17 +63,25 @@ object Main extends App {
   }
 
   // Build stations and its connections: the metro network
-  val R: Seq[Line] = sortedLines.filter { case (line, _) => line == "R" }.head._2
-  val kk = R.map(l => actorSystem.actorOf(Props[Station], l.features.codigoanden.toString))
-  kk.foreach(x => println(x.path.name))
-  val tt = for {
-    i <- kk.indices
-    next: Int = if (i + 1 < kk.length) i + 1 else 0
-    currentActor: ActorRef = kk(i)
-    nextActor: ActorRef = kk(next)
-  } yield (currentActor, nextActor)
-  tt.foreach(x => println(x._1.path.name, x._2.path.name))
-  tt.foreach { case (current, next) => current ! Next(next) }
+  //val R: Seq[Line] = sortedLines.filter { case (line, _) => line == "R" }.head._2
+  //val kk = R.map(l => actorSystem.actorOf(Props[Station], l.features.codigoanden.toString))
+  //kk.foreach(x => println(x.path.name))
+  //val tt = for {
+    //i <- kk.indices
+    //next: Int = if (i + 1 < kk.length) i + 1 else 0
+    //currentActor: ActorRef = kk(i)
+    //nextActor: ActorRef = kk(next)
+  //} yield (currentActor, nextActor)
+  //tt.foreach(x => println(x._1.path.name, x._2.path.name))
+  //tt.foreach { case (current, next) => current ! Next(next) }
+
+  // Build stations and its connections: the metro network
+  val stationActors: Iterable[(String, Seq[ActorRef])] = for {
+    (line: String, lines: Seq[Line]) <- sortedLines
+    if line == "3"
+    actors: Seq[ActorRef] = lines.map(l => actorSystem.actorOf(Props[Station], l.features.codigoanden.toString))
+    _ = Line.sendNextStation(actors)
+  } yield (line, actors)
 
   // Build trains
   val trainOne = actorSystem.actorOf(Props(classOf[Train], paths, "BLUE"), "T1")
@@ -81,15 +89,30 @@ object Main extends App {
   val trainThree = actorSystem.actorOf(Props(classOf[Train], paths, "YELLOW"), "T3")
 
   // Start simulation
-  trainOne ! Move(kk.filter(x => x.path.name == "2").head)
-  Thread.sleep(1)
-  trainTwo ! Move(kk.filter(x => x.path.name == "3").head)
+  //trainOne ! Move(kk.filter(x => x.path.name == "2").head)
+  //trainTwo ! Move(kk.filter(x => x.path.name == "3").head)
   //trainTwo ! Move(lago)
   //trainThree ! Move(campo)
 
+  // Initialize simulation with trains
+  val random = new Random
+  val allActors: List[ActorRef] = stationActors.flatMap { case (_, xs) => xs }.toList
+  val trains: Iterable[ActorRef] = for {
+    (_: String, lx: Seq[Line]) <- lines
+    start = lx.toList(random.nextInt(lx.toList.size)).features.codigoanden.toString if lx.toList.nonEmpty
+    destination = allActors.filter(x => x.path.name == start)
+    if destination.nonEmpty
+    message = Some(Move(destination.head))
+    uuid = java.util.UUID.randomUUID.toString
+    train = actorSystem.actorOf(Props(classOf[Train], lx, "BLUE"), uuid)
+    _ = train ! message.get
+  } yield train
 
+
+  val simulator: Simulator = new Simulator(actorSystem, stationActors.toMap)
   while (true) {
-    Thread.sleep(1000)
+    Thread.sleep(5000)
+    simulator.simulate()
     //WebSocket.sendText(s"""{"train": "1", "station": "EMPALME", "slot": "station"}""")
     //Thread.sleep(1000)
     //WebSocket.sendText(s"""{"train": "1", "station": "CAMPAMENTO", "slot": "station"}""")

@@ -1,5 +1,7 @@
 // Metro. SDMT
 
+import Messages.Next
+import akka.actor.ActorRef
 import org.geolatte.geom.{G2D, LineString}
 
 
@@ -8,6 +10,39 @@ case class Line(features: LineFeatures, geometry: LineString[G2D]) {
   lazy val pos: Position = new Position(geometry.getEndPosition.getLat, geometry.getEndPosition.getLon)
   def x: Double = this.pos.x
   def y: Double = this.pos.y
+}
+
+object Line {
+
+  def sortLines(lines: Seq[Line]): Seq[Line] = {
+    val lineHead: Seq[Line] = lines.filter(l => l.features.tipoparada == "C")
+    val lineLast: Seq[Line] = lines.filter(l => l.features.tipoparada == "T")
+    val linesMid: Seq[Line] = lines.filter(l => l.features.tipoparada != "C" && l.features.tipoparada != "T")
+    def sortDirectionLines(lines: Seq[Line], direction: String): Seq[Line] = {
+      lines
+        .filter(l => l.features.sentido == direction)
+        .sortBy(_.features.numeroorden)
+    }
+    val stationsDirectionHead = lineHead match {
+      case Nil => Seq[Line]()
+      case _ => sortDirectionLines(linesMid, lineHead.head.features.sentido)
+    }
+    val stationsDirectionLast = lineLast match {
+      case Nil => Seq[Line]()
+      case _ => sortDirectionLines(linesMid, lineLast.head.features.sentido)
+    }
+    stationsDirectionHead ++ lineHead ++ stationsDirectionLast ++ lineLast
+  }
+
+  def sendNextStation(lineActors: Seq[ActorRef]): Unit= {
+    val currentNextLineActors = for {
+      i <- lineActors.indices
+      next: Int = if (i + 1 < lineActors.length) i + 1 else 0
+      currentActor: ActorRef = lineActors(i)
+      nextActor: ActorRef = lineActors(next)
+    } yield (currentActor, nextActor)
+    currentNextLineActors.foreach { case (current, next) => current ! Next(next) }
+  }
 }
 
 case class LineFeatures(

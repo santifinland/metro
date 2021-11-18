@@ -1,72 +1,35 @@
 // Metro. SDMT
 
-import Messages.Next
-import akka.actor.ActorRef
-import org.geolatte.geom.{G2D, LineString}
+import scala.concurrent.duration.DurationInt
+
+import akka.actor.{Actor, ActorRef}
+
+import Main.actorSystem.{dispatcher, scheduler}
+import Messages._
 
 
-case class Line(features: LineFeatures, geometry: LineString[G2D]) {
+class Line(ui: ActorRef) extends Actor {
 
-  lazy val pos: Position = new Position(geometry.getEndPosition.getLat, geometry.getEndPosition.getLon)
-  def x: Double = this.pos.x
-  def y: Double = this.pos.y
-}
+  val stations: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map[String, Int]()
 
-object Line {
-
-  def sortLines(lines: Seq[Line]): Seq[Line] = {
-    val lineHead: Seq[Line] = lines.filter(l => l.features.tipoparada == "C")
-    val lineLast: Seq[Line] = lines.filter(l => l.features.tipoparada == "T")
-    val linesMid: Seq[Line] = lines.filter(l => l.features.tipoparada != "C" && l.features.tipoparada != "T")
-    def sortDirectionLines(lines: Seq[Line], direction: String): Seq[Line] = {
-      lines
-        .filter(l => l.features.sentido == direction)
-        .sortBy(_.features.numeroorden)
-    }
-    val stationsDirectionHead = lineHead match {
-      case Nil => Seq[Line]()
-      case _ => sortDirectionLines(linesMid, lineHead.head.features.sentido)
-    }
-    val stationsDirectionLast = lineLast match {
-      case Nil => Seq[Line]()
-      case _ => sortDirectionLines(linesMid, lineLast.head.features.sentido)
-    }
-    stationsDirectionHead ++ lineHead ++ stationsDirectionLast ++ lineLast
+  def receive: Receive = {
+    case _ =>
+      scribe.info(s"""Recevied initial Line meessage""")
+      scheduler.scheduleAtFixedRate(3.seconds, 3.seconds)( new Runnable {
+        override def run(): Unit = ui ! PeopleInStation(computeLinePeople())
+      })
+      context.become(receivePeople)
   }
 
-  def sendNextStation(lineActors: Seq[ActorRef]): Unit= {
-    val currentNextLineActors = for {
-      i <- lineActors.indices
-      next: Int = if (i + 1 < lineActors.length) i + 1 else 0
-      currentActor: ActorRef = lineActors(i)
-      nextActor: ActorRef = lineActors(next)
-    } yield (currentActor, nextActor)
-    currentNextLineActors.foreach { case (current, next) => current ! Next(next) }
+  def receivePeople: Receive = {
+    case x: PeopleInStation => {
+      scribe.debug(s"""Recevied ${x.people} from ${sender.path.name}""")
+      stations(sender.path.name) = x.people
+    }
+  }
+
+  def computeLinePeople(): Int = {
+    scribe.debug(s"""Computing people""")
+    this.stations.map { case (_, people: Int) => people }.sum
   }
 }
-
-case class LineFeatures(
-    numerolineausuario: String,
-    sentido: String,
-    codigoestacion: String,
-    codigoanden: Int,
-    numeroorden: Int,
-    tipoparada: String,
-    denominacion: String,
-    codigomunicipio: String,
-    municipio: String,
-    coronatarifaria: String,
-    longitudtramoanterior: Double,
-    velocidadtramoanterior: Float,
-    modolinea: Int,
-    modointercambiador: Int,
-    codigointercambiador: String,
-    idftramo: String,
-    idflinea: String,
-    idfitinerario: String,
-    idfestacion: String,
-    idfposte: String,
-    idfanden: String
-)
-
-case class LineGeometry(geometryType: String, coordinates: Seq[Seq[Double]])

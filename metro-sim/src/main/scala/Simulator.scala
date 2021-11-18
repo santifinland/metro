@@ -3,8 +3,9 @@
 import scala.collection.immutable.SortedMap
 import scala.util.Random
 
-import Messages.EnterStation
 import akka.actor.{ActorRef, ActorSystem, Props}
+
+import Messages.EnterStation
 
 
 class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRef]]) {
@@ -12,17 +13,15 @@ class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRe
   val random = new Random
 
   def simulate(): Unit = {
-    println(s"""INSISS:""")
     val daily_journeys = 50000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
     val people: Int = 2
-    println(s"""PEEEEEEEOPLE: ${people}""")
     stationActors.foreach { case (_, actors) => actors.foreach { x =>
       val start = x
       val actorsLength: Int = actors.size
       Range(0, people).foreach { _ =>
         val destination = actors(random.nextInt(actorsLength))
-        println(s"""Person going to : ${destination.path.name}""")
+        scribe.debug(s"""Person going to : ${destination.path.name}""")
         val uuid = java.util.UUID.randomUUID.toString
         val person = actorSystem.actorOf(Props(classOf[Person], destination), uuid)
         person ! EnterStation(start)

@@ -1,5 +1,5 @@
 // Metro. SDMT
 
-class Metro(lines: Array[Line]) {
+class Metro(lines: Array[Path]) {
 
 }

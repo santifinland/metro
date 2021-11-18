@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source, SourceQueueWithComplete}
 
+
 object WebSocket {
 
   private var browserConnections: List[TextMessage => Unit] = List()

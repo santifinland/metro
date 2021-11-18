@@ -9,18 +9,19 @@ import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 
+
 case class Tramo(features: JsValue, geometries: JsValue)
 
 class MetroParser(metro: String) {
 
-  def parseMetro(metro: String): Seq[Line] = {
+  def parseMetro(metro: String): Seq[Path] = {
     val raw: JsValue = Json.parse(metro)
     val features: Seq[JsValue] = (raw \ "features" \\ "properties").toSeq
     val geometries: Seq[JsValue] = (raw \ "features" \\ "geometry").toSeq
     features.lazyZip(geometries).flatMap((f, g) => parseTramo(f, g))
   }
 
-  def parseTramo(f: JsValue, g: JsValue): Option[Line] = {
+  def parseTramo(f: JsValue, g: JsValue): Option[Path] = {
     val features: Option[LineFeatures] = (f).validate(tramoReads) match {
       case s: JsSuccess[LineFeatures] => Some(s.value)
       case _: JsError => None
@@ -32,7 +33,7 @@ class MetroParser(metro: String) {
     if (features.isDefined && geometry.isDefined) {
       implicit val crs: CoordinateReferenceSystem[G2D] = addLinearSystem(WGS84, classOf[G2D], U.METER)
       val ls = lineString(crs)(geometry.get.coordinates.map(xs => (xs.head, xs.last)): _*)
-      Some(Line(features.get, ls))
+      Some(Path(features.get, ls))
     } else {
       None
     }

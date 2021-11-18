@@ -28,7 +28,7 @@ export class TrainComponent implements AfterViewInit {
   stations: Station[];
   paths: Station[];
   trains: Train[] = [];
-
+  totalPeople: number[] = [0, 0];
   subscription!: Subscription;
 
   constructor() {
@@ -47,7 +47,7 @@ export class TrainComponent implements AfterViewInit {
     this.panAndZoom();
     this.handleMessages();
     const source = interval(2000);
-    this.subscription = source.subscribe(_ => this.drawTrains(this.trains))
+    this.subscription = source.subscribe(_ => this.drawTrains(this.trains));
   }
 
   panAndZoom() {
@@ -101,6 +101,16 @@ export class TrainComponent implements AfterViewInit {
             }
           }
         }
+
+        if (m.message === "peopleInStation") {
+          console.log("received people in station");
+          console.log(m.people);
+          if (m.line === "10a") {
+            this.totalPeople[0] = m.people
+          } else {
+            this.totalPeople[1] = m.people
+          }
+        }
       },
       err => console.log(err),
       () => console.log('complete')
@@ -110,7 +120,6 @@ export class TrainComponent implements AfterViewInit {
   addTrain(train: string, x: number, y: number): void {
     this.trains.push(new Train(train, x, y));
   }
-
 
   drawStations(ctx: CanvasRenderingContext2D, stations: Station[]) {
     ctx.font = '8px Verdana';

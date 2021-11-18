@@ -11,6 +11,7 @@ export class Station {
   empty: boolean;
   slots: Slot[];
   next: any;
+  people: number;
 
   constructor(id: string, name: string, line: string, position: Position, path: Position[], sentido: string,
               slots: Slot[], next?: Station) {
@@ -23,5 +24,6 @@ export class Station {
     this.empty = true;
     this.slots = slots;
     this.next = next;
+    this.people = 0
   }
 }

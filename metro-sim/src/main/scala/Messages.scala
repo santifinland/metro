@@ -1,6 +1,6 @@
 // Metro. SDMT
 
-import akka.actor.{ActorRef}
+import akka.actor.ActorRef
 
 
 object Messages {
@@ -12,6 +12,9 @@ object Messages {
   case class Move(actorRef: ActorRef)
   case class Next(actorRef: ActorRef)
   case class Reserved(actorRef: ActorRef)
+
+  // Train -> self Train messages
+  case object TrainArrivedAtStation
 
   // Train -> Station messages
   case object ArrivedAtStation
@@ -36,5 +39,8 @@ object Messages {
   case class AcceptedEnterTrain(actorRef: ActorRef)
   case object NotAcceptedEnterTrain
   case class ArrivedAtStationToPeople(actorRef: ActorRef)
+
+  // Station -> User interface messages
+  case class PeopleInStation(people: Int)
 
 }

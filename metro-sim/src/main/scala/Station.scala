@@ -91,7 +91,6 @@ object Station {
                    L: ActorRef): Iterable[(String, Seq[ActorRef])] = {
     for {
       (line: String, lines: Seq[Path]) <- sortedLines
-      if line == "10a" || line == "11"
       actors: Seq[ActorRef] = lines.map { l =>
         val normalized = Normalizer.normalize(l.features.denominacion, Normalizer.Form.NFD)
         val kk = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")

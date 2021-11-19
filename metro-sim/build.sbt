@@ -8,6 +8,7 @@ lazy val root = (project in file(".")).
      libraryDependencies ++= Seq(
        "com.github.pureconfig" %% "pureconfig" % "0.17.0",
        "com.outr" %% "scribe" % "3.6.3",
+       "org.scala-graph" %% "graph-core" % "1.13.2",
        "com.typesafe.akka" %% "akka-actor" % "2.6.17",
        "com.typesafe.akka" %% "akka-http" % "10.2.6",
        "com.typesafe.akka" %% "akka-stream" % "2.6.17",

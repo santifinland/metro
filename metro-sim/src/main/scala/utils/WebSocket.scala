@@ -12,7 +12,8 @@ object WebSocket {
   def listen(): Flow[Message, Message, NotUsed] = {
 
     val inbound: Sink[Message, Any] = Sink.ignore
-    val outbound: Source[Message, SourceQueueWithComplete[Message]] = Source.queue[Message](16, OverflowStrategy.fail)
+    val outbound: Source[Message, SourceQueueWithComplete[Message]] = Source.queue[Message](256,
+      OverflowStrategy.fail)
 
     Flow.fromSinkAndSourceMat(inbound, outbound)((_, outboundMat) => {
       browserConnections ::= outboundMat.offer

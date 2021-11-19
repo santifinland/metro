@@ -1,10 +1,11 @@
-package parser
-
 // Metro. SDMT
 
+package parser
+
 import akka.actor.ActorRef
-import messages.Messages.Next
 import org.geolatte.geom.{G2D, LineString}
+
+import messages.Messages.Next
 import utils.Position
 
 

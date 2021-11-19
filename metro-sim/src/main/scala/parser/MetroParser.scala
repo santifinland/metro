@@ -1,6 +1,6 @@
-package parser
-
 // Metro. SDMT
+
+package parser
 
 import org.geolatte.geom._
 import org.geolatte.geom.crs.CoordinateReferenceSystems.{WGS84, addLinearSystem}

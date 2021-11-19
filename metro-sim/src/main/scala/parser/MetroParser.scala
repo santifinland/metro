@@ -1,10 +1,11 @@
+package parser
+
 // Metro. SDMT
 
 import org.geolatte.geom._
-import org.geolatte.geom.crs.{Unit => U}
 import org.geolatte.geom.crs.CoordinateReferenceSystems.{WGS84, addLinearSystem}
-import org.geolatte.geom.crs.CoordinateReferenceSystem
-import org.geolatte.geom.syntax.GeometryImplicits.{lineString, positionSeqBuilder, tupleToC2D, tupleToG2D}
+import org.geolatte.geom.crs.{CoordinateReferenceSystem, Unit => U}
+import org.geolatte.geom.syntax.GeometryImplicits.{lineString, positionSeqBuilder, tupleToG2D}
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._

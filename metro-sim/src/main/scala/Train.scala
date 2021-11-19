@@ -1,15 +1,20 @@
 // Metro. SDMT
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
 import scala.util.Random
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import Main.actorSystem.dispatcher
 import Main.materializer.system
-import Messages._
+import messages.Messages._
+import parser.Path
+import utils.WebSocket
 
 
-class Train(lines: Seq[Path]) extends Actor {
+class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
+
+  val TimeBetweenStations: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
+  val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
 
   var station: Option[ActorRef] = None
   var nextStation: Option[ActorRef] = None
@@ -33,14 +38,14 @@ class Train(lines: Seq[Path]) extends Actor {
         this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
         WebSocket.sendText(
           s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
-        system.scheduler.scheduleOnce(Random.between(1, 3).seconds, this.station.get, GetNext)
+        system.scheduler.scheduleOnce(TimeBetweenStations, this.station.get, GetNext)
 
       } else {
         scribe.info(
           s""" Train ${self.path.name} departing from ${station.get.path.name} with ${people.size} passengers""")
         this.nextStation = Some(x.actorRef)
         this.station.get ! Free
-        system.scheduler.scheduleOnce(Random.between(5, 10).seconds, self, TrainArrivedAtStation)
+        system.scheduler.scheduleOnce(TimeBetweenStations, self, TrainArrivedAtStation)
       }
 
     case TrainArrivedAtStation =>
@@ -52,7 +57,7 @@ class Train(lines: Seq[Path]) extends Actor {
       this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
       this.sendMovement()
       this.nextStation = None
-      system.scheduler.scheduleOnce(Random.between(1, 3).seconds, this.station.get, GetNext)  // Open doors
+      system.scheduler.scheduleOnce(TimeOpenDoors, this.station.get, GetNext)  // Open doors
 
 
 
@@ -67,7 +72,7 @@ class Train(lines: Seq[Path]) extends Actor {
       } else {
         scribe.debug(s" Train ${self.path.name} esperando en ${station.get.path.name}")
       }
-      system.scheduler.scheduleOnce(3.seconds, x.actorRef, Reserve)
+      system.scheduler.scheduleOnce(5.seconds, x.actorRef, Reserve)
 
     case x: RequestEnterTrain =>
       if (people.size < MAX_CAPACITY) {
@@ -95,7 +100,7 @@ object Train {
   val random = new Random
 
   def buildTrains(actorSystem: ActorSystem, lines: Map[String, Seq[Path]],
-                  actors: List[ActorRef], n: Int): Iterable[ActorRef] = {
+                  actors: List[ActorRef], n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
     for {
       (_: String, lx: Seq[Path]) <- lines
       _ <- 1 to (n * lx.length / 100)
@@ -104,7 +109,7 @@ object Train {
       if destination.nonEmpty
       message = Some(Move(destination.head))
       uuid = java.util.UUID.randomUUID.toString
-      train = actorSystem.actorOf(Props(classOf[Train], lx), uuid)
+      train = actorSystem.actorOf(Props(classOf[Train], lx, timeMultiplier), uuid)
       _ = train ! message.get
     } yield train
   }

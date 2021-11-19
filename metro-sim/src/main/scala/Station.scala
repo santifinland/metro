@@ -6,14 +6,15 @@ import scala.concurrent.duration.DurationInt
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import Main.actorSystem.{dispatcher, scheduler}
-import Messages._
+import messages.Messages._
+import parser.Path
 
 
-class Station(line: ActorRef) extends Actor {
+class Station(line: ActorRef, name: String) extends Actor {
 
   var next: Option[ActorRef] = None
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
-  val MAX_CAPACITY = 200
+  val MAX_CAPACITY = 300
 
   def receive: Receive = {
     case x: Next =>
@@ -39,7 +40,7 @@ class Station(line: ActorRef) extends Actor {
     case GetNext => sender ! Next(this.next.get)
 
     case ArrivedAtStation =>
-      scribe.debug(s"${Calendar.getInstance().getTime} Train ${sender.path.name} arrived to ${self.path.name}")
+      scribe.debug(s"${Calendar.getInstance().getTime} Train ${sender.path.name} arrived to ${name}")
 
       this.people.foreach { case(_, p) => p ! TrainInStation(sender)}
 
@@ -56,7 +57,7 @@ class Station(line: ActorRef) extends Actor {
     case ExitStation =>
       people.remove(sender.path.name)
 
-    case x: Any => scribe.error(s"Full Station does not understand $x")
+    case x: Any => scribe.error(s"Full Station does not understand $x from ${sender.path.name}")
   }
 
   def empty: Receive = {
@@ -94,7 +95,7 @@ object Station {
       actors: Seq[ActorRef] = lines.map { l =>
         val normalized = Normalizer.normalize(l.features.denominacion, Normalizer.Form.NFD)
         val kk = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-        actorSystem.actorOf(Props(classOf[Station], L), l.features.codigoanden.toString)
+        actorSystem.actorOf(Props(classOf[Station], L, l.features.denominacion), l.features.codigoanden.toString)
       }
       _ = Path.sendNextStation(actors)
     } yield (line, actors)

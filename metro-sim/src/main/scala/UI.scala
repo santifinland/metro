@@ -1,8 +1,8 @@
 // Metro. SDMT
 
 import akka.actor.Actor
-
-import Messages._
+import messages.Messages._
+import utils.WebSocket
 
 
 class UI extends Actor {

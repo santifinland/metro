@@ -4,30 +4,41 @@ import scala.collection.immutable.SortedMap
 import scala.util.Random
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import messages.Messages.EnterStation
+import parser.Path
+import utils.Distribution
 
-import Messages.EnterStation
 
-
-class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRef]]) {
+class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRef]],
+                sortedLines: Map[String, Seq[Path]]) {
 
   val random = new Random
 
-  def simulate(): Unit = {
+  def simulate(timeMultiplier: Double): Unit = {
     val daily_journeys = 50000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
     val people: Int = 2
-    stationActors.foreach { case (_, actors) => actors.foreach { x =>
+    stationActors.foreach { case (line, actors) => actors.foreach { x =>
       val start = x
       val actorsLength: Int = actors.size
       Range(0, people).foreach { _ =>
         val destination = actors(random.nextInt(actorsLength))
-        scribe.debug(s"""Person going to : ${destination.path.name}""")
+        val shortes = shortestPath(sortedLines.filter{ case (l, _) => l == line }.head._2, start.path.name, destination.path.name)
+        //scribe.info(s"""Person going to : ${destination.path.name}. Shortest: $shortes""")
         val uuid = java.util.UUID.randomUUID.toString
-        val person = actorSystem.actorOf(Props(classOf[Person], destination), uuid)
+        val person = actorSystem.actorOf(Props(classOf[Person], destination, timeMultiplier), uuid)
         person ! EnterStation(start)
       }
     }
     }
+  }
+
+  def shortestPath(sortedLines: Seq[Path], start: String, destination: String): Boolean = {
+    val startPosition = sortedLines.map(x => x.features.codigoanden.toString).indexOf(start)
+    val destinationPosition = sortedLines.map(x => x.features.codigoanden.toString).indexOf(destination)
+    //scribe.info(s"Start Position: $startPosition")
+    //scribe.info(s"Destination Position: $destinationPosition")
+    startPosition < sortedLines.size / 2
   }
 }
 

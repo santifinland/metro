@@ -9,8 +9,10 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
+import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
+import utils.WebSocket
 
 
 object Main extends App {
@@ -29,7 +31,9 @@ object Main extends App {
   // Read configuration
   val conf = ConfigSource.default.load[MetroConf]
   val metroConf = conf.toOption.get
-  print(metroConf.lines)
+  scribe.info(s"Metro")
+  val timeMultiplier = 1 / metroConf.timeMultiplier
+  scribe.info(s"Time multiplier: $timeMultiplier")
   Thread.sleep(4000)
 
   // Metro net lines info
@@ -59,15 +63,15 @@ object Main extends App {
   // Initialize simulation with trains
   val random = new Random
   val allActors: List[ActorRef] = stationActors.flatMap { case (_, xs) => xs }.toList
-  val trains: Iterable[ActorRef]  = Train.buildTrains(actorSystem, lines, allActors, 50)
+  val trains: Iterable[ActorRef]  = Train.buildTrains(actorSystem, lines, allActors, 50, timeMultiplier)
   println(trains)
 
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toMap)
+  val simulator: Simulator = new Simulator(actorSystem, stationActors.toMap, sortedLines)
   var i = 0
   while (i < 300) {
     i += 1
     scribe.info(s"iteración $i")
-    Thread.sleep(1000)
-    simulator.simulate()
+    Thread.sleep((100000L * timeMultiplier).toLong)
+    simulator.simulate(timeMultiplier)
   }
 }

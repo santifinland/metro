@@ -1,8 +1,11 @@
+package parser
+
 // Metro. SDMT
 
-import Messages.Next
 import akka.actor.ActorRef
+import messages.Messages.Next
 import org.geolatte.geom.{G2D, LineString}
+import utils.Position
 
 
 case class Path(features: LineFeatures, geometry: LineString[G2D]) {

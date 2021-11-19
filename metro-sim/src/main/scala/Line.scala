@@ -5,7 +5,7 @@ import scala.concurrent.duration.DurationInt
 import akka.actor.{Actor, ActorRef}
 
 import Main.actorSystem.{dispatcher, scheduler}
-import Messages._
+import messages.Messages._
 
 
 class Line(ui: ActorRef) extends Actor {

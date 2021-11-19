@@ -2,5 +2,5 @@
 
 case class MetroConf(
   appName: String,
-  lines: List[String]
+  timeMultiplier: Double
 )

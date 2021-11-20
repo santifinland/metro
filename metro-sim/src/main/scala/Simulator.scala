@@ -3,7 +3,6 @@
 import scala.collection.immutable.SortedMap
 import scala.util.Random
 
-import Metro.PlatformPrefix
 import akka.actor.{ActorRef, ActorSystem, Props}
 import messages.Messages.EnterStation
 import parser.Path
@@ -13,10 +12,10 @@ import utils.Distribution
 
 
 class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRef]],
-                sortedLines: Map[String, Seq[Path]], metroGraph: Graph[String, WDiEdge]) {
+                sortedLinePaths: Map[String, Seq[Path]], metroGraph: Graph[MetroNode, WDiEdge]) {
 
   val random = new Random
-  val allPaths: List[Path] = sortedLines.values.flatten.toList
+  val allPaths: List[Path] = sortedLinePaths.values.flatten.toList
   val allStations: List[ActorRef] = stationActors.values.flatten.toList
 
   def simulate(timeMultiplier: Double): Unit = {
@@ -29,11 +28,13 @@ class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRe
       val actorsLength: Int = actors.size
       Range(0, people).foreach { _ =>
         val destination: ActorRef = allStations(random.nextInt(allStations.size))  // TODO: apply probability dist over destinations
-        val startNodeNme = PlatformPrefix + start.path.name
-        val startNode = metroGraph.nodes.get(PlatformPrefix + start.path.name)
-        val destinationNodeName = PlatformPrefix + destination.path.name
-        val destinationNode = metroGraph.nodes.get(PlatformPrefix + destination.path.name)
-        scribe.debug(s"Person wants to go from $startNodeNme to $destinationNodeName")
+        val startNodeName = start.path.name
+        scribe.debug(s"Searching start node ${start.path.name} in the grapah")
+        val startNode = metroGraph.nodes.get(new StationNode(start.path.name, line))
+        val destinationNodeName = destination.path.name
+        scribe.debug(s"Searching destination node ${start.path.name} in the grapah")
+        val destinationNode = metroGraph.nodes.get(new StationNode(destination.path.name, line))
+        scribe.debug(s"Person wants to go from $startNodeName to $destinationNodeName")
         val journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
         scribe.debug(s"Simulated journey: $journey")
         //scribe.info(s"""Person going to : ${destination.path.name}. Shortest: $shortes""")

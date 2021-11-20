@@ -59,17 +59,17 @@ object Main extends App {
     .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
 
   // Build metro graph
-  val metroGraph: Graph[String, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
+  val metroGraph: Graph[MetroNode, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
 
   // Build Line and User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
 
-  // Iterate over lines
+  // Iterate over lines to create Line Actors and Platform Actors
   val platformActors: Iterable[(String, Seq[ActorRef])] = sortedLinePaths.flatMap { case (l: String, paths: Seq[Path]) =>
     scribe.info(s"Handling line $l")
     val L: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "L" + l)  // Build line actors for this line
     L ! "Start"  // Start line with any message: i.e. "Start"
-    Station.buildPlatformActors(actorSystem, sortedLinePaths.filter{ case (line, _) => "L" + line == L.path.name }, L)  // Line sta.
+    Platform.buildPlatformActors(actorSystem, sortedLinePaths.filter{ case (line, _) => "L" + line == L.path.name }, L)  // Line sta.
     //Station.buildPlatformActors(actorSystem, paths, L)  // Line sta.
   }
 
@@ -83,13 +83,13 @@ object Main extends App {
   println(trains)
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
-  simulator.simulate(timeMultiplier)
-  var i = 0
-  while (i < 300) {
-    i += 1
-    scribe.info(s"iteración $i")
-    Thread.sleep((100000L * timeMultiplier).toLong)
-    simulator.simulate(timeMultiplier)
-  }
+  //val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
+  //simulator.simulate(timeMultiplier)
+  //var i = 0
+  //while (i < 300) {
+    //i += 1
+    //scribe.info(s"iteración $i")
+    //Thread.sleep((100000L * timeMultiplier).toLong)
+    //simulator.simulate(timeMultiplier)
+  //}
 }

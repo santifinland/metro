@@ -16,8 +16,8 @@ class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
   val TimeBetweenStations: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
   val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
 
-  var station: Option[ActorRef] = None
-  var nextStation: Option[ActorRef] = None
+  var platform: Option[ActorRef] = None
+  var nextPlatform: Option[ActorRef] = None
   var x: Double = 0
   var y: Double = 0
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
@@ -31,55 +31,55 @@ class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
 
     case x: Reserved =>
 
-      if (this.station.isEmpty) {
-        this.station = Some(x.actorRef)
-        scribe.debug(s" Train ${self.path.name} starting move at ${station.get.path.name}")
-        this.x = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.x
-        this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
+      if (this.platform.isEmpty) {
+        this.platform = Some(x.actorRef)
+        scribe.debug(s" Train ${self.path.name} starting move at ${platform.get.path.name}")
+        this.x = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.x
+        this.y = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.y
         WebSocket.sendText(
           s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
-        system.scheduler.scheduleOnce(TimeBetweenStations, this.station.get, GetNext)
+        system.scheduler.scheduleOnce(TimeBetweenStations, this.platform.get, GetNext)
 
       } else {
         scribe.info(
-          s""" Train ${self.path.name} departing from ${station.get.path.name} with ${people.size} passengers""")
-        this.nextStation = Some(x.actorRef)
-        this.station.get ! Free
+          s""" Train ${self.path.name} departing from ${platform.get.path.name} with ${people.size} passengers""")
+        this.nextPlatform = Some(x.actorRef)
+        this.platform.get ! Free
         system.scheduler.scheduleOnce(TimeBetweenStations, self, TrainArrivedAtStation)
       }
 
     case TrainArrivedAtStation =>
-      scribe.debug(s"    Train ${self.path.name} llegando a ${nextStation.get.path.name}")
-      this.station = this.nextStation
-      this.station.get ! ArrivedAtStation
-      this.people.foreach {case (_, actor) => actor ! ArrivedAtStationToPeople(this.station.get) }
-      this.x = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.x
-      this.y = lines.filter(l => l.features.codigoanden.toString == this.station.get.path.name).head.y
+      scribe.debug(s"    Train ${self.path.name} arriving to ${nextPlatform.get.path.name}")
+      this.platform = this.nextPlatform
+      this.platform.get ! ArrivedAtStation
+      this.people.foreach {case (_, actor) => actor ! ArrivedAtStationToPeople(this.platform.get) }
+      this.x = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.x
+      this.y = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.y
       this.sendMovement()
-      this.nextStation = None
-      system.scheduler.scheduleOnce(TimeOpenDoors, this.station.get, GetNext)  // Open doors
+      this.nextPlatform = None
+      system.scheduler.scheduleOnce(TimeOpenDoors, this.platform.get, GetNext)  // Open doors
 
 
 
     case x: Next =>
-      this.nextStation = Some(x.actorRef)
-      scribe.debug(s" Train ${self.path.name} knows next station ${x.actorRef.path.name}")
-      this.nextStation.get ! Reserve
+      this.nextPlatform = Some(x.actorRef)
+      scribe.debug(s" Train ${self.path.name} knows next platform ${x.actorRef.path.name}")
+      this.nextPlatform.get ! Reserve
 
     case x: Full =>
-      if (this.station.isEmpty) {
+      if (this.platform.isEmpty) {
         scribe.debug(s" Train ${self.path.name} no puede comenzar su movimiento")
       } else {
-        scribe.debug(s" Train ${self.path.name} esperando en ${station.get.path.name}")
+        scribe.debug(s" Train ${self.path.name} esperando en ${platform.get.path.name}")
       }
       system.scheduler.scheduleOnce(5.seconds, x.actorRef, Reserve)
 
     case x: RequestEnterTrain =>
       if (people.size < MAX_CAPACITY) {
         this.people.addOne(x.actorRef.path.name, x.actorRef)
-        sender ! AcceptedEnterTrain(this.station.get)
+        sender ! AcceptedEnterTrain(this.platform.get)
       } else {
-        scribe.warn(s" Train ${self.path.name} over capacity at ${station.get.path.name}")
+        scribe.warn(s" Train ${self.path.name} over capacity at ${platform.get.path.name}")
         sender ! NotAcceptedEnterTrain
       }
 

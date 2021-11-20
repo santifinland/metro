@@ -13,6 +13,6 @@ class UI extends Actor {
       WebSocket.sendText(
         s"""{"message": "peopleInStation", "line": "${sender.path.name}", "people": ${x.people}}""")
 
-    case _ => scribe.debug("Message not understood")
+    case _ => scribe.warn("Message not understood")
   }
 }

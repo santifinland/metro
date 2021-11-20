@@ -21,7 +21,7 @@ class Station(line: ActorRef, name: String) extends Actor {
       this.next = Some(x.actorRef)
       scribe.debug(s"Setting station ${self.path.name} to empty mode")
       context.become(empty)
-      scheduler.scheduleAtFixedRate(3.seconds, 3.seconds)( new Runnable {
+      scheduler.scheduleAtFixedRate(3.seconds, 10.seconds)( new Runnable {
         override def run(): Unit = line ! PeopleInStation(people.size)
       })
     case _ => scribe.warn("Next station not set yet")
@@ -87,13 +87,11 @@ class Station(line: ActorRef, name: String) extends Actor {
 object Station {
 
   // Build stations and its connections: the metro network
-  def buildStation(actorSystem: ActorSystem, sortedLines: Map[String, Seq[Path]],
-                   L: ActorRef): Iterable[(String, Seq[ActorRef])] = {
+  def buildPlatformActors(actorSystem: ActorSystem, sortedLinePaths: Map[String, Seq[Path]],
+                          L: ActorRef): Iterable[(String, Seq[ActorRef])] = {
     for {
-      (line: String, lines: Seq[Path]) <- sortedLines
-      actors: Seq[ActorRef] = lines.map { l =>
-        val normalized = Normalizer.normalize(l.features.denominacion, Normalizer.Form.NFD)
-        val kk = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+      (line: String, paths: Seq[Path]) <- sortedLinePaths
+      actors: Seq[ActorRef] = paths.map { l =>
         actorSystem.actorOf(Props(classOf[Station], L, l.features.denominacion), l.features.codigoanden.toString)
       }
       _ = Path.sendNextStation(actors)

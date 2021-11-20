@@ -53,34 +53,38 @@ object Main extends App {
   val metroParser = new MetroParser(metro)
   val paths: Seq[Path] = metroParser.parseMetro(metro)
 
-  // Sort stations by order inside each line
-  val lines: Map[String, Seq[Path]] = paths.groupBy(l => l.features.numerolineausuario)
-  val sortedLines: Map[String, Seq[Path]] = lines.map { case (lineName, paths) => lineName -> Path.sortLines(paths) }
+  // Sort paths by order inside each line
+  val sortedLinePaths: Map[String, Seq[Path]] = paths
+    .groupBy(l => l.features.numerolineausuario)
+    .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
 
   // Build metro graph
-  val metroGraph: Graph[String, WDiEdge] = new Metro(sortedLines).buildMetroGraph()
+  val metroGraph: Graph[String, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
 
   // Build Line and User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
 
   // Iterate over lines
-  val stationActors: Iterable[(String, Seq[ActorRef])] = sortedLines.flatMap { case (l: String, _) =>
+  val platformActors: Iterable[(String, Seq[ActorRef])] = sortedLinePaths.flatMap { case (l: String, paths: Seq[Path]) =>
     scribe.info(s"Handling line $l")
     val L: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "L" + l)  // Build line actors for this line
     L ! "Start"  // Start line with any message: i.e. "Start"
-   Station.buildStation(actorSystem, sortedLines.filter{ case (line, _) => "L" + line == L.path.name }, L)  // Line sta.
+    Station.buildPlatformActors(actorSystem, sortedLinePaths.filter{ case (line, _) => "L" + line == L.path.name }, L)  // Line sta.
+    //Station.buildPlatformActors(actorSystem, paths, L)  // Line sta.
   }
 
   // Initialize simulation with trains
   val random = new Random
-  val allActors: List[ActorRef] = stationActors.flatMap { case (_, xs) => xs }.toList
-  val percentageOfStationsWithTrains: Int = 50
+  val allActors: List[ActorRef] = platformActors.flatMap { case (_, xs) => xs }.toList
+  val percentageOfStationsWithTrains: Int = 5
+  val lines: Map[String, Seq[Path]] = paths.groupBy(l => l.features.numerolineausuario)
   val trains: Iterable[ActorRef]  = Train.buildTrains(actorSystem, lines, allActors, percentageOfStationsWithTrains,
     timeMultiplier)
   println(trains)
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toMap, sortedLines, metroGraph)
+  val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
+  simulator.simulate(timeMultiplier)
   var i = 0
   while (i < 300) {
     i += 1

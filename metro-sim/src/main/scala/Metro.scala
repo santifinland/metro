@@ -1,6 +1,6 @@
 // Metro. SDMT
 
-import scalax.collection.{Graph, GraphEdge}
+import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 
 import parser.Path
@@ -10,26 +10,37 @@ import Metro.{PlatformPrefix, StationPrefix}
 class Metro(lines: Map[String, Seq[Path]], lineLinks: Option[Seq[(Path, Path)]] = None) {
 
   def buildMetroGraph(): Graph[String, WDiEdge] = {
-    val stations: Iterable[String] = this.lines.values.flatten.map(
-      x => StationPrefix + x.features.denominacion.replaceAll(" ", "_") + x.features.codigoestacion)
-    val platforms: Iterable[String] = this.lines.values.flatten.map(x => PlatformPrefix + x.features.codigoanden)
+    val stations: Iterable[String] = this.lines
+      .values
+      .flatten
+      .map(x => stationName(x.features.denominacion, x.features.codigoestacion))
+    val platforms: Iterable[String] = this.lines
+      .values
+      .flatten
+      .map(x => platformName(x.features.denominacion, x.features.codigoanden))
     val nodes: Iterable[String] = stations ++ platforms
     val lineEdges: Iterable[WDiEdge[String]] = lines.values.flatMap(buildLineEdges)
     val interLineEdges: Iterable[WDiEdge[String]] = buildInterLineEdges(lines)
     Graph.from(nodes, lineEdges ++ interLineEdges)
   }
 
+  def platformName(stationName: String, platformCode: Int): String = {
+    PlatformPrefix + stationName.replaceAll(" ", "_") + "_" + platformCode
+  }
+
+  def stationName(stationName: String, stationCode: String): String = {
+    StationPrefix + stationName.replaceAll(" ", "_") + "_" + stationCode
+  }
+
   def buildLineEdges(linePaths: Seq[Path]): Seq[WDiEdge[String]] = {
     (for {
       i <- linePaths.indices
-      currentStation: String = StationPrefix + linePaths(i).features.denominacion.replaceAll(" ", "") +
-        linePaths(i).features.codigoestacion
+      currentStation: String = stationName(linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
       weight: Double = linePaths(i).features.longitudtramoanterior
-      currentPlatform: String = PlatformPrefix + linePaths(i).features.codigoanden
+      currentPlatform: String = platformName(linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
       nextPath: Path = if (i + 1 < linePaths.length) linePaths(i + 1) else linePaths.head
-      nextStation: String = StationPrefix + nextPath.features.denominacion.replaceAll(" ", "_") +
-        nextPath.features.codigoestacion
-      nextPlatform: String = PlatformPrefix + nextPath.features.codigoanden
+      nextStation: String = stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)
+      nextPlatform: String = platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
       s1: WDiEdge[String] = WDiEdge(currentStation, currentPlatform)(1)
       s1bis: WDiEdge[String] = WDiEdge(currentPlatform, currentStation)(1)
       p: WDiEdge[String] = WDiEdge(currentPlatform, nextPlatform)(weight)
@@ -44,7 +55,7 @@ class Metro(lines: Map[String, Seq[Path]], lineLinks: Option[Seq[(Path, Path)]] 
       .values
       .filter { case (x: Iterable[Path]) => x.size > 2 }
       .map { case (x: Iterable[Path]) =>
-        x.map(y => StationPrefix + y.features.denominacion.replaceAll(" ", "_") + y.features.codigoestacion) }
+        x.map(y => stationName(y.features.denominacion, y.features.codigoestacion)) }
       .map { case (x: Iterable[String]) => computePairs(x.toList) }
     transferPairs
       .flatten

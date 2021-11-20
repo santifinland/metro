@@ -23,13 +23,12 @@ class Line(ui: ActorRef) extends Actor {
 
   def receivePeople: Receive = {
     case x: PeopleInStation => {
-      scribe.debug(s"""Recevied ${x.people} from ${sender.path.name}""")
+      //scribe.debug(s"""There are ${x.people} people in ${sender.path.name} station""")
       stations(sender.path.name) = x.people
     }
   }
 
   def computeLinePeople(): Int = {
-    scribe.debug(s"""Computing people""")
     this.stations.map { case (_, people: Int) => people }.sum
   }
 }

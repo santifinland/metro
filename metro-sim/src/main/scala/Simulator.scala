@@ -17,27 +17,25 @@ class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRe
 
   val random = new Random
   val allPaths: List[Path] = sortedLines.values.flatten.toList
+  val allStations: List[ActorRef] = stationActors.values.flatten.toList
 
   def simulate(timeMultiplier: Double): Unit = {
     val daily_journeys = 50000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
-    val people: Int = 2
+    val people: Int = 1
     // In each platform of each station, new people is created
     stationActors.foreach { case (line, actors) => actors.foreach { x =>
       val start = x  // This persons starts the journey here, in current station of this loop of the foreach
       val actorsLength: Int = actors.size
       Range(0, people).foreach { _ =>
-        val destination: ActorRef = actors(random.nextInt(allPaths.size))  // TODO: apply probability dist over destinations
+        val destination: ActorRef = allStations(random.nextInt(allStations.size))  // TODO: apply probability dist over destinations
+        val startNodeNme = PlatformPrefix + start.path.name
         val startNode = metroGraph.nodes.get(PlatformPrefix + start.path.name)
-        val destinationNoe = metroGraph.nodes.get(PlatformPrefix + destination.path.name)
-        //val shortestP: Option[metroGraph.Path] = metroGraph.get(lago) shortestPathTo metroGraph.get(campo)
-
-        //val campo = Metro.StationPrefix + "CASA_DE_CAMPO" + sortedLines("10a").filter(x => x.features.codigoanden == 419).head.features.codigoestacion
-        //val chamartin = Metro.StationPrefix + "CHAMARTIN" + sortedLines("10a").filter(x => x.features.codigoanden == 395).head.features.codigoestacion
-        //val shortestP: Option[metroGraph.Path] = metroGraph.get(lago) shortestPathTo metroGraph.get(campo)
-
-
-        val shortes = shortestPath(sortedLines.filter{ case (l, _) => l == line }.head._2, start.path.name, destination.path.name)
+        val destinationNodeName = PlatformPrefix + destination.path.name
+        val destinationNode = metroGraph.nodes.get(PlatformPrefix + destination.path.name)
+        scribe.debug(s"Person wants to go from $startNodeNme to $destinationNodeName")
+        val journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
+        scribe.debug(s"Simulated journey: $journey")
         //scribe.info(s"""Person going to : ${destination.path.name}. Shortest: $shortes""")
         val uuid = java.util.UUID.randomUUID.toString
         // TODO: Person class now needs a jurney instead of single destination
@@ -46,14 +44,6 @@ class Simulator(actorSystem: ActorSystem, stationActors: Map[String, Seq[ActorRe
       }
     }
     }
-  }
-
-  def shortestPath(sortedLines: Seq[Path], start: String, destination: String): Boolean = {
-    val startPosition = sortedLines.map(x => x.features.codigoanden.toString).indexOf(start)
-    val destinationPosition = sortedLines.map(x => x.features.codigoanden.toString).indexOf(destination)
-    //scribe.info(s"Start Position: $startPosition")
-    //scribe.info(s"Destination Position: $destinationPosition")
-    startPosition < sortedLines.size / 2
   }
 }
 

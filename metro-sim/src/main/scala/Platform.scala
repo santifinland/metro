@@ -92,7 +92,7 @@ object Platform {
         val platformName = l.features.denominacion + " " + l.features.codigoanden
         actorSystem.actorOf(Props(classOf[Platform], L, platformName), l.features.codigoanden.toString)
       }
-      _ = Path.sendNextStation(actors)
+      _ = Path.sendNextPlatform(actors)
     } yield (line, actors)
   }
 }

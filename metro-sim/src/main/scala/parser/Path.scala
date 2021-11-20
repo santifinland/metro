@@ -38,7 +38,7 @@ object Path {
     stationsDirectionHead ++ lineHead ++ stationsDirectionLast ++ lineLast
   }
 
-  def sendNextStation(lineActors: Seq[ActorRef]): Unit= {
+  def sendNextPlatform(lineActors: Seq[ActorRef]): Unit= {
     val currentNextLineActors = for {
       i <- lineActors.indices
       next: Int = if (i + 1 < lineActors.length) i + 1 else 0

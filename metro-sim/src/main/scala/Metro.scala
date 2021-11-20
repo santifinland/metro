@@ -2,9 +2,10 @@
 
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
+import java.text.Normalizer
 
 import parser.Path
-import Metro.{PlatformPrefix, StationPrefix}
+
 
 trait MetroNode {
   val name: String
@@ -19,11 +20,11 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
   def buildMetroGraph(): Graph[MetroNode, WDiEdge] = {
     val stations: Iterable[MetroNode] = this.sortedLinePaths
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
-        new StationNode(stationName(x.features.denominacion, x.features.codigoestacion), line)
+        new StationNode(Metro.stationName(x.features.denominacion, x.features.codigoestacion), "L" + line)
       } }
     val platforms: Iterable[MetroNode] = this.sortedLinePaths
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
-        new PlatformNode(platformName(x.features.denominacion, x.features.codigoanden), line)
+        new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), "L" + line)
       } }
     val nodes: Iterable[MetroNode] = stations ++ platforms
     val lineEdges: Iterable[WDiEdge[MetroNode]] = sortedLinePaths
@@ -33,27 +34,19 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
     Graph.from(nodes, lineEdges ++ interLineEdges)
   }
 
-  def platformName(stationName: String, platformCode: Int): String = {
-    PlatformPrefix + stationName.replaceAll(" ", "_") + "_" + platformCode
-  }
-
-  def stationName(stationName: String, stationCode: String): String = {
-    StationPrefix + stationName.replaceAll(" ", "_") + "_" + stationCode
-  }
-
   def buildLineEdges(linePaths: Seq[Path], stations: Iterable[MetroNode], platforms: Iterable[MetroNode])
   : Seq[WDiEdge[MetroNode]] = {
     (for {
       i <- linePaths.indices
-      currentStationName: String = stationName(linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
+      currentStationName: String = Metro.stationName(linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
       currentStation: MetroNode = stations.filter(x => x.name == currentStationName).head
       weight: Double = linePaths(i).features.longitudtramoanterior
-      currentPlatformName: String = platformName(linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
+      currentPlatformName: String = Metro.platformName(linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
       currentPlatform: MetroNode = platforms.filter(x => x.name == currentPlatformName).head
       nextPath: Path = if (i + 1 < linePaths.length) linePaths(i + 1) else linePaths.head
-      nextStationName: String = stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)
+      nextStationName: String = Metro.stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)
       nextStation: MetroNode = stations.filter(x => x.name == nextStationName).head
-      nextPlatformName: String = platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
+      nextPlatformName: String = Metro.platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
       nextPlatform: MetroNode = platforms.filter(x => x.name == nextPlatformName).head
       s1: WDiEdge[MetroNode] = WDiEdge(currentStation, currentPlatform)(1)
       s1bis: WDiEdge[MetroNode] = WDiEdge(currentPlatform, currentStation)(1)
@@ -74,7 +67,7 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
     val transferPairs: Iterable[List[(MetroNode, MetroNode)]] = stationWithTransfers
       .map { case (x: Iterable[Path]) =>
         x.map { case (y: Path) =>
-          val stationWithTransferName: String = stationName(y.features.denominacion, y.features.codigoestacion)
+          val stationWithTransferName: String = Metro.stationName(y.features.denominacion, y.features.codigoestacion)
           stations.filter { case (z: StationNode) => z.name == stationWithTransferName }.head
         } }
       .map { case (x: Iterable[MetroNode]) => computePairs(x.toList) }
@@ -96,4 +89,15 @@ object Metro {
   val StationPrefix = "Station_"
   val PlatformPrefix = "Platform_"
 
+  def platformName(stationName: String, platformCode: Int): String = {
+    val name = PlatformPrefix + stationName.replaceAll(" ", "_") + "_" + platformCode
+    val normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+    normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+  }
+
+  def stationName(stationName: String, stationCode: String): String = {
+    val name = StationPrefix + stationName.replaceAll(" ", "_") + "_" + stationCode
+    val normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+    normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+  }
 }

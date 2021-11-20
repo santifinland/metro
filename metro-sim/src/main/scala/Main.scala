@@ -3,7 +3,6 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
-
 import Main.metroGraph
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.event.Logging.{Debug, DebugLevel}
@@ -19,6 +18,8 @@ import scalax.collection.edge.WDiEdge
 import utils.WebSocket
 import scalax.collection.edge.Implicits._
 import scribe.Level
+
+import scala.collection.immutable
 
 
 object Main extends App {
@@ -64,22 +65,32 @@ object Main extends App {
   // Build Line and User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
 
-  // Iterate over lines to create Line Actors and Platform Actors
-  val platformActors: Iterable[(String, Seq[ActorRef])] = sortedLinePaths.flatMap { case (l: String, paths: Seq[Path]) =>
-    scribe.info(s"Handling line $l")
-    val L: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "L" + l)  // Build line actors for this line
-    L ! "Start"  // Start line with any message: i.e. "Start"
-    Platform.buildPlatformActors(actorSystem, sortedLinePaths.filter{ case (line, _) => "L" + line == L.path.name }, L)  // Line sta.
-    //Station.buildPlatformActors(actorSystem, paths, L)  // Line sta.
-  }
+  // Build Line actors
+  val lineActors: Iterable[ActorRef] = sortedLinePaths
+    .keys
+    .map(  l => actorSystem.actorOf(Props(classOf[Line], ui), "L" + l))
+
+  // Start Line actors with any message: i.e. "Start"
+  lineActors.foreach(l => l ! "Start")
+
+  // Iterate over lines to create Platform Actors
+  val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
+    l: ActorRef <- lineActors
+    linePlatformActors: Seq[ActorRef] = metroGraph
+      .nodes
+      .filter(x => x.line == l.path.name)
+      .filter(x => x.name.startsWith(Metro.PlatformPrefix))
+      .map(x => actorSystem.actorOf(Props(classOf[Platform], l, x.value.name), x.value.name))
+      .toSeq
+    _ = Path.sendNextPlatform(linePlatformActors)  // Send next platform for each built actor in this line
+  } yield l -> linePlatformActors).toMap
 
   // Initialize simulation with trains
   val random = new Random
-  val allActors: List[ActorRef] = platformActors.flatMap { case (_, xs) => xs }.toList
   val percentageOfStationsWithTrains: Int = 5
-  val lines: Map[String, Seq[Path]] = paths.groupBy(l => l.features.numerolineausuario)
-  val trains: Iterable[ActorRef]  = Train.buildTrains(actorSystem, lines, allActors, percentageOfStationsWithTrains,
-    timeMultiplier)
+  val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
+    Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
+  }
   println(trains)
 
   // Start simulation creating people and computing shortestPath

@@ -11,7 +11,7 @@ import parser.Path
 import utils.WebSocket
 
 
-class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
+class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
 
   val TimeBetweenStations: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
   val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
@@ -34,8 +34,10 @@ class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
       if (this.platform.isEmpty) {
         this.platform = Some(x.actorRef)
         scribe.debug(s" Train ${self.path.name} starting move at ${platform.get.path.name}")
-        this.x = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.x
-        this.y = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.y
+        val platformPath = allPaths.filter(
+          p => Metro.platformName(p.features.denominacion, p.features.codigoanden) == this.platform.get.path.name).head
+        this.x = platformPath.x
+        this.y = platformPath.y
         WebSocket.sendText(
           s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
         system.scheduler.scheduleOnce(TimeBetweenStations, this.platform.get, GetNext)
@@ -53,8 +55,10 @@ class Train(lines: Seq[Path], timeMultiplier: Double) extends Actor {
       this.platform = this.nextPlatform
       this.platform.get ! ArrivedAtStation
       this.people.foreach {case (_, actor) => actor ! ArrivedAtStationToPeople(this.platform.get) }
-      this.x = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.x
-      this.y = lines.filter(l => l.features.codigoanden.toString == this.platform.get.path.name).head.y
+      val platformPath = allPaths.filter(
+        p => Metro.platformName(p.features.denominacion, p.features.codigoanden) == this.platform.get.path.name).head
+      this.x = platformPath.x
+      this.y = platformPath.y
       this.sendMovement()
       this.nextPlatform = None
       system.scheduler.scheduleOnce(TimeOpenDoors, this.platform.get, GetNext)  // Open doors
@@ -99,17 +103,14 @@ object Train {
 
   val random = new Random
 
-  def buildTrains(actorSystem: ActorSystem, lines: Map[String, Seq[Path]],
-                  actors: List[ActorRef], n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
+  def buildTrains(actorSystem: ActorSystem, allPaths: Seq[Path], linePlatforms: Seq[ActorRef],
+                  n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
     for {
-      (_: String, lx: Seq[Path]) <- lines
-      _ <- 1 to (n * lx.length / 100)
-      start = lx.toList(random.nextInt(lx.toList.size)).features.codigoanden.toString if lx.toList.nonEmpty
-      destination = actors.filter(x => x.path.name == start)
-      if destination.nonEmpty
-      message = Some(Move(destination.head))
+      _ <- 1 to (n * linePlatforms.length / 100)
+      start: ActorRef = linePlatforms(random.nextInt(linePlatforms.size))
+      message = Some(Move(start))
       uuid = java.util.UUID.randomUUID.toString
-      train = actorSystem.actorOf(Props(classOf[Train], lx, timeMultiplier), uuid)
+      train = actorSystem.actorOf(Props(classOf[Train], allPaths, timeMultiplier), uuid)
       _ = train ! message.get
     } yield train
   }

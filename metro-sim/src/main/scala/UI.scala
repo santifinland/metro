@@ -9,10 +9,10 @@ class UI extends Actor {
 
   def receive: Receive = {
 
-    case x: PeopleInStation =>
+    case x: PeopleInPlatform =>
       WebSocket.sendText(
-        s"""{"message": "peopleInStation", "line": "${sender.path.name}", "people": ${x.people}}""")
+        s"""{"message": "peopleInPlatform", "line": "${sender.path.name}", "people": ${x.people}}""")
 
-    case _ => scribe.debug("Message not understood")
+    case _ => scribe.warn("Message not understood")
   }
 }

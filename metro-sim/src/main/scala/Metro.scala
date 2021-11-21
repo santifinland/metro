@@ -1,54 +1,79 @@
 // Metro. SDMT
 
-import scalax.collection.{Graph, GraphEdge}
+import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
+import java.text.Normalizer
 
 import parser.Path
-import Metro.{PlatformPrefix, StationPrefix}
 
 
-class Metro(lines: Map[String, Seq[Path]], lineLinks: Option[Seq[(Path, Path)]] = None) {
+trait MetroNode {
+  val name: String
+  val line: String
+}
 
-  def buildMetroGraph(): Graph[String, WDiEdge] = {
-    val stations: Iterable[String] = this.lines.values.flatten.map(
-      x => StationPrefix + x.features.denominacion.replaceAll(" ", "_") + x.features.codigoestacion)
-    val platforms: Iterable[String] = this.lines.values.flatten.map(x => PlatformPrefix + x.features.codigoanden)
-    val nodes: Iterable[String] = stations ++ platforms
-    val lineEdges: Iterable[WDiEdge[String]] = lines.values.flatMap(buildLineEdges)
-    val interLineEdges: Iterable[WDiEdge[String]] = buildInterLineEdges(lines)
+class StationNode(val name: String, val line: String) extends MetroNode
+class PlatformNode(val name: String, val line: String) extends MetroNode
+
+class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
+
+  def buildMetroGraph(): Graph[MetroNode, WDiEdge] = {
+    val stations: Iterable[MetroNode] = this.sortedLinePaths
+      .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
+        new StationNode(Metro.stationName(x.features.denominacion, x.features.codigoestacion), "L" + line)
+      } }
+    val platforms: Iterable[MetroNode] = this.sortedLinePaths
+      .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
+        new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), "L" + line)
+      } }
+    val nodes: Iterable[MetroNode] = stations ++ platforms
+    val lineEdges: Iterable[WDiEdge[MetroNode]] = sortedLinePaths
+      .values
+      .flatMap(x => buildLineEdges(x, stations, platforms))
+    val interLineEdges: Iterable[WDiEdge[MetroNode]] = buildInterLineEdges(sortedLinePaths, stations, platforms)
     Graph.from(nodes, lineEdges ++ interLineEdges)
   }
 
-  def buildLineEdges(linePaths: Seq[Path]): Seq[WDiEdge[String]] = {
+  def buildLineEdges(linePaths: Seq[Path], stations: Iterable[MetroNode], platforms: Iterable[MetroNode])
+  : Seq[WDiEdge[MetroNode]] = {
     (for {
       i <- linePaths.indices
-      currentStation: String = StationPrefix + linePaths(i).features.denominacion.replaceAll(" ", "") +
-        linePaths(i).features.codigoestacion
+      currentStationName: String = Metro.stationName(linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
+      currentStation: MetroNode = stations.filter(x => x.name == currentStationName).head
       weight: Double = linePaths(i).features.longitudtramoanterior
-      currentPlatform: String = PlatformPrefix + linePaths(i).features.codigoanden
+      currentPlatformName: String = Metro.platformName(linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
+      currentPlatform: MetroNode = platforms.filter(x => x.name == currentPlatformName).head
       nextPath: Path = if (i + 1 < linePaths.length) linePaths(i + 1) else linePaths.head
-      nextStation: String = StationPrefix + nextPath.features.denominacion.replaceAll(" ", "_") +
-        nextPath.features.codigoestacion
-      nextPlatform: String = PlatformPrefix + nextPath.features.codigoanden
-      s1: WDiEdge[String] = WDiEdge(currentStation, currentPlatform)(1)
-      s1bis: WDiEdge[String] = WDiEdge(currentPlatform, currentStation)(1)
-      p: WDiEdge[String] = WDiEdge(currentPlatform, nextPlatform)(weight)
-      s2: WDiEdge[String] = WDiEdge(nextPlatform, nextStation)(1)
-      s2bis: WDiEdge[String] = WDiEdge(nextStation, nextPlatform)(1)
+      nextStationName: String = Metro.stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)
+      nextStation: MetroNode = stations.filter(x => x.name == nextStationName).head
+      nextPlatformName: String = Metro.platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
+      nextPlatform: MetroNode = platforms.filter(x => x.name == nextPlatformName).head
+      s1: WDiEdge[MetroNode] = WDiEdge(currentStation, currentPlatform)(1)
+      s1bis: WDiEdge[MetroNode] = WDiEdge(currentPlatform, currentStation)(1)
+      p: WDiEdge[MetroNode] = WDiEdge(currentPlatform, nextPlatform)(weight)
+      s2: WDiEdge[MetroNode] = WDiEdge(nextPlatform, nextStation)(1)
+      s2bis: WDiEdge[MetroNode] = WDiEdge(nextStation, nextPlatform)(1)
     } yield List(s1, s1bis, p, s2, s2bis)).flatten
   }
 
-  def buildInterLineEdges(lines: Map[String, Seq[Path]]): Iterable[WDiEdge[String]] = {
-    val stationWithTransfers: Map[String, Iterable[Path]] = lines.values.flatten.groupBy(x => x.features.denominacion)
-    val transferPairs = stationWithTransfers
+  def buildInterLineEdges(lines: Map[String, Seq[Path]], stations: Iterable[MetroNode], platforms: Iterable[MetroNode])
+  : Iterable[WDiEdge[MetroNode]] = {
+    val stationWithTransfers: Iterable[Iterable[Path]] = lines
       .values
-      .filter { case (x: Iterable[Path]) => x.size > 2 }
+      .flatten
+      .groupBy(x => x.features.denominacion)
+      .values
+      .filter(x => x.size > 2)
+    val transferPairs: Iterable[List[(MetroNode, MetroNode)]] = stationWithTransfers
       .map { case (x: Iterable[Path]) =>
-        x.map(y => StationPrefix + y.features.denominacion.replaceAll(" ", "_") + y.features.codigoestacion) }
-      .map { case (x: Iterable[String]) => computePairs(x.toList) }
+        x.map { case (y: Path) =>
+          val stationWithTransferName: String = Metro.stationName(y.features.denominacion, y.features.codigoestacion)
+          stations.filter { case (z: StationNode) => z.name == stationWithTransferName }.head
+        } }
+      .map { case (x: Iterable[MetroNode]) => computePairs(x.toList) }
     transferPairs
       .flatten
-      .map { case (a: String, b: String) => WDiEdge(a, b)(5) }
+      .map { case (a: MetroNode, b: MetroNode) => WDiEdge(a, b)(5) }
   }
 
   def computePairs[T](data: List[T]): List[(T, T)] =
@@ -64,4 +89,15 @@ object Metro {
   val StationPrefix = "Station_"
   val PlatformPrefix = "Platform_"
 
+  def platformName(stationName: String, platformCode: Int): String = {
+    val name = PlatformPrefix + stationName.replaceAll(" ", "_") + "_" + platformCode
+    val normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+    normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+  }
+
+  def stationName(stationName: String, stationCode: String): String = {
+    val name = StationPrefix + stationName.replaceAll(" ", "_") + "_" + stationCode
+    val normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
+    normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+  }
 }

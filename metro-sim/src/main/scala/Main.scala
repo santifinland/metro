@@ -3,13 +3,14 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
-
 import Main.metroGraph
 import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.event.Logging.{Debug, DebugLevel}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
+import messages.Messages.Next
 import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
@@ -17,6 +18,9 @@ import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.WebSocket
 import scalax.collection.edge.Implicits._
+import scribe.Level
+
+import scala.collection.immutable
 
 
 object Main extends App {
@@ -36,6 +40,11 @@ object Main extends App {
   val conf = ConfigSource.default.load[MetroConf]
   val metroConf = conf.toOption.get
   scribe.info(s"Metro")
+  scribe.Logger.root
+    .clearHandlers()
+    .clearModifiers()
+    .withHandler(minimumLevel = Some(Level.Debug))
+    .replace()
   val timeMultiplier = 1 / metroConf.timeMultiplier
   scribe.info(s"Time multiplier: $timeMultiplier")
   Thread.sleep(4000)
@@ -46,64 +55,77 @@ object Main extends App {
   val metroParser = new MetroParser(metro)
   val paths: Seq[Path] = metroParser.parseMetro(metro)
 
-  // Sort stations by order inside each line
-  val lines: Map[String, Seq[Path]] = paths.groupBy(l => l.features.numerolineausuario)
-  val sortedLines: Map[String, Seq[Path]] = lines.map { case (lineName, paths) => lineName -> Path.sortLines(paths) }
+  // Sort paths by order inside each line
+  val sortedLinePaths: Map[String, Seq[Path]] = paths
+    .groupBy(l => l.features.numerolineausuario)
+    .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
 
   // Build metro graph
-  val metroGraph: Graph[String, WDiEdge] = new Metro(sortedLines).buildMetroGraph()
-  //val lago = Metro.StationPrefix + "LAGO" + sortedLines("10a").filter(x => x.features.codigoanden == 415).head.features.codigoestacion
-  //val empalme = Metro.StationPrefix + "EMPALME" + sortedLines("5").filter(x => x.features.codigoanden == 207).head.features.codigoestacion
-  //val campo = Metro.StationPrefix + "CASA_DE_CAMPO" + sortedLines("10a").filter(x => x.features.codigoanden == 419).head.features.codigoestacion
-  //val chamartin = Metro.StationPrefix + "CHAMARTIN" + sortedLines("10a").filter(x => x.features.codigoanden == 395).head.features.codigoestacion
-  //val shortestP: Option[metroGraph.Path] = metroGraph.get(lago) shortestPathTo metroGraph.get(campo)
+  val metroGraph: Graph[MetroNode, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
 
   // Build Line and User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
 
-  // Iterate over lines
-  val stationActors: Iterable[(String, Seq[ActorRef])] = sortedLines.flatMap { case (l: String, _) =>
-    scribe.info(s"Handling line $l")
-    // Build line actors for this line
-    val L: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "L" + l)
-    // Start line with any message: i.e. "Start"
-    L ! "Start"
-    // Built line station actors
-   Station.buildStation(actorSystem, sortedLines.filter{ case (line, _) => "L" + line == L.path.name }, L)
-  }
-  stationActors.foreach(println)
+  // Build Line actors
+  val lineActors: Iterable[ActorRef] = sortedLinePaths
+    .keys
+    .map(  l => actorSystem.actorOf(Props(classOf[Line], ui), "L" + l))
 
-  // Build trains
+  // Start Line actors with any message: i.e. "Start"
+  lineActors.foreach(l => l ! "Start")
 
-  // Start simulation creating people and computing shortestPath
+  // Iterate over lines to create Station actors
+  //val stationActors: collection.Set[ActorRef] = metroGraph
+      //.nodes
+      //.filter(x => x.name.startsWith(Metro.StationPrefix))
+      //.map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
 
+  // Iterate over lines to create Platform Actors
+  val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
+    l: ActorRef <- lineActors
+    linePlatformActors: collection.Set[ActorRef] = metroGraph
+      .nodes
+      .filter(x => x.line == l.path.name)
+      .filter(x => x.name.startsWith(Metro.PlatformPrefix))
+      .map(x => actorSystem.actorOf(Props(classOf[Platform], l, x.value.name), x.value.name))
+  } yield l -> linePlatformActors.toSeq).toMap
 
-
-  //val L10a: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "10a")
-  //L10a ! "Start"
-  //val L11: ActorRef = actorSystem.actorOf(Props(classOf[Line], ui), "11")
-  //L11 ! "Start"
-
-  // Build stations and its connections: the metro network
-  //val stationActors10a: Iterable[(String, Seq[ActorRef])] = Station.buildStation(
-    //actorSystem, sortedLines.filter{ case (line, _) => line == L10a.path.name }, L10a)
-  //val stationActors11: Iterable[(String, Seq[ActorRef])] = Station.buildStation(
-    //actorSystem, sortedLines.filter{ case (line, _) => line == L11.path.name }, L11)
+  // Iterate over graph to set next Platform Actor for each Platform Actor
+  metroGraph
+    .nodes
+    .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
+    .foreach { x: metroGraph.NodeT => {
+      // Find actor for this node. This actor will sent Next message to all its successors
+      val currentActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == x.value.name).head
+      // Find all successors of this node
+      x
+        .diSuccessors
+        .filter(s => s.value.name.startsWith(Metro.PlatformPrefix))
+        .foreach { z: metroGraph.NodeT => {
+        // Find actor for this successor node
+        scribe.debug(s"Search ${z.value.name}")
+        val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
+        // Send Next message to this successor node actor
+        currentActor ! Next(nextActor)
+      }}
+    } }
 
   // Initialize simulation with trains
   val random = new Random
-  val allActors: List[ActorRef] = stationActors.flatMap { case (_, xs) => xs }.toList
-  val percentageOfStationsWithTrains: Int = 50
-  val trains: Iterable[ActorRef]  = Train.buildTrains(actorSystem, lines, allActors, percentageOfStationsWithTrains,
-    timeMultiplier)
+  val percentageOfStationsWithTrains: Int = 5
+  val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
+    Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
+  }
   println(trains)
 
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toMap, sortedLines)
-  var i = 0
-  while (i < 300) {
-    i += 1
-    scribe.info(s"iteración $i")
-    Thread.sleep((100000L * timeMultiplier).toLong)
-    simulator.simulate(timeMultiplier)
-  }
+  // Start simulation creating people and computing shortestPath
+  val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
+  simulator.simulate(timeMultiplier)
+  //var i = 0
+  //while (i < 300) {
+    //i += 1
+    //scribe.info(s"iteración $i")
+    //Thread.sleep((100000L * timeMultiplier).toLong)
+    //simulator.simulate(timeMultiplier)
+  //}
 }

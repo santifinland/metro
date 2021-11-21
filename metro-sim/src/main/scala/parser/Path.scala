@@ -18,10 +18,10 @@ case class Path(features: LineFeatures, geometry: LineString[G2D]) {
 
 object Path {
 
-  def sortLines(lines: Seq[Path]): Seq[Path] = {
-    val lineHead: Seq[Path] = lines.filter(l => l.features.tipoparada == "C")
-    val lineLast: Seq[Path] = lines.filter(l => l.features.tipoparada == "T")
-    val linesMid: Seq[Path] = lines.filter(l => l.features.tipoparada != "C" && l.features.tipoparada != "T")
+  def sortLinePaths(line: Seq[Path]): Seq[Path] = {
+    val lineHead: Seq[Path] = line.filter(l => l.features.tipoparada == "C")
+    val lineLast: Seq[Path] = line.filter(l => l.features.tipoparada == "T")
+    val linesMid: Seq[Path] = line.filter(l => l.features.tipoparada != "C" && l.features.tipoparada != "T")
     def sortDirectionLines(lines: Seq[Path], direction: String): Seq[Path] = {
       lines
         .filter(l => l.features.sentido == direction)
@@ -38,7 +38,7 @@ object Path {
     stationsDirectionHead ++ lineHead ++ stationsDirectionLast ++ lineLast
   }
 
-  def sendNextStation(lineActors: Seq[ActorRef]): Unit= {
+  def sendNextPlatform(lineActors: Seq[ActorRef]): Unit= {
     val currentNextLineActors = for {
       i <- lineActors.indices
       next: Int = if (i + 1 < lineActors.length) i + 1 else 0

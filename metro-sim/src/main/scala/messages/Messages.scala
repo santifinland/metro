@@ -21,25 +21,25 @@ object Messages {
   case class Reserved(actorRef: ActorRef)
 
   // Train -> self Train messages
-  case object TrainArrivedAtStation
+  case object TrainArrivedAtPlatform
 
-  // Train -> Station messages
-  case object ArrivedAtStation
+  // Train -> Platform messages
+  case object ArrivedAtPlatform
 
   // Application -> Person messages
-  case class EnterStation(actorRef: ActorRef)
+  case class EnterPlatform(actorRef: ActorRef)
 
-  // Person -> Station messages
-  case class RequestEnterStation(actorRef: ActorRef)
+  // Person -> Platform messages
+  case class RequestEnterPlatform(actorRef: ActorRef)
 
-  case object ExitStation
+  case object ExitPlatform
 
-  // Station -> Person messages
-  case class AcceptedEnterStation(actorRef: ActorRef)
+  // Platform -> Person messages
+  case class AcceptedEnterPlatform(actorRef: ActorRef)
 
-  case object NotAcceptedEnterStation
+  case object NotAcceptedEnterPlatform
 
-  case class TrainInStation(actorRef: ActorRef)
+  case class TrainInPlatform(actorRef: ActorRef)
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
@@ -51,9 +51,9 @@ object Messages {
 
   case object NotAcceptedEnterTrain
 
-  case class ArrivedAtStationToPeople(actorRef: ActorRef)
+  case class ArrivedAtPlatformToPeople(actorRef: ActorRef)
 
-  // Station -> User interface messages
-  case class PeopleInStation(people: Int)
+  // Platform -> User interface messages
+  case class PeopleInPlatform(people: Int)
 
 }

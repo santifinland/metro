@@ -17,10 +17,10 @@ class Platform(line: ActorRef, name: String) extends Actor {
   def receive: Receive = {
     case x: Next =>
       this.next = Some(x.actorRef)
-      scribe.debug(s"Setting platform ${self.path.name} to empty mode")
+      scribe.debug(s"Setting platform ${self.path.name} to empty mode. Next actor ${x.actorRef.path.name}")
       context.become(empty)
       scheduler.scheduleAtFixedRate(3.seconds, 10.seconds)( new Runnable {
-        override def run(): Unit = line ! PeopleInStation(people.size)
+        override def run(): Unit = line ! PeopleInPlatform(people.size)
       })
     case _ => scribe.warn("Next platform not set yet")
   }
@@ -37,21 +37,21 @@ class Platform(line: ActorRef, name: String) extends Actor {
 
     case GetNext => sender ! Next(this.next.get)
 
-    case ArrivedAtStation =>
+    case ArrivedAtPlatform =>
       scribe.debug(s"Train ${sender.path.name} arrived to platform $name")
-      this.people.foreach { case(_, p) => p ! TrainInStation(sender)}
+      this.people.foreach { case(_, p) => p ! TrainInPlatform(sender)}
 
-    case x: RequestEnterStation =>
+    case x: RequestEnterPlatform =>
       if (people.size < MAX_CAPACITY) {
         this.people.addOne(x.actorRef.path.name, x.actorRef)
         scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterStation(self)
+        sender ! AcceptedEnterPlatform(self)
       } else {
         scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterStation
+        sender ! NotAcceptedEnterPlatform
       }
 
-    case ExitStation =>
+    case ExitPlatform =>
       people.remove(sender.path.name)
 
     case x: Any => scribe.error(s"Full platform does not understand $x from ${sender.path.name}")
@@ -64,35 +64,19 @@ class Platform(line: ActorRef, name: String) extends Actor {
       sender ! Reserved(self)
       context.become(full)
 
-    case x: RequestEnterStation =>
+    case x: RequestEnterPlatform =>
       if (people.size < MAX_CAPACITY) {
         this.people.addOne(x.actorRef.path.name, x.actorRef)
-        scribe.debug(s"""Station $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterStation(self)
+        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
+        sender ! AcceptedEnterPlatform(self)
       } else {
-        scribe.warn(s"""Station $name over capacity""")
-        sender ! NotAcceptedEnterStation
+        scribe.warn(s"""Platform $name over capacity""")
+        sender ! NotAcceptedEnterPlatform
       }
 
-    case ExitStation =>
+    case ExitPlatform =>
       people.remove(sender.path.name)
 
     case x: Any =>  scribe.warn(s"Empty Platform does not understand message $x")
-  }
-}
-
-object Platform {
-
-  // Build platform and its connections to Stations and next Platform in the same line
-  def buildPlatformActors(actorSystem: ActorSystem, sortedLinePaths: Map[String, Seq[Path]],
-                          L: ActorRef): Iterable[(String, Seq[ActorRef])] = {
-    for {
-      (line: String, paths: Seq[Path]) <- sortedLinePaths
-      actors: Seq[ActorRef] = paths.map { l =>
-        val platformName = l.features.denominacion + " " + l.features.codigoanden
-        actorSystem.actorOf(Props(classOf[Platform], L, platformName), l.features.codigoanden.toString)
-      }
-      _ = Path.sendNextPlatform(actors)
-    } yield (line, actors)
   }
 }

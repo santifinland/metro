@@ -1,6 +1,6 @@
 // Metro. SDMT
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
+import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 import akka.actor.{Actor, ActorRef}
 import Main.actorSystem.dispatcher
@@ -12,36 +12,37 @@ class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
 
   val WaitAtStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
 
-  var currentStation: Option[ActorRef] = None
-
+  var currentPlatform: Option[ActorRef] = None
 
   def receive: Receive = {
 
-    case x: EnterStation =>
-      scribe.debug(s"Person ${self.path.name} want to start in station ${x.actorRef.path.name}")
-      x.actorRef ! RequestEnterStation(self)
+    case x: EnterPlatform =>
+      scribe.debug(s"Person ${self.path.name} want to enter platform ${x.actorRef.path.name}")
+      x.actorRef ! RequestEnterPlatform(self)
 
-    case x: AcceptedEnterStation =>
-      this.currentStation = Some(x.actorRef)
-      scribe.debug(s"Person ${self.path.name} entered station ${this.currentStation.get.path.name}")
-      context.become(inStation)
+    case x: AcceptedEnterPlatform =>
+      this.currentPlatform = Some(x.actorRef)
+      scribe.debug(s"Person ${self.path.name} entered platform ${this.currentPlatform.get.path.name}")
+      context.become(inPlatform)
 
-    case NotAcceptedEnterStation =>
-      scribe.debug(s"Person ${self.path.name} not accepted in station ${sender.path.name}")
+    case NotAcceptedEnterPlatform =>
+      scribe.debug(s"Person ${self.path.name} not accepted in platform ${sender.path.name}")
       system.scheduler.scheduleOnce(WaitAtStation, sender, RequestEnterTrain(self))
 
     case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
   }
 
-  def inStation: Receive = {
+  def inPlatform: Receive = {
 
-    case x: TrainInStation =>
-      scribe.debug(s"Train ${x.actorRef.path.name} available for ${self.path.name} at station ${sender.path.name}")
+    case x: TrainInPlatform =>
+      scribe.debug(
+        s"Train ${x.actorRef.path.name} available for ${self.path.name} at platform ${sender.path.name}")
       x.actorRef ! RequestEnterTrain(self)
 
     case x: AcceptedEnterTrain =>
-      scribe.debug(s"Person ${self.path.name} inside Train ${sender.path.name} at station ${x.actorRef.path.name}")
-      x.actorRef ! ExitStation
+      scribe.debug(
+        s"Person ${self.path.name} inside Train ${sender.path.name} at platform ${x.actorRef.path.name}")
+      x.actorRef ! ExitPlatform
       context.become(inTrain)
 
     case NotAcceptedEnterTrain =>
@@ -52,8 +53,9 @@ class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
 
   def inTrain: Receive = {
 
-    case x: ArrivedAtStationToPeople =>
-      scribe.debug(s"Person ${self.path.name} inside Train ${sender.path.name} at Station ${x.actorRef.path.name}")
+    case x: ArrivedAtPlatformToPeople =>
+      scribe.debug(
+        s"Person ${self.path.name} inside Train ${sender.path.name} at Platform ${x.actorRef.path.name}")
       if (x.actorRef.path.name == destination.path.name) {
         scribe.debug(s"Person ${self.path.name} arrived destination")
         sender ! ExitTrain

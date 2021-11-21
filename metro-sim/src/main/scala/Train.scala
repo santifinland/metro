@@ -13,7 +13,7 @@ import utils.WebSocket
 
 class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
 
-  val TimeBetweenStations: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
+  val TimeBetweenPlatforms: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
   val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
 
   var platform: Option[ActorRef] = None
@@ -40,21 +40,21 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
         this.y = platformPath.y
         WebSocket.sendText(
           s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
-        system.scheduler.scheduleOnce(TimeBetweenStations, this.platform.get, GetNext)
+        system.scheduler.scheduleOnce(TimeBetweenPlatforms, this.platform.get, GetNext)
 
       } else {
         scribe.info(
           s""" Train ${self.path.name} departing from ${platform.get.path.name} with ${people.size} passengers""")
         this.nextPlatform = Some(x.actorRef)
         this.platform.get ! Free
-        system.scheduler.scheduleOnce(TimeBetweenStations, self, TrainArrivedAtStation)
+        system.scheduler.scheduleOnce(TimeBetweenPlatforms, self, TrainArrivedAtPlatform)
       }
 
-    case TrainArrivedAtStation =>
+    case TrainArrivedAtPlatform =>
       scribe.debug(s"    Train ${self.path.name} arriving to ${nextPlatform.get.path.name}")
       this.platform = this.nextPlatform
-      this.platform.get ! ArrivedAtStation
-      this.people.foreach {case (_, actor) => actor ! ArrivedAtStationToPeople(this.platform.get) }
+      this.platform.get ! ArrivedAtPlatform
+      this.people.foreach {case (_, actor) => actor ! ArrivedAtPlatformToPeople(this.platform.get) }
       val platformPath = allPaths.filter(
         p => Metro.platformName(p.features.denominacion, p.features.codigoanden) == this.platform.get.path.name).head
       this.x = platformPath.x

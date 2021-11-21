@@ -16,13 +16,13 @@ class Line(ui: ActorRef) extends Actor {
     case _ =>
       scribe.info(s"""Recevied initial Line meessage""")
       scheduler.scheduleAtFixedRate(3.seconds, 3.seconds)( new Runnable {
-        override def run(): Unit = ui ! PeopleInStation(computeLinePeople())
+        override def run(): Unit = ui ! PeopleInPlatform(computeLinePeople())
       })
       context.become(receivePeople)
   }
 
   def receivePeople: Receive = {
-    case x: PeopleInStation => {
+    case x: PeopleInPlatform => {
       //scribe.debug(s"""There are ${x.people} people in ${sender.path.name} station""")
       stations(sender.path.name) = x.people
     }

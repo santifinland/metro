@@ -10,6 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
+import messages.Messages.Next
 import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
@@ -73,17 +74,41 @@ object Main extends App {
   // Start Line actors with any message: i.e. "Start"
   lineActors.foreach(l => l ! "Start")
 
+  // Iterate over lines to create Station actors
+  //val stationActors: collection.Set[ActorRef] = metroGraph
+      //.nodes
+      //.filter(x => x.name.startsWith(Metro.StationPrefix))
+      //.map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
+
   // Iterate over lines to create Platform Actors
   val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
     l: ActorRef <- lineActors
-    linePlatformActors: Seq[ActorRef] = metroGraph
+    linePlatformActors: collection.Set[ActorRef] = metroGraph
       .nodes
       .filter(x => x.line == l.path.name)
       .filter(x => x.name.startsWith(Metro.PlatformPrefix))
       .map(x => actorSystem.actorOf(Props(classOf[Platform], l, x.value.name), x.value.name))
-      .toSeq
-    _ = Path.sendNextPlatform(linePlatformActors)  // Send next platform for each built actor in this line
-  } yield l -> linePlatformActors).toMap
+  } yield l -> linePlatformActors.toSeq).toMap
+
+  // Iterate over graph to set next Platform Actor for each Platform Actor
+  metroGraph
+    .nodes
+    .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
+    .foreach { x: metroGraph.NodeT => {
+      // Find actor for this node. This actor will sent Next message to all its successors
+      val currentActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == x.value.name).head
+      // Find all successors of this node
+      x
+        .diSuccessors
+        .filter(s => s.value.name.startsWith(Metro.PlatformPrefix))
+        .foreach { z: metroGraph.NodeT => {
+        // Find actor for this successor node
+        scribe.debug(s"Search ${z.value.name}")
+        val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
+        // Send Next message to this successor node actor
+        currentActor ! Next(nextActor)
+      }}
+    } }
 
   // Initialize simulation with trains
   val random = new Random
@@ -94,8 +119,8 @@ object Main extends App {
   println(trains)
 
   // Start simulation creating people and computing shortestPath
-  //val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
-  //simulator.simulate(timeMultiplier)
+  val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
+  simulator.simulate(timeMultiplier)
   //var i = 0
   //while (i < 300) {
     //i += 1

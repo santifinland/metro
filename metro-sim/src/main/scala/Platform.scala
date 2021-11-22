@@ -11,8 +11,6 @@ import parser.Path
 class Platform(line: ActorRef, name: String) extends Actor {
 
   var next: Option[ActorRef] = None
-  val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
-  val MAX_CAPACITY = 300
 
   def receive: Receive = {
     case x: Next =>
@@ -41,16 +39,6 @@ class Platform(line: ActorRef, name: String) extends Actor {
       scribe.debug(s"Train ${sender.path.name} arrived to platform $name")
       this.people.foreach { case(_, p) => p ! TrainInPlatform(sender)}
 
-    case x: RequestEnterPlatform =>
-      if (people.size < MAX_CAPACITY) {
-        this.people.addOne(x.actorRef.path.name, x.actorRef)
-        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterPlatform(self)
-      } else {
-        scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterPlatform
-      }
-
     case ExitPlatform =>
       people.remove(sender.path.name)
 
@@ -63,16 +51,6 @@ class Platform(line: ActorRef, name: String) extends Actor {
       scribe.debug(s"Platform $name reserved by ${sender.path.name}!")
       sender ! Reserved(self)
       context.become(full)
-
-    case x: RequestEnterPlatform =>
-      if (people.size < MAX_CAPACITY) {
-        this.people.addOne(x.actorRef.path.name, x.actorRef)
-        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterPlatform(self)
-      } else {
-        scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterPlatform
-      }
 
     case ExitPlatform =>
       people.remove(sender.path.name)

@@ -17,7 +17,8 @@ class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
   def receive: Receive = {
 
     case x: EnterPlatform =>
-      scribe.debug(s"Person ${self.path.name} want to enter platform ${x.actorRef.path.name}")
+      scribe.debug(
+        s"Person ${self.path.name} to ${destination.path.name} wants to enter ${x.actorRef.path.name}")
       x.actorRef ! RequestEnterPlatform(self)
 
     case x: AcceptedEnterPlatform =>

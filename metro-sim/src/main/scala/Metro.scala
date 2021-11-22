@@ -2,29 +2,36 @@
 
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
-import java.text.Normalizer
 
+import java.text.Normalizer
 import parser.Path
 
 
 trait MetroNode {
   val name: String
-  val line: String
+  val lines: Seq[String]
+
+  override def toString: String = this.name
 }
 
-class StationNode(val name: String, val line: String) extends MetroNode
-class PlatformNode(val name: String, val line: String) extends MetroNode
+class StationNode(val name: String, val lines: Seq[String]) extends MetroNode
+class PlatformNode(val name: String, val lines:Seq[ String]) extends MetroNode
 
 class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
 
   def buildMetroGraph(): Graph[MetroNode, WDiEdge] = {
-    val stations: Iterable[MetroNode] = this.sortedLinePaths
+    val stationsLines: Iterable[MetroNode] = this.sortedLinePaths
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
-        new StationNode(Metro.stationName(x.features.denominacion, x.features.codigoestacion), "L" + line)
+        new StationNode(Metro.stationName(x.features.denominacion, x.features.codigoestacion), Seq("L" + line))
       } }
+    val stations: Iterable[MetroNode] = stationsLines
+      .groupBy(x => x.name)
+      .map { case (_: String, stationNodes: Iterable[MetroNode]) => {
+        stationNodes.reduce((a, b) => new StationNode(a.name, a.lines ++ b.lines) )
+      }}
     val platforms: Iterable[MetroNode] = this.sortedLinePaths
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
-        new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), "L" + line)
+        new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), Seq("L" + line))
       } }
     val nodes: Iterable[MetroNode] = stations ++ platforms
     val lineEdges: Iterable[WDiEdge[MetroNode]] = sortedLinePaths
@@ -38,10 +45,12 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
   : Seq[WDiEdge[MetroNode]] = {
     (for {
       i <- linePaths.indices
-      currentStationName: String = Metro.stationName(linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
+      currentStationName: String = Metro.stationName(
+        linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
       currentStation: MetroNode = stations.filter(x => x.name == currentStationName).head
       weight: Double = linePaths(i).features.longitudtramoanterior
-      currentPlatformName: String = Metro.platformName(linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
+      currentPlatformName: String = Metro.platformName(
+        linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
       currentPlatform: MetroNode = platforms.filter(x => x.name == currentPlatformName).head
       nextPath: Path = if (i + 1 < linePaths.length) linePaths(i + 1) else linePaths.head
       nextStationName: String = Metro.stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)

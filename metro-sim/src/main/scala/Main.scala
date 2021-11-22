@@ -62,6 +62,10 @@ object Main extends App {
 
   // Build metro graph
   val metroGraph: Graph[MetroNode, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
+  val stations: List[metroGraph.NodeT] = metroGraph
+    .nodes
+    .filter(x => x.value.name.startsWith(Metro.StationPrefix))
+    .toList
 
   // Build Line and User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
@@ -75,17 +79,17 @@ object Main extends App {
   lineActors.foreach(l => l ! "Start")
 
   // Iterate over lines to create Station actors
-  //val stationActors: collection.Set[ActorRef] = metroGraph
-      //.nodes
-      //.filter(x => x.name.startsWith(Metro.StationPrefix))
-      //.map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
+  val stationActors: collection.Set[ActorRef] = metroGraph
+      .nodes
+      .filter(x => x.name.startsWith(Metro.StationPrefix))
+      .map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
 
   // Iterate over lines to create Platform Actors
   val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
     l: ActorRef <- lineActors
     linePlatformActors: collection.Set[ActorRef] = metroGraph
       .nodes
-      .filter(x => x.line == l.path.name)
+      .filter(x => x.lines.contains(l.path.name))
       .filter(x => x.name.startsWith(Metro.PlatformPrefix))
       .map(x => actorSystem.actorOf(Props(classOf[Platform], l, x.value.name), x.value.name))
   } yield l -> linePlatformActors.toSeq).toMap
@@ -103,7 +107,6 @@ object Main extends App {
         .filter(s => s.value.name.startsWith(Metro.PlatformPrefix))
         .foreach { z: metroGraph.NodeT => {
         // Find actor for this successor node
-        scribe.debug(s"Search ${z.value.name}")
         val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
         // Send Next message to this successor node actor
         currentActor ! Next(nextActor)
@@ -112,14 +115,13 @@ object Main extends App {
 
   // Initialize simulation with trains
   val random = new Random
-  val percentageOfStationsWithTrains: Int = 5
+  val percentageOfStationsWithTrains: Int = 20
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
     Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
-  println(trains)
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, platformActors.toMap, sortedLinePaths, metroGraph)
+  val simulator: Simulator = new Simulator(actorSystem, stationActors.toList, metroGraph)
   simulator.simulate(timeMultiplier)
   //var i = 0
   //while (i < 300) {

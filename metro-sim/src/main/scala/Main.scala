@@ -10,7 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
-import messages.Messages.Next
+import messages.Messages.NextPlatform
 import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
@@ -109,7 +109,7 @@ object Main extends App {
         // Find actor for this successor node
         val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
         // Send Next message to this successor node actor
-        currentActor ! Next(nextActor)
+        currentActor ! NextPlatform(nextActor)
       }}
     } }
 

@@ -27,9 +27,9 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
 
     case x: Move =>
       scribe.debug(s" Train ${self.path.name} wants to move from ${x.actorRef.path.name}")
-      x.actorRef ! Reserve
+      x.actorRef ! ReservePlatform
 
-    case x: Reserved =>
+    case x: PlatformReserved =>
 
       if (this.platform.isEmpty) {
         this.platform = Some(x.actorRef)
@@ -40,13 +40,13 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
         this.y = platformPath.y
         WebSocket.sendText(
           s"""{"message": "newTrain", "train": "${self.path.name}", "x": ${this.x}, "y": ${this.y}}""")
-        system.scheduler.scheduleOnce(TimeBetweenPlatforms, this.platform.get, GetNext)
+        system.scheduler.scheduleOnce(TimeBetweenPlatforms, this.platform.get, GetNextPlatform)
 
       } else {
         scribe.info(
           s""" Train ${self.path.name} departing from ${platform.get.path.name} with ${people.size} passengers""")
         this.nextPlatform = Some(x.actorRef)
-        this.platform.get ! Free
+        this.platform.get ! LeavingPlatform
         system.scheduler.scheduleOnce(TimeBetweenPlatforms, self, TrainArrivedAtPlatform)
       }
 
@@ -61,22 +61,22 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
       this.y = platformPath.y
       this.sendMovement()
       this.nextPlatform = None
-      system.scheduler.scheduleOnce(TimeOpenDoors, this.platform.get, GetNext)  // Open doors
+      system.scheduler.scheduleOnce(TimeOpenDoors, this.platform.get, GetNextPlatform)  // Open doors
 
 
 
-    case x: Next =>
+    case x: NextPlatform =>
       this.nextPlatform = Some(x.actorRef)
       scribe.debug(s" Train ${self.path.name} knows next platform ${x.actorRef.path.name}")
-      this.nextPlatform.get ! Reserve
+      this.nextPlatform.get ! ReservePlatform
 
-    case x: Full =>
+    case x: FullPlatform =>
       if (this.platform.isEmpty) {
         scribe.debug(s" Train ${self.path.name} no puede comenzar su movimiento")
       } else {
         scribe.debug(s" Train ${self.path.name} esperando en ${platform.get.path.name}")
       }
-      system.scheduler.scheduleOnce(5.seconds, x.actorRef, Reserve)
+      system.scheduler.scheduleOnce(5.seconds, x.actorRef, ReservePlatform)
 
     case x: RequestEnterTrain =>
       if (people.size < MAX_CAPACITY) {

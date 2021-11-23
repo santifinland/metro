@@ -2,18 +2,19 @@
 
 import scala.concurrent.duration.DurationInt
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef}
+
 import Main.actorSystem.{dispatcher, scheduler}
 import messages.Messages._
-import parser.Path
 
 
 class Platform(line: ActorRef, name: String) extends Actor {
 
+  val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
   var next: Option[ActorRef] = None
 
   def receive: Receive = {
-    case x: Next =>
+    case x: NextPlatform =>
       this.next = Some(x.actorRef)
       scribe.debug(s"Setting platform ${self.path.name} to empty mode. Next actor ${x.actorRef.path.name}")
       context.become(empty)
@@ -25,15 +26,15 @@ class Platform(line: ActorRef, name: String) extends Actor {
 
   def full: Receive = {
 
-    case Reserve =>
+    case ReservePlatform =>
       scribe.debug(s"Platform $name is not Free!")
-      sender ! Full(self)
+      sender ! FullPlatform(self)
 
-    case Free =>
+    case LeavingPlatform =>
       context.become(empty)
       scribe.debug(s"Platform $name freed by ${sender.path.name}!")
 
-    case GetNext => sender ! Next(this.next.get)
+    case GetNextPlatform => sender ! NextPlatform(this.next.get)
 
     case ArrivedAtPlatform =>
       scribe.debug(s"Train ${sender.path.name} arrived to platform $name")
@@ -47,9 +48,9 @@ class Platform(line: ActorRef, name: String) extends Actor {
 
   def empty: Receive = {
 
-    case Reserve =>
+    case ReservePlatform =>
       scribe.debug(s"Platform $name reserved by ${sender.path.name}!")
-      sender ! Reserved(self)
+      sender ! PlatformReserved(self)
       context.become(full)
 
     case ExitPlatform =>

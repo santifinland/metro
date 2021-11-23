@@ -5,7 +5,6 @@ import scala.util.Random
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import messages.Messages.EnterPlatform
-import parser.Path
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.Distribution
@@ -25,8 +24,8 @@ class Simulator(actorSystem: ActorSystem, stationActors: List[ActorRef], metroGr
       .filter(x => x.value.name.startsWith(Metro.StationPrefix))
       .toList
     for {
-      startNode: metroGraph.NodeT <- stations
-      destinationNode: metroGraph.NodeT = stations(random.nextInt(stations.size))
+      startNode <- stations
+      destinationNode = stations(random.nextInt(stations.size))
       journey = startNode shortestPathTo destinationNode
       _ = scribe.info(s"""Person going to $journey""")
       uuid = java.util.UUID.randomUUID.toString

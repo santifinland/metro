@@ -4,17 +4,16 @@ import scala.collection.immutable.SortedMap
 import scala.util.Random
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import messages.Messages.EnterPlatform
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.Distribution
 
 
-class Simulator(actorSystem: ActorSystem, stationActors: List[ActorRef], metroGraph: Graph[MetroNode, WDiEdge]) {
+class Simulator(actorSystem: ActorSystem, actors: List[ActorRef], metroGraph: Graph[MetroNode, WDiEdge]) {
 
   val random = new Random
 
-  def simulate(timeMultiplier: Double): Unit = {
+  def simulate(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
     val daily_journeys = 50000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
     val people: Int = 1
@@ -24,15 +23,17 @@ class Simulator(actorSystem: ActorSystem, stationActors: List[ActorRef], metroGr
       .filter(x => x.value.name.startsWith(Metro.StationPrefix))
       .toList
     for {
-      startNode <- stations
+      startNode <- if (limit.isDefined) stations.take(limit.get) else stations
       destinationNode = stations(random.nextInt(stations.size))
-      journey = startNode shortestPathTo destinationNode
-      _ = scribe.info(s"""Person going to $journey""")
+      journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
+      path = journey
+        .get
+        .nodes
+        .map(x => actors.filter(y => y.path.name == x.name).head)
+        .toSeq
+      _ = scribe.debug(s"""Person going to $journey""")
       uuid = java.util.UUID.randomUUID.toString
-      start: ActorRef = stationActors.filter(x => x.path.name == startNode.name).head
-      destination: ActorRef = stationActors.filter(x => x.path.name == destinationNode.name).head
-      person = actorSystem.actorOf(Props(classOf[Person], destination, timeMultiplier), uuid)
-      _ = person ! EnterPlatform(start)
+      person = actorSystem.actorOf(Props(classOf[Person], path, timeMultiplier), uuid)
     } yield person
   }
 }

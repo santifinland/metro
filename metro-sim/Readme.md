@@ -17,20 +17,24 @@ The person arrives to a platform of an intermediate or final destination.
 
 The person can walk through the different platforms of a single station.
 
+The person keeps track of its current station and platform.
+
 The following messages are issued by a person:
 
-| Message               |  Destination Actor |  Message parameters  |
-|-----------------------|:------------------:|:--------------------:|
-| RequestEnterPlatform  | Platform           | self: ActorRef       |
-| RequestEnterTrain     | Train              | self: ActorRef       |
-| ExitTrain             | Train              |                      |
-| ExitPlatform          | Platform           |                      |
+| Message                   |  Destination Actor |  Message parameters  |
+|---------------------------|:------------------:|:--------------------:|
+| RequestEnterStation       | Station            |                      |
+| RequestEnterPlatform      | Platform           |                      |
+| RequestEnterTrain         | Train              | self: ActorRef       |
+| ExitTrain                 | Train              |                      |
+| ExitPlatform              | Platform           |                      |
 
 The following messages are received by a person:
 
 | Message                  |  Origin Actor      |  Message parameters  |
 |--------------------------|:------------------:|:--------------------:|
-| EnterPlatform            | Main application   |                      |
+| AcceptedEnterStation     | Station            |                      |
+| NotAcceptedEnterStation  | Station            |                      |
 | AcceptedEnterPlatform    | Platform           | self: ActorRef       |
 | NotAcceptedEnterPlatform | Platform           |                      |
 | TrainInPlatform          | Platform           | ???                  |
@@ -49,6 +53,7 @@ The following messages are issued by a platform
 |--------------------------|:------------------:|:--------------------:|
 | NextPlatform             | Platform           | self: ActorRef       |
 | AcceptedEnterPlatform    | Person             | self: ActorRef       |
+| RequestEnterStation      | Station            |                      |
 | NotAcceptedEnterPlatform | Person             |                      |
 | TrainInPlatform          | Person             | train: ActorRef      |
 | FullPlatform             | Train              | self: ActorRef       |
@@ -119,5 +124,9 @@ The following messages are issued by a Station
 
 The following messages are received by a station
 
-| Message                  |  Origin Actor      |  Message parameters  |
-|--------------------------|:------------------:|:--------------------:|
+| Message                   |  Origin Actor      |  Message parameters  |
+|---------------------------|:------------------:|:--------------------:|
+| PersonRequestEnterStation | Person             | self: ActorRef       |
+
+
+

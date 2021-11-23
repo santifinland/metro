@@ -108,21 +108,20 @@ object Main extends App {
         .foreach { z: metroGraph.NodeT => {
         // Find actor for this successor node
         val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
-        // Send Next message to this successor node actor
-        currentActor ! NextPlatform(nextActor)
+        currentActor ! NextPlatform(nextActor)  // Send Next message to this successor node actor
       }}
     } }
 
   // Initialize simulation with trains
   val random = new Random
-  val percentageOfStationsWithTrains: Int = 20
+  val percentageOfStationsWithTrains: Int = 4
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
     Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toList, metroGraph)
-  simulator.simulate(timeMultiplier)
+  val simulator: Simulator = new Simulator(actorSystem, stationActors.toList ++ platformActors.values.flatten, metroGraph)
+  simulator.simulate(timeMultiplier, Some(1))
   //var i = 0
   //while (i < 300) {
     //i += 1

@@ -26,9 +26,9 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
       } }
     val stations: Iterable[MetroNode] = stationsLines
       .groupBy(x => x.name)
-      .map { case (_: String, stationNodes: Iterable[MetroNode]) => {
+      .map { case (_: String, stationNodes: Iterable[MetroNode]) =>
         stationNodes.reduce((a, b) => new StationNode(a.name, a.lines ++ b.lines) )
-      }}
+      }
     val platforms: Iterable[MetroNode] = this.sortedLinePaths
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
         new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), Seq("L" + line))

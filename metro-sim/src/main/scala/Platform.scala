@@ -12,6 +12,7 @@ class Platform(line: ActorRef, name: String) extends Actor {
 
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
   var next: Option[ActorRef] = None
+  val MAX_CAPACITY = 300
 
   def receive: Receive = {
     case x: NextPlatform =>
@@ -25,6 +26,16 @@ class Platform(line: ActorRef, name: String) extends Actor {
   }
 
   def full: Receive = {
+
+    case RequestEnterPlatform =>
+      if (people.size < MAX_CAPACITY) {
+        this.people.addOne(sender.path.name, sender)
+        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
+        sender ! AcceptedEnterPlatform(self)
+      } else {
+        scribe.warn(s"""Platform $name over capacity""")
+        sender ! NotAcceptedEnterPlatform
+      }
 
     case ReservePlatform =>
       scribe.debug(s"Platform $name is not Free!")
@@ -47,6 +58,16 @@ class Platform(line: ActorRef, name: String) extends Actor {
   }
 
   def empty: Receive = {
+
+    case RequestEnterPlatform =>
+      if (people.size < MAX_CAPACITY) {
+        this.people.addOne(sender.path.name, sender)
+        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
+        sender ! AcceptedEnterPlatform(self)
+      } else {
+        scribe.warn(s"""Platform $name over capacity""")
+        sender ! NotAcceptedEnterPlatform
+      }
 
     case ReservePlatform =>
       scribe.debug(s"Platform $name reserved by ${sender.path.name}!")

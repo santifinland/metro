@@ -8,18 +8,25 @@ import Main.materializer.system
 import messages.Messages._
 
 
-class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
+class Person(path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
 
   val WaitAtStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
 
+  var currentStation: Option[ActorRef] = None
+  def nextNode: ActorRef = path(path.indexOf(this.currentStation.get) + 1)
   var currentPlatform: Option[ActorRef] = None
+
+  override def preStart(): Unit = {
+    scribe.debug(s"Person ${self.path.name} to ${path.last.path.name} wants to enter ${path.head.path.name}")
+    path.head ! RequestEnterStation
+  }
 
   def receive: Receive = {
 
-    case x: EnterPlatform =>
-      scribe.debug(
-        s"Person ${self.path.name} to ${destination.path.name} wants to enter ${x.actorRef.path.name}")
-      x.actorRef ! RequestEnterPlatform(self)
+    case AcceptedEnterStation =>
+      this.currentStation = Some(sender)
+      scribe.debug(s"Person ${self.path.name} entered station ${this.currentStation.get.path.name}")
+      nextNode ! (if (nextNode.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
 
     case x: AcceptedEnterPlatform =>
       this.currentPlatform = Some(x.actorRef)
@@ -57,7 +64,7 @@ class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
     case x: ArrivedAtPlatformToPeople =>
       scribe.debug(
         s"Person ${self.path.name} inside Train ${sender.path.name} at Platform ${x.actorRef.path.name}")
-      if (x.actorRef.path.name == destination.path.name) {
+      if (x.actorRef.path.name == nextNode.path.name) {
         scribe.debug(s"Person ${self.path.name} arrived destination")
         sender ! ExitTrain
         context.stop(self)
@@ -66,3 +73,5 @@ class Person(destination: ActorRef, timeMultiplier: Double) extends Actor {
     case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
   }
 }
+
+

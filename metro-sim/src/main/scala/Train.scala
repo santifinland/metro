@@ -2,6 +2,7 @@
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
 import scala.util.Random
+import scala.math.ceil
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import Main.actorSystem.dispatcher
@@ -106,7 +107,7 @@ object Train {
   def buildTrains(actorSystem: ActorSystem, allPaths: Seq[Path], linePlatforms: Seq[ActorRef],
                   n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
     for {
-      _ <- 1 to (n * linePlatforms.length / 100)
+      _ <- 1 to ceil(n * linePlatforms.length / 100).toInt
       start: ActorRef = linePlatforms(random.nextInt(linePlatforms.size))
       message = Some(Move(start))
       uuid = java.util.UUID.randomUUID.toString

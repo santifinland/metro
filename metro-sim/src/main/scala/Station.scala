@@ -1,29 +1,27 @@
 // Metro. SDMT
 
 import akka.actor.{Actor, ActorRef}
-import messages.Messages.{AcceptedEnterPlatform, NotAcceptedEnterPlatform, RequestEnterPlatform}
+
+import messages.Messages.{AcceptedEnterStation, NotAcceptedEnterStation, RequestEnterStation}
 
 
 class Station(name: String) extends Actor {
 
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
-
   val MAX_CAPACITY = 300
 
   def receive: Receive = {
 
-    case x: RequestEnterPlatform =>
+    case RequestEnterStation =>
       if (people.size < MAX_CAPACITY) {
-        this.people.addOne(x.actorRef.path.name, x.actorRef)
-        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterPlatform(self)
+        this.people.addOne(sender.path.name, sender)
+        scribe.debug(s"""Station $name with ${this.people.size} people after adding""")
+        sender ! AcceptedEnterStation
       } else {
-        scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterPlatform
+        scribe.warn(s"""Station $name over capacity""")
+        sender ! NotAcceptedEnterStation
       }
 
     case x: Any =>  scribe.warn(s"Station does not understand message $x")
   }
 }
-
-

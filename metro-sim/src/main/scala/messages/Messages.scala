@@ -19,16 +19,16 @@ object Messages {
   case object GetNextPlatform
   case object ReservePlatform
 
-  // Application -> Person messages
-  case class EnterPlatform(actorRef: ActorRef)
-
   // Person -> Platform messages
-  case class RequestEnterPlatform(actorRef: ActorRef)
+  case object RequestEnterPlatform
   case object ExitPlatform
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
   case object ExitTrain
+
+  // Person -> Station messages
+  case object RequestEnterStation
 
   // Platform -> Person messages
   case class AcceptedEnterPlatform(actorRef: ActorRef)
@@ -48,5 +48,9 @@ object Messages {
 
   // Platform -> Platform messages issued by the application when building the metro graph
   case class NextPlatform(actorRef: ActorRef)
+
+  // Station -> Person
+  case object AcceptedEnterStation
+  case object NotAcceptedEnterStation
 
 }

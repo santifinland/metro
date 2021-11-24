@@ -1,10 +1,10 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.{FiniteDuration, SECONDS}
-
 import akka.actor.{Actor, ActorRef}
 import Main.actorSystem.dispatcher
 import Main.materializer.system
+import messages.Messages
 import messages.Messages._
 
 
@@ -12,25 +12,34 @@ class Person(path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
 
   val WaitAtStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
 
-  var currentStation: Option[ActorRef] = None
-  def nextNode: ActorRef = path(path.indexOf(this.currentStation.get) + 1)
-  var currentPlatform: Option[ActorRef] = None
+  var currentNode: ActorRef = path.head
+  var nextNode: ActorRef = path.head
+  //var currentStation: Option[ActorRef] = None
+  //var currentPlatform: Option[ActorRef] = None
+  //def nextNode: Option[ActorRef] = currentPlatform match {
+    //case x: Some[ActorRef] =>  Some(path(path.indexOf(x.get) + 1))
+    //case _ => None
+  //}
 
   override def preStart(): Unit = {
     scribe.debug(s"Person ${self.path.name} to ${path.last.path.name} wants to enter ${path.head.path.name}")
+    scribe.debug(s"Person path: ${path}")
     path.head ! RequestEnterStation
   }
 
   def receive: Receive = {
 
     case AcceptedEnterStation =>
-      this.currentStation = Some(sender)
-      scribe.debug(s"Person ${self.path.name} entered station ${this.currentStation.get.path.name}")
+      currentNode = sender
+      nextNode = path(path.indexOf(currentNode) + 1)
+      scribe.debug(s"Person ${self.path.name} entered station ${currentNode.path.name}")
+      scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.path.name}")
       nextNode ! (if (nextNode.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
 
     case x: AcceptedEnterPlatform =>
-      this.currentPlatform = Some(x.actorRef)
-      scribe.debug(s"Person ${self.path.name} entered platform ${this.currentPlatform.get.path.name}")
+      currentNode = x.actorRef
+      nextNode = path(path.indexOf(currentNode) + 1)
+      scribe.debug(s"Person ${self.path.name} entered platform ${this.currentNode.path.name}")
       context.become(inPlatform)
 
     case NotAcceptedEnterPlatform =>
@@ -62,12 +71,21 @@ class Person(path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
   def inTrain: Receive = {
 
     case x: ArrivedAtPlatformToPeople =>
+      currentNode = x.actorRef
+      nextNode = path(path.indexOf(currentNode) + 1)
       scribe.debug(
         s"Person ${self.path.name} inside Train ${sender.path.name} at Platform ${x.actorRef.path.name}")
-      if (x.actorRef.path.name == nextNode.path.name) {
-        scribe.debug(s"Person ${self.path.name} arrived destination")
+      if (x.actorRef.path.name == path.last.path.name) {
+        scribe.debug(s"Person ${self.path.name} arrived final destination")
         sender ! ExitTrain
         context.stop(self)
+      } else if (nextNode.path.name.startsWith(Metro.StationPrefix)) {  // Person has arrived to intermediate node
+        scribe.debug(s"Person ${self.path.name} to ${nextNode.path.name}  stopping at ${x.actorRef.path.name}")
+        sender ! ExitTrain
+        context.become(receive)
+        nextNode ! RequestEnterStation
+      } else {
+        scribe.debug(s"Person ${self.path.name} to ${nextNode.path.name} not stopping at ${x.actorRef.path.name}")
       }
 
     case _ => scribe.warn(s"Person ${self.path.name} received unknown message")

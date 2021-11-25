@@ -43,7 +43,7 @@ object Main extends App {
   scribe.Logger.root
     .clearHandlers()
     .clearModifiers()
-    .withHandler(minimumLevel = Some(Level.Debug))
+    .withHandler(minimumLevel = Some(Level.Info))
     .replace()
   val timeMultiplier = 1 / metroConf.timeMultiplier
   scribe.info(s"Time multiplier: $timeMultiplier")

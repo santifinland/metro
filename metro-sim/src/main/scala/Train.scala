@@ -44,7 +44,7 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
         system.scheduler.scheduleOnce(TimeBetweenPlatforms, this.platform.get, GetNextPlatform)
 
       } else {
-        scribe.info(
+        scribe.debug(
           s""" Train ${self.path.name} departing from ${platform.get.path.name} with ${people.size} passengers""")
         this.nextPlatform = Some(x.actorRef)
         this.platform.get ! LeavingPlatform
@@ -107,7 +107,7 @@ object Train {
   def buildTrains(actorSystem: ActorSystem, allPaths: Seq[Path], linePlatforms: Seq[ActorRef],
                   n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
     for {
-      _ <- 1 to ceil(n * linePlatforms.length / 100).toInt
+      _ <- 1 to (n * linePlatforms.length / 100) + 1
       start: ActorRef = linePlatforms(random.nextInt(linePlatforms.size))
       message = Some(Move(start))
       uuid = java.util.UUID.randomUUID.toString

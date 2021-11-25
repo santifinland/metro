@@ -6,54 +6,51 @@ import akka.actor.ActorRef
 
 object Messages {
 
-  case object Free
-
-  case object Reserve
-
-  case object GetNext
-
-  case class Full(actorRef: ActorRef)
-
-  case class Move(actorRef: ActorRef)
-
-  case class Next(actorRef: ActorRef)
-
-  case class Reserved(actorRef: ActorRef)
+  // Platform -> Train messages
+  case class FullPlatform(actorRef: ActorRef)
+  case class PlatformReserved(actorRef: ActorRef)
 
   // Train -> self Train messages
   case object TrainArrivedAtPlatform
 
   // Train -> Platform messages
   case object ArrivedAtPlatform
-
-  // Application -> Person messages
-  case class EnterPlatform(actorRef: ActorRef)
+  case object LeavingPlatform
+  case object GetNextPlatform
+  case object ReservePlatform
 
   // Person -> Platform messages
-  case class RequestEnterPlatform(actorRef: ActorRef)
-
+  case object RequestEnterPlatform
   case object ExitPlatform
-
-  // Platform -> Person messages
-  case class AcceptedEnterPlatform(actorRef: ActorRef)
-
-  case object NotAcceptedEnterPlatform
-
-  case class TrainInPlatform(actorRef: ActorRef)
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
-
   case object ExitTrain
+
+  // Person -> Station messages
+  case object RequestEnterStation
+
+  // Platform -> Person messages
+  case class AcceptedEnterPlatform(actorRef: ActorRef)
+  case object NotAcceptedEnterPlatform
+  case class TrainInPlatform(actorRef: ActorRef)
 
   // Train -> Person messages
   case class AcceptedEnterTrain(actorRef: ActorRef)
-
   case object NotAcceptedEnterTrain
-
   case class ArrivedAtPlatformToPeople(actorRef: ActorRef)
 
   // Platform -> User interface messages
   case class PeopleInPlatform(people: Int)
+
+  // Application -> Train messages
+  case class Move(actorRef: ActorRef)
+
+  // Platform -> Platform messages issued by the application when building the metro graph
+  case class NextPlatform(actorRef: ActorRef)
+
+  // Station -> Person
+  case object AcceptedEnterStation
+  case object NotAcceptedEnterStation
 
 }

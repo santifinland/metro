@@ -5,7 +5,7 @@ package parser
 import akka.actor.ActorRef
 import org.geolatte.geom.{G2D, LineString}
 
-import messages.Messages.Next
+import messages.Messages.NextPlatform
 import utils.Position
 
 
@@ -45,7 +45,7 @@ object Path {
       currentActor: ActorRef = lineActors(i)
       nextActor: ActorRef = lineActors(next)
     } yield (currentActor, nextActor)
-    currentNextLineActors.foreach { case (current, next) => current ! Next(next) }
+    currentNextLineActors.foreach { case (current, next) => current ! NextPlatform(next) }
   }
 }
 
@@ -63,8 +63,8 @@ case class LineFeatures(
     longitudtramoanterior: Double,
     velocidadtramoanterior: Float,
     modolinea: Int,
-    modointercambiador: Int,
-    codigointercambiador: String,
+    modointercambiador: Option[Int],
+    codigointercambiador: Option[String],
     idftramo: String,
     idflinea: String,
     idfitinerario: String,

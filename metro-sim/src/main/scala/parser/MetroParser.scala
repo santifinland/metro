@@ -25,7 +25,11 @@ class MetroParser(metro: String) {
   def parseTramo(f: JsValue, g: JsValue): Option[Path] = {
     val features: Option[LineFeatures] = (f).validate(tramoReads) match {
       case s: JsSuccess[LineFeatures] => Some(s.value)
-      case _: JsError => None
+      case e: JsError => {
+        scribe.debug(s"Error $e")
+        scribe.debug(s"Error ${e.errors}")
+        None
+      }
     }
     val geometry: Option[LineGeometry] = (g).validate(geometryReads) match {
       case s: JsSuccess[LineGeometry] => Some(s.value)
@@ -54,8 +58,8 @@ class MetroParser(metro: String) {
       (JsPath \ "LONGITUDTRAMOANTERIOR").read[Double] and
       (JsPath \ "VELOCIDADTRAMOANTERIOR").read[Float] and
       (JsPath \ "MODOLINEA").read[Int] and
-      (JsPath \ "MODOINTERCAMBIADOR").read[Int] and
-      (JsPath \ "CODIGOINTERCAMBIADOR").read[String] and
+      (JsPath \ "MODOINTERCAMBIADOR").readNullable[Int] and
+      (JsPath \ "CODIGOINTERCAMBIADOR").readNullable[String] and
       (JsPath \ "IDFTRAMO").read[String] and
       (JsPath \ "IDFLINEA").read[String] and
       (JsPath \ "IDFITINERARIO").read[String] and

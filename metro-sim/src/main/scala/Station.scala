@@ -1,8 +1,8 @@
 // Metro. SDMT
 
 import akka.actor.{Actor, ActorRef}
-import messages.Messages.{AcceptedEnterStation, EnteredStationFromPlatform, ExitStation, NotAcceptedEnterStation, RequestEnterStation}
 
+import messages.Messages._
 
 class Station(name: String) extends Actor {
 
@@ -17,7 +17,7 @@ class Station(name: String) extends Actor {
         scribe.debug(s"""Station $name with ${this.people.size} people after adding""")
         sender ! AcceptedEnterStation
       } else {
-        scribe.info(s"""Station $name over capacity""")
+        scribe.warn(s"""Station $name over capacity""")
         sender ! NotAcceptedEnterStation
       }
 

@@ -75,9 +75,6 @@ object Main extends App {
     .keys
     .map(  l => actorSystem.actorOf(Props(classOf[Line], ui), "L" + l))
 
-  // Start Line actors with any message: i.e. "Start"
-  lineActors.foreach(l => l ! "Start")
-
   // Iterate over lines to create Station actors
   val stationActors: collection.Set[ActorRef] = metroGraph
       .nodes
@@ -114,7 +111,7 @@ object Main extends App {
 
   // Initialize simulation with trains
   val random = new Random
-  val percentageOfStationsWithTrains: Int = 4
+  val percentageOfStationsWithTrains: Int = 20
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
     Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
@@ -122,11 +119,11 @@ object Main extends App {
   // Start simulation creating people and computing shortestPath
   val simulator: Simulator = new Simulator(actorSystem, stationActors.toList ++ platformActors.values.flatten, metroGraph)
   simulator.simulate(timeMultiplier, Some(1))
-  //var i = 0
-  //while (i < 300) {
-    //i += 1
-    //scribe.info(s"iteración $i")
-    //Thread.sleep((100000L * timeMultiplier).toLong)
-    //simulator.simulate(timeMultiplier)
-  //}
+  var i = 0
+  while (i < 300) {
+    i += 1
+    scribe.info(s"iteración $i")
+    Thread.sleep((100000L * timeMultiplier).toLong)
+    simulator.simulate(timeMultiplier)
+  }
 }

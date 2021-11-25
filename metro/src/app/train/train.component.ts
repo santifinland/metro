@@ -28,7 +28,7 @@ export class TrainComponent implements AfterViewInit {
   stations: Station[];
   paths: Station[];
   trains: Train[] = [];
-  totalPeople: number[] = [0, 0];
+  totalPeople: Map<string, number> = new Map();
   subscription!: Subscription;
 
   constructor() {
@@ -86,15 +86,11 @@ export class TrainComponent implements AfterViewInit {
         const m = JSON.parse(rawMsg);
 
         if (m.message === "newTrain") {
-          console.log("received new train")
-          console.log(m.train)
           this.addTrain(m.train, m.x, m.y)
         }
 
         if (m.message === "moveTrain") {
-          console.log("received train movement")
           for (let train of this.trains) {
-            console.log(m.train)
             if (train.id === m.train) {
               train.x = m.x;
               train.y = m.y;
@@ -102,14 +98,8 @@ export class TrainComponent implements AfterViewInit {
           }
         }
 
-        if (m.message === "peopleInStation") {
-          console.log("received people in station");
-          console.log(m.people);
-          if (m.line === "10a") {
-            this.totalPeople[0] = m.people
-          } else {
-            this.totalPeople[1] = m.people
-          }
+        if (m.message === "peopleInLine") {
+          this.totalPeople.set(m.line, m.people)
         }
       },
       err => console.log(err),
@@ -199,5 +189,9 @@ export class TrainComponent implements AfterViewInit {
       default:
         return "red";
     }
+  }
+
+  totalPeopleAccess() {
+    return Array.from(this.totalPeople.entries());
   }
 }

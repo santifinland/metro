@@ -45,6 +45,8 @@ object Messages {
 
   // Platform -> User interface messages
   case class PeopleInPlatform(people: Int)
+  case class PeopleInStation(people: Int)
+  case class PeopleInLine(people: Int)
 
   // Application -> Train messages
   case class Move(actorRef: ActorRef)

@@ -60,7 +60,7 @@ The following messages are issued by a platform
 | TrainInPlatform          | Person             | train: ActorRef      |
 | FullPlatform             | Train              | self: ActorRef       |
 | PlatformReserved         | Train              | self: ActorRef       |
-| PeopleInPlatform         | User Interface     | people: Int          |
+| PeopleInPlatform         | Line               | people: Int          |
 
 
 The following messages are received by a platform
@@ -127,6 +127,7 @@ The following messages are issued by a Station
 |-------------------------|:------------------:|:--------------------:|
 | AcceptedEnterStation    | Person             |                      |
 | NotAcceptedEnterStation | Person             |                      |
+| PeopleInStation         | Line               | people: Int          |
 
 The following messages are received by a station
 

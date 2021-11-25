@@ -2,7 +2,6 @@
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
 import scala.util.Random
-import scala.math.ceil
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import Main.actorSystem.dispatcher
@@ -63,8 +62,6 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
       this.sendMovement()
       this.nextPlatform = None
       system.scheduler.scheduleOnce(TimeOpenDoors, this.platform.get, GetNextPlatform)  // Open doors
-
-
 
     case x: NextPlatform =>
       this.nextPlatform = Some(x.actorRef)

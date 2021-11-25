@@ -22,6 +22,7 @@ object Messages {
   // Person -> Platform messages
   case object RequestEnterPlatform
   case object ExitPlatform
+  case object EnteredPlatformFromTrain
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
@@ -29,6 +30,8 @@ object Messages {
 
   // Person -> Station messages
   case object RequestEnterStation
+  case object EnteredStationFromPlatform
+  case object ExitStation
 
   // Platform -> Person messages
   case class AcceptedEnterPlatform(actorRef: ActorRef)

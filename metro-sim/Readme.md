@@ -21,13 +21,15 @@ The person keeps track of its current station and platform.
 
 The following messages are issued by a person:
 
-| Message                   |  Destination Actor |  Message parameters  |
-|---------------------------|:------------------:|:--------------------:|
-| RequestEnterStation       | Station            |                      |
-| RequestEnterPlatform      | Platform           |                      |
-| RequestEnterTrain         | Train              | self: ActorRef       |
-| ExitTrain                 | Train              |                      |
-| ExitPlatform              | Platform           |                      |
+| Message                    |  Destination Actor |  Message parameters  |
+|----------------------------|:------------------:|:--------------------:|
+| RequestEnterStation        | Station            |                      |
+| RequestEnterPlatform       | Platform           |                      |
+| RequestEnterTrain          | Train              | self: ActorRef       |
+| ExitTrain                  | Train              |                      |
+| ExitPlatform               | Platform           |                      |
+| EnteredPlatformFromTrain   | Platform           |                      |
+| EnteredStationFromPlatform | Platform           |                      |
 
 The following messages are received by a person:
 
@@ -37,7 +39,7 @@ The following messages are received by a person:
 | NotAcceptedEnterStation  | Station            |                      |
 | AcceptedEnterPlatform    | Platform           | self: ActorRef       |
 | NotAcceptedEnterPlatform | Platform           |                      |
-| TrainInPlatform          | Platform           | ???                  |
+| TrainInPlatform          | Platform           | train: ActorRef      |
 
 
 ## Platform
@@ -51,14 +53,14 @@ The following messages are issued by a platform
 
 | Message                  |  Destination Actor |  Message parameters  |
 |--------------------------|:------------------:|:--------------------:|
-| NextPlatform             | Platform           | self: ActorRef       |
+| NextPlatform             | Platform           | next: ActorRef       |
 | AcceptedEnterPlatform    | Person             | self: ActorRef       |
 | RequestEnterStation      | Station            |                      |
 | NotAcceptedEnterPlatform | Person             |                      |
 | TrainInPlatform          | Person             | train: ActorRef      |
 | FullPlatform             | Train              | self: ActorRef       |
 | PlatformReserved         | Train              | self: ActorRef       |
-| PeopleInPlatform         | User Interface     | people: Int          |
+| PeopleInPlatform         | Line               | people: Int          |
 
 
 The following messages are received by a platform
@@ -70,6 +72,7 @@ The following messages are received by a platform
 | LeavingPlatform          | Train              |                      |
 | GetNextPlatform          | Train              |                      |
 | ReservePlatform          | Train              |                      |
+| EnteredPlatformFromTrain | Person             |                      |
 
 
 ## Train
@@ -98,14 +101,15 @@ The following messages are issued by a train
 
 The following messages are received by a train
 
-| Message                  |  Origin Actor      |  Message parameters  |
-|--------------------------|:------------------:|:--------------------:|
-| TrainArrivedAtPlatform   | Train              |                      |
-| FullPlatform             | Platform           | self: ActorRef       |
-| PlatformReserved         | Platform           | self: ActorRef       |
-| RequestEnterTrain        | Person             | self: ActorRef       |
-| ExitTrain                | Person             |                      |
-| Move                     | Main application   | platform: ActorRef   |
+| Message                 |  Origin Actor      |  Message parameters  |
+|-------------------------|:------------------:|:--------------------:|
+| TrainArrivedAtPlatform  | Train              |                      |
+| FullPlatform            | Platform           | self: ActorRef       |
+| PlatformReserved        | Platform           | self: ActorRef       |
+| NextPlatform            | Platform           | self: ActorRef       |
+| RequestEnterTrain       | Person             | self: ActorRef       |
+| ExitTrain               | Person             |                      |
+| Move                    | Main application   | platform: ActorRef   |
 
 
 ## Station
@@ -119,14 +123,19 @@ A station keeps track of people inside it.
 
 The following messages are issued by a Station
 
-| Message                   |  Destination Actor |  Message parameters  |
-|---------------------------|:------------------:|:--------------------:|
+| Message                 |  Destination Actor |  Message parameters  |
+|-------------------------|:------------------:|:--------------------:|
+| AcceptedEnterStation    | Person             |                      |
+| NotAcceptedEnterStation | Person             |                      |
+| PeopleInStation         | Line               | people: Int          |
 
 The following messages are received by a station
 
-| Message                   |  Origin Actor      |  Message parameters  |
-|---------------------------|:------------------:|:--------------------:|
-| PersonRequestEnterStation | Person             | self: ActorRef       |
+| Message                    |  Origin Actor      |  Message parameters  |
+|----------------------------|:------------------:|:--------------------:|
+| RequestEnterStation        | Person             | self: ActorRef       |
+| EnteredStationFromPlatform | Person             |                      |
+| ExitStation                | Person             |                      |
 
 
 

@@ -1,9 +1,9 @@
 <div class="line-people">
-  <div>
-    10a: {{totalPeople[0]}}
-  </div>
-  <div>
-    11: {{totalPeople[1]}}
+  <div class="card" *ngFor="let line  of totalPeopleAccess()">
+    <div class="card-content">
+      <h3 class="card-header">{{line[0]}}</h3>
+      <p class="card-info">{{line[1]}}</p>
+    </div>
   </div>
 </div>
 <div class="metro">

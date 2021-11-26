@@ -1,7 +1,7 @@
 <div class="line-people">
   <div class="card" *ngFor="let line  of totalPeopleAccess()">
     <div class="card-content">
-      <h3 class="card-header">{{line[0]}}</h3>
+      <h3 class="card-header" [style.color]="lineColors(line[0])">{{line[0]}}</h3>
       <p class="card-info">{{line[1]}}</p>
     </div>
   </div>

@@ -7,7 +7,7 @@ import messages.Messages._
 class Station(name: String) extends Actor {
 
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
-  val MAX_CAPACITY = 300
+  val MAX_CAPACITY = 3000
 
   def receive: Receive = {
 

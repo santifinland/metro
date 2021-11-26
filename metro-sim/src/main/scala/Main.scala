@@ -3,9 +3,7 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
-import Main.metroGraph
 import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.event.Logging.{Debug, DebugLevel}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
@@ -17,10 +15,7 @@ import pureconfig.generic.auto._
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.WebSocket
-import scalax.collection.edge.Implicits._
 import scribe.Level
-
-import scala.collection.immutable
 
 
 object Main extends App {
@@ -111,7 +106,7 @@ object Main extends App {
 
   // Initialize simulation with trains
   val random = new Random
-  val percentageOfStationsWithTrains: Int = 20
+  val percentageOfStationsWithTrains: Int = 40
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
     Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }

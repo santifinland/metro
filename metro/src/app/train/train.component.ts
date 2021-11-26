@@ -28,13 +28,14 @@ export class TrainComponent implements AfterViewInit {
   stations: Station[];
   paths: Station[];
   trains: Train[] = [];
-  totalPeople: Map<string, number> = new Map();
+  linePeople: Map<string, number> = new Map();
   subscription!: Subscription;
 
   constructor() {
     const madrid: Madrid = new Madrid(this.width, this.height);
     this.stations = madrid.stations;
     this.paths = madrid.paths;
+    new Set(this.paths.map(x => x.line)).forEach(x => this.linePeople.set(x, 0))
   }
 
   ngAfterViewInit(): void {
@@ -99,7 +100,7 @@ export class TrainComponent implements AfterViewInit {
         }
 
         if (m.message === "peopleInLine") {
-          this.totalPeople.set(m.line, m.people)
+          this.linePeople.set(m.line.slice(1), m.people)
         }
       },
       err => console.log(err),
@@ -192,6 +193,6 @@ export class TrainComponent implements AfterViewInit {
   }
 
   totalPeopleAccess() {
-    return Array.from(this.totalPeople.entries());
+    return Array.from(this.linePeople.entries());
   }
 }

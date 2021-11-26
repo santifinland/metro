@@ -22,17 +22,19 @@
 .line-people {
   display: flex;
   flex-wrap: wrap;
+  gap: 5px;
 }
 
 .card {
+  width: 100px;
+  height: 100px;
   text-align: center;
-  background: #888;
+  background: #DDD;
   border-radius: 10px;
 }
 
 .card-content {
   border-radius: 5px;
-  padding: 20px;
 }
 
 .card-header {

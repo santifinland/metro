@@ -13,7 +13,7 @@ class Platform(line: ActorRef, name: String) extends Actor {
   val people: scala.collection.mutable.Map[String, (ActorRef, Boolean)] =
     scala.collection.mutable.Map[String, (ActorRef, Boolean)]()
   var next: Option[ActorRef] = None
-  val MAX_CAPACITY = 300
+  val MAX_CAPACITY = 500
 
   def receive: Receive = {
 

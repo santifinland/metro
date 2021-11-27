@@ -3,12 +3,13 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
+
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
-import messages.Messages.NextPlatform
+import messages.Messages.{NextPlatform, Simulate}
 import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
@@ -43,6 +44,7 @@ object Main extends App {
   val timeMultiplier = 1 / metroConf.timeMultiplier
   scribe.info(s"Time multiplier: $timeMultiplier")
   Thread.sleep(4000)
+  WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
 
   // Metro net lines info
   val source = scala.io.Source.fromFile("data/tramos.json")
@@ -112,13 +114,16 @@ object Main extends App {
   }
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toList ++ platformActors.values.flatten, metroGraph)
-  simulator.simulate(timeMultiplier, Some(1))
+  val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui,
+    stationActors.toList ++ platformActors.values.flatten, metroGraph, timeMultiplier), "simulator")
+  //simulator.simulate(timeMultiplier, Some(1))
+  simulator ! Simulate
   var i = 0
   while (i < 300) {
     i += 1
     scribe.info(s"iteración $i")
     Thread.sleep((100000L * timeMultiplier).toLong)
-    simulator.simulate(timeMultiplier)
+    //simulator.simulate(timeMultiplier)
+    simulator ! Simulate
   }
 }

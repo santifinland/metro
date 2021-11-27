@@ -29,7 +29,12 @@ export class TrainComponent implements AfterViewInit {
   paths: Station[];
   trains: Train[] = [];
   linePeople: Map<string, number> = new Map();
+  metroPeople: number = 0;
   subscription!: Subscription;
+  clockSubscription!: Subscription;
+  period: number = 2000;
+  time: number = 6 * 3600;
+  timeMultiplier: number = 1;
 
   constructor() {
     const madrid: Madrid = new Madrid(this.width, this.height);
@@ -47,8 +52,9 @@ export class TrainComponent implements AfterViewInit {
     this.drawStations(this.ctxStations, this.stations);
     this.panAndZoom();
     this.handleMessages();
-    const source = interval(2000);
+    const source = interval(this.period);
     this.subscription = source.subscribe(_ => this.drawTrains(this.trains));
+    this.clockSubscription = source.subscribe(_ => this.clock())
   }
 
   panAndZoom() {
@@ -86,10 +92,6 @@ export class TrainComponent implements AfterViewInit {
         const rawMsg: string = JSON.stringify(msg, undefined, 4);
         const m = JSON.parse(rawMsg);
 
-        if (m.message === "newTrain") {
-          this.addTrain(m.train, m.x, m.y)
-        }
-
         if (m.message === "moveTrain") {
           for (let train of this.trains) {
             if (train.id === m.train) {
@@ -101,6 +103,24 @@ export class TrainComponent implements AfterViewInit {
 
         if (m.message === "peopleInLine") {
           this.linePeople.set(m.line.slice(1), m.people)
+        }
+
+        if (m.message === "peopleInPlatform") {
+          console.log(m.platform + " with " + m.people)
+        }
+
+        if (m.message === "peopleInMetro") {
+          this.metroPeople = m.people;
+        }
+
+        if (m.message === "newTrain") {
+          this.addTrain(m.train, m.x, m.y)
+        }
+
+        if (m.message === "timeMultiplier") {
+          console.log(m);
+          this.time = 0;
+          this.timeMultiplier = m.multiplier;
         }
       },
       err => console.log(err),
@@ -193,6 +213,30 @@ export class TrainComponent implements AfterViewInit {
   }
 
   totalPeopleAccess() {
-    return Array.from(this.linePeople.entries());
+    return Array
+      .from(this.linePeople.entries())
+      .sort((a, b) => a[1] > b[1] ? -1 : 1);
   }
+
+  clock(): void {
+    this.time = this.time + (this.period / this.timeMultiplier);
+  }
+
+  displayClock() {
+      return new Date(this.time).toLocaleTimeString('en-GB', {
+        timeZone: 'Etc/UTC',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+  }
+
+  allLines(): number {
+    return Array.from(this.linePeople.values()).reduce((p, c) => p + c)
+  }
+
+
+
+
 }

@@ -6,6 +6,9 @@ import akka.actor.ActorRef
 
 object Messages {
 
+  // Application -> Simulator
+  case object Simulate
+
   // Platform -> Train messages
   case class FullPlatform(actorRef: ActorRef)
   case class PlatformReserved(actorRef: ActorRef)
@@ -23,6 +26,10 @@ object Messages {
   case object RequestEnterPlatform
   case object ExitPlatform
   case object EnteredPlatformFromTrain
+
+  // Person -> Simulator messages
+  case object ArrivedToDestination
+  case class PeopleInMetro(people: Int)
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
@@ -44,7 +51,7 @@ object Messages {
   case class ArrivedAtPlatformToPeople(actorRef: ActorRef)
 
   // Platform -> User interface messages
-  case class PeopleInPlatform(people: Int)
+  case class PeopleInPlatform(actorRef: ActorRef, people: Int)
   case class PeopleInStation(people: Int)
   case class PeopleInLine(people: Int)
 

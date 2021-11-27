@@ -8,7 +8,7 @@ import Main.materializer.system
 import messages.Messages._
 
 
-class Person(path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
+class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
 
   val WaitAtStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
   val WaitForStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
@@ -35,7 +35,7 @@ class Person(path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
         if (path.indexOf(currentNode) == path.size - 1) {
           scribe.debug(s"Person ${self.path.name} arrived final destination")
           currentNode ! ExitStation
-          context.stop(self)
+          simulator ! ArrivedToDestination
           None
         } else {
           Some(path(path.indexOf(currentNode) + 1))

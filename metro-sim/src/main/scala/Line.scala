@@ -21,6 +21,9 @@ class Line(ui: ActorRef) extends Actor {
     case x: PeopleInPlatform =>
       if (x.people > 0) {
         scribe.info(s"""There are ${x.people} people in ${sender.path.name}""")
+        if (x.people > 100) {
+          ui ! PeopleInPlatform(sender, x.people)
+        }
       }
       platforms(sender.path.name) = x.people
   }

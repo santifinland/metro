@@ -1,3 +1,11 @@
+
+<div class="line-people">
+  Clock: {{displayClock()}}
+</div>
+<div class="all-people">
+  All people: {{allLines()}}
+  Metro people: {{metroPeople}}
+</div>
 <div class="line-people">
   <div class="card" *ngFor="let line  of totalPeopleAccess()">
     <div class="card-content">

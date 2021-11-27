@@ -1,17 +1,41 @@
 // Metro. SDMT
 
 import scala.collection.immutable.SortedMap
+import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import Main.actorSystem.{dispatcher, scheduler}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import messages.Messages.{ArrivedToDestination, PeopleInMetro, Simulate}
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.Distribution
 
 
-class Simulator(actorSystem: ActorSystem, actors: List[ActorRef], metroGraph: Graph[MetroNode, WDiEdge]) {
+class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[ActorRef], metroGraph: Graph[MetroNode, WDiEdge],
+                timeMultiplier: Double) extends Actor {
+
+  val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
 
   val random = new Random
+
+  override def preStart(): Unit = {
+    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => ui ! PeopleInMetro(people.size))
+  }
+
+  def receive: Receive = {
+
+    case x: Simulate =>
+      scribe.info(s"Simulator issuing Persons, with time multiplier $timeMultiplier")
+      simulate(timeMultiplier, x.limit)
+
+    case x: ArrivedToDestination =>
+      scribe.info(s"Person ${sender.path.name} arrived to destination ${x.actorRef.path.name}. Removing it")
+      people.remove(sender.path.name)
+      context.stop(sender)
+
+    case x: Any => scribe.error(s"Simulator does not understand $x from ${sender.path.name}")
+  }
 
   def simulate(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
     val daily_journeys = 50000
@@ -29,11 +53,12 @@ class Simulator(actorSystem: ActorSystem, actors: List[ActorRef], metroGraph: Gr
       path = journey
         .get
         .nodes
-        .map(x => actors.filter(y => y.path.name == x.name).head)
+        .map(x => stationActors.filter(y => y.path.name == x.name).head)
         .toSeq
       _ = scribe.debug(s"""Person going to $journey""")
       uuid = java.util.UUID.randomUUID.toString
-      person = actorSystem.actorOf(Props(classOf[Person], path, timeMultiplier), uuid)
+      person = actorSystem.actorOf(Props(classOf[Person], self, path, timeMultiplier), uuid)
+      _ = this.people.addOne(person.path.name, person)
     } yield person
   }
 }

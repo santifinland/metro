@@ -3,12 +3,13 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
+
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.stream.Materializer
 import akka.util.Timeout
-import messages.Messages.NextPlatform
+import messages.Messages.{NextPlatform, Simulate}
 import parser.{MetroParser, Path}
 import pureconfig._
 import pureconfig.generic.auto._
@@ -43,6 +44,7 @@ object Main extends App {
   val timeMultiplier = 1 / metroConf.timeMultiplier
   scribe.info(s"Time multiplier: $timeMultiplier")
   Thread.sleep(4000)
+  WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
 
   // Metro net lines info
   val source = scala.io.Source.fromFile("data/tramos.json")
@@ -74,7 +76,8 @@ object Main extends App {
   val stationActors: collection.Set[ActorRef] = metroGraph
       .nodes
       .filter(x => x.name.startsWith(Metro.StationPrefix))
-      .map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
+      .map(x => actorSystem.actorOf(Props(classOf[Station],
+        lineActors.filter(y => y.path.name == x.value.lines.head).head, x.value.name), x.value.name))
 
   // Iterate over lines to create Platform Actors
   val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
@@ -108,17 +111,18 @@ object Main extends App {
   val random = new Random
   val percentageOfStationsWithTrains: Int = 40
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
-    Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
+    Train.buildTrains(actorSystem, ui, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
 
   // Start simulation creating people and computing shortestPath
-  val simulator: Simulator = new Simulator(actorSystem, stationActors.toList ++ platformActors.values.flatten, metroGraph)
-  simulator.simulate(timeMultiplier, Some(1))
+  val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui,
+    stationActors.toList ++ platformActors.values.flatten, metroGraph, timeMultiplier), "simulator")
   var i = 0
   while (i < 300) {
     i += 1
     scribe.info(s"iteración $i")
+    //simulator ! Simulate(Some(3))
+    simulator ! Simulate(None)
     Thread.sleep((100000L * timeMultiplier).toLong)
-    simulator.simulate(timeMultiplier)
   }
 }

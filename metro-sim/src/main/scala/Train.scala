@@ -4,14 +4,14 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
 import scala.util.Random
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import Main.actorSystem.dispatcher
+import Main.actorSystem.{dispatcher, scheduler}
 import Main.materializer.system
 import messages.Messages._
 import parser.Path
 import utils.WebSocket
 
 
-class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
+class Train(ui: ActorRef, allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
 
   val TimeBetweenPlatforms: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
   val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
@@ -22,6 +22,10 @@ class Train(allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
   var y: Double = 0
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
   val MAX_CAPACITY = 1000
+
+  override def preStart(): Unit = {
+    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => ui ! PeopleInTrain(people.size))
+  }
 
   def receive: Receive = {
 
@@ -101,14 +105,14 @@ object Train {
 
   val random = new Random
 
-  def buildTrains(actorSystem: ActorSystem, allPaths: Seq[Path], linePlatforms: Seq[ActorRef],
+  def buildTrains(actorSystem: ActorSystem, ui: ActorRef, allPaths: Seq[Path], linePlatforms: Seq[ActorRef],
                   n: Int, timeMultiplier: Double): Iterable[ActorRef] = {
     for {
       _ <- 1 to (n * linePlatforms.length / 100) + 1
       start: ActorRef = linePlatforms(random.nextInt(linePlatforms.size))
       message = Some(Move(start))
       uuid = java.util.UUID.randomUUID.toString
-      train = actorSystem.actorOf(Props(classOf[Train], allPaths, timeMultiplier), uuid)
+      train = actorSystem.actorOf(Props(classOf[Train], ui, allPaths, timeMultiplier), uuid)
       _ = train ! message.get
     } yield train
   }

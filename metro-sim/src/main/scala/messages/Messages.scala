@@ -6,6 +6,12 @@ import akka.actor.ActorRef
 
 object Messages {
 
+  // Application debug message
+  case object Debug
+
+  // Application -> Simulator
+  case class Simulate(limit: Option[Int])
+
   // Platform -> Train messages
   case class FullPlatform(actorRef: ActorRef)
   case class PlatformReserved(actorRef: ActorRef)
@@ -24,6 +30,10 @@ object Messages {
   case object ExitPlatform
   case object EnteredPlatformFromTrain
 
+  // Person -> Simulator messages
+  case class ArrivedToDestination(actorRef: ActorRef)
+  case class PeopleInMetro(people: Int)
+
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)
   case object ExitTrain
@@ -38,15 +48,20 @@ object Messages {
   case object NotAcceptedEnterPlatform
   case class TrainInPlatform(actorRef: ActorRef)
 
+  // Platform -> Line
+  case class PeopleInPlatform(actorRef: ActorRef, people: Int)
+
   // Train -> Person messages
   case class AcceptedEnterTrain(actorRef: ActorRef)
   case object NotAcceptedEnterTrain
   case class ArrivedAtPlatformToPeople(actorRef: ActorRef)
 
+  // Train -> User interface messages
+  case class PeopleInTrain(people: Int)
+
   // Platform -> User interface messages
-  case class PeopleInPlatform(people: Int)
-  case class PeopleInStation(people: Int)
-  case class PeopleInLine(people: Int)
+  case class PeopleInLinePlatforms(people: Int)
+  case class PeopleInLineStations(people: Int)
 
   // Application -> Train messages
   case class Move(actorRef: ActorRef)
@@ -58,4 +73,10 @@ object Messages {
   case object AcceptedEnterStation
   case object NotAcceptedEnterStation
 
+  // Station -> Line
+  case class PeopleInStation(actorRef: ActorRef, people: Int)
+
+  // Line -> User Interface
+  case class PlatformOvercrowded(actorRef: ActorRef, people: Int)
+  case class StationOvercrowded(actorRef: ActorRef, people: Int)
 }

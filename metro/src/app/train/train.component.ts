@@ -28,8 +28,12 @@ export class TrainComponent implements AfterViewInit {
   stations: Station[];
   paths: Station[];
   trains: Train[] = [];
-  linePeople: Map<string, number> = new Map();
+
   metroPeople: number = 0;
+  platformsPeople: Map<string, number> = new Map();
+  stationsPeople: Map<string, number> = new Map();
+  trainsPeople: number = 0;
+
   subscription!: Subscription;
   clockSubscription!: Subscription;
   period: number = 2000;
@@ -40,7 +44,8 @@ export class TrainComponent implements AfterViewInit {
     const madrid: Madrid = new Madrid(this.width, this.height);
     this.stations = madrid.stations;
     this.paths = madrid.paths;
-    new Set(this.paths.map(x => x.line)).forEach(x => this.linePeople.set(x, 0))
+    new Set(this.paths.map(x => x.line)).forEach(x => this.platformsPeople.set(x, 0))
+    new Set(this.paths.map(x => x.line)).forEach(x => this.stationsPeople.set(x, 0))
   }
 
   ngAfterViewInit(): void {
@@ -101,16 +106,28 @@ export class TrainComponent implements AfterViewInit {
           }
         }
 
-        if (m.message === "peopleInLine") {
-          this.linePeople.set(m.line.slice(1), m.people)
+        if (m.message === "peopleInLinePlatforms") {
+          this.platformsPeople.set(m.line.slice(1), m.people)
         }
 
-        if (m.message === "peopleInPlatform") {
-          console.log(m.platform + " with " + m.people)
+        if (m.message === "peopleInLineStations") {
+          this.stationsPeople.set(m.line.slice(1), m.people)
+        }
+
+        if (m.message === "peopleInTrains") {
+          this.trainsPeople = m.people;
         }
 
         if (m.message === "peopleInMetro") {
           this.metroPeople = m.people;
+        }
+
+        if (m.message === "platformOvercrowded") {
+          console.log(m.platform + " with " + m.people)
+        }
+
+        if (m.message === "stationOvercrowded") {
+          console.log(m.platform + " with " + m.people)
         }
 
         if (m.message === "newTrain") {
@@ -212,12 +229,6 @@ export class TrainComponent implements AfterViewInit {
     }
   }
 
-  totalPeopleAccess() {
-    return Array
-      .from(this.linePeople.entries())
-      .sort((a, b) => a[1] > b[1] ? -1 : 1);
-  }
-
   clock(): void {
     this.time = this.time + (this.period / this.timeMultiplier);
   }
@@ -232,8 +243,19 @@ export class TrainComponent implements AfterViewInit {
       });
   }
 
-  allLines(): number {
-    return Array.from(this.linePeople.values()).reduce((p, c) => p + c)
+  linePeople() {
+    return Array
+      .from(this.platformsPeople.entries())
+      .sort((a, b) => a[1] > b[1] ? -1 : 1);
+  }
+
+  allPeople(recipient: Map<string, number>): number {
+    return Array.from(recipient.values()).reduce((p, c) => p + c)
+  }
+
+  computeCheckPeople(): number {
+    return this.metroPeople - this.trainsPeople - this.allPeople(this.platformsPeople) -
+      this.allPeople(this.stationsPeople)
   }
 
 

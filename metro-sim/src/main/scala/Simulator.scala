@@ -20,17 +20,17 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
   val random = new Random
 
   override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, 3.seconds)(() => ui ! PeopleInMetro(people.size))
+    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => ui ! PeopleInMetro(people.size))
   }
 
   def receive: Receive = {
 
-    case Simulate =>
+    case x: Simulate =>
       scribe.info(s"Simulator issuing Persons, with time multiplier $timeMultiplier")
-      simulate(timeMultiplier)
+      simulate(timeMultiplier, x.limit)
 
-    case ArrivedToDestination =>
-      scribe.info(s"Person ${sender.path.name} arrived to destination. Removing it from simulation")
+    case x: ArrivedToDestination =>
+      scribe.info(s"Person ${sender.path.name} arrived to destination ${x.actorRef.path.name}. Removing it")
       people.remove(sender.path.name)
       context.stop(sender)
 

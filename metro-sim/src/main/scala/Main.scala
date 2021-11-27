@@ -76,7 +76,8 @@ object Main extends App {
   val stationActors: collection.Set[ActorRef] = metroGraph
       .nodes
       .filter(x => x.name.startsWith(Metro.StationPrefix))
-      .map(x => actorSystem.actorOf(Props(classOf[Station], x.value.name), x.value.name))
+      .map(x => actorSystem.actorOf(Props(classOf[Station],
+        lineActors.filter(y => y.path.name == x.value.lines.head).head, x.value.name), x.value.name))
 
   // Iterate over lines to create Platform Actors
   val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
@@ -110,20 +111,18 @@ object Main extends App {
   val random = new Random
   val percentageOfStationsWithTrains: Int = 40
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
-    Train.buildTrains(actorSystem, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
+    Train.buildTrains(actorSystem, ui, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
 
   // Start simulation creating people and computing shortestPath
   val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui,
     stationActors.toList ++ platformActors.values.flatten, metroGraph, timeMultiplier), "simulator")
-  //simulator.simulate(timeMultiplier, Some(1))
-  simulator ! Simulate
   var i = 0
   while (i < 300) {
     i += 1
     scribe.info(s"iteración $i")
+    //simulator ! Simulate(Some(3))
+    simulator ! Simulate(None)
     Thread.sleep((100000L * timeMultiplier).toLong)
-    //simulator.simulate(timeMultiplier)
-    simulator ! Simulate
   }
 }

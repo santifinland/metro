@@ -22,7 +22,7 @@ class Platform(line: ActorRef, name: String) extends Actor {
       this.next = Some(x.actorRef)
       scribe.debug(s"Setting platform ${self.path.name} to empty mode. Next actor ${x.actorRef.path.name}")
       context.become(empty)
-      scheduler.scheduleAtFixedRate(3.seconds, 10.seconds)(() => line ! PeopleInPlatform(self, people.size))
+      scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => line ! PeopleInPlatform(self, people.size))
     case _ => scribe.warn("Next platform not set yet")
   }
 
@@ -58,7 +58,9 @@ class Platform(line: ActorRef, name: String) extends Actor {
     case EnteredPlatformFromTrain =>
       this.people.addOne(sender.path.name, (sender, false))
 
-    case x: Any => scribe.error(s"Full platform does not understand $x from ${sender.path.name}")
+    case x: Any =>
+      scribe.error(s"Full platform does not understand $x from ${sender.path.name}")
+      sender ! Debug
   }
 
   def empty: Receive = {
@@ -84,6 +86,8 @@ class Platform(line: ActorRef, name: String) extends Actor {
     case EnteredPlatformFromTrain =>
       this.people.addOne(sender.path.name, (sender, false))
 
-    case x: Any =>  scribe.warn(s"Empty Platform does not understand message $x")
+    case x: Any =>
+      scribe.warn(s"Empty Platform does not understand message $x from ${sender.path.name}")
+      sender ! Debug
   }
 }

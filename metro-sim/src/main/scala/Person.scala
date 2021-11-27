@@ -26,16 +26,45 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
   def receive: Receive = {
 
     case AcceptedEnterStation =>
-      if (currentNode.path.name.startsWith(Metro.PlatformPrefix)) {
-        currentNode ! ExitPlatform
-      }
       currentNode = sender
       scribe.debug(s"Person ${self.path.name} entered station ${currentNode.path.name}")
       nextNode = {
         if (path.indexOf(currentNode) == path.size - 1) {
+          scribe.debug(s"Person ${self.path.name} arrived final destination. Path: $path")
+          currentNode ! ExitStation
+          simulator ! ArrivedToDestination(currentNode)
+          None
+        } else {
+          Some(path(path.indexOf(currentNode) + 1))
+        }
+      }
+      if (nextNode.isDefined) {
+        scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
+        nextNode.get !
+          (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
+      }
+      context.become(inStation)
+
+    case NotAcceptedEnterStation =>
+      scribe.debug(s"Person ${self.path.name} not accepted in station ${sender.path.name}")
+      system.scheduler.scheduleOnce(WaitForStation, sender, RequestEnterStation)
+
+    case Debug => scribe.debug(s"Person ${self.path.name} with $path")
+
+    case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
+  }
+
+  def inStation: Receive = {
+
+    case AcceptedEnterStation =>
+      currentNode ! ExitStation
+      scribe.debug(s"Person ${self.path.name} from ${currentNode.path.name} entered ${sender.path.name}")
+      currentNode = sender
+      nextNode = {
+        if (path.indexOf(currentNode) == path.size - 1) {
           scribe.debug(s"Person ${self.path.name} arrived final destination")
           currentNode ! ExitStation
-          simulator ! ArrivedToDestination
+          simulator ! ArrivedToDestination(sender)
           None
         } else {
           Some(path(path.indexOf(currentNode) + 1))
@@ -47,11 +76,8 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
           (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
       }
 
-    case NotAcceptedEnterStation =>
-      scribe.debug(s"Person ${self.path.name} not accepted in station ${sender.path.name}")
-      system.scheduler.scheduleOnce(WaitForStation, sender, RequestEnterStation)
-
     case x: AcceptedEnterPlatform =>
+      currentNode ! ExitStation
       currentNode = x.actorRef
       nextNode = Some(path(path.indexOf(currentNode) + 1))
       scribe.debug(s"Person ${self.path.name} entered platform ${this.currentNode.path.name}")
@@ -61,7 +87,7 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
       scribe.debug(s"Person ${self.path.name} not accepted in platform ${sender.path.name}")
       system.scheduler.scheduleOnce(WaitAtStation, sender, RequestEnterPlatform)
 
-    case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
+    case Debug => scribe.info(s"Person ${self.path.name} with $path")
   }
 
   def inPlatform: Receive = {
@@ -81,6 +107,28 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
       scribe.debug(s"Person ${self.path.name} not accepted in Train")
       sender ! RequestEnterTrain(self)
 
+    case AcceptedEnterStation =>
+      currentNode ! ExitPlatform
+      currentNode = sender
+      nextNode = {
+        if (path.indexOf(currentNode) == path.size - 1) {
+          scribe.debug(s"Person ${self.path.name} arrived final destination")
+          currentNode ! ExitStation
+          simulator ! ArrivedToDestination(currentNode)
+          None
+        } else {
+          Some(path(path.indexOf(currentNode) + 1))
+        }
+      }
+      if (nextNode.isDefined) {
+        scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
+        nextNode.get !
+          (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
+      }
+      context.become(inStation)
+
+    case Debug => scribe.info(s"Person ${self.path.name} with $path")
+
     case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
   }
 
@@ -93,13 +141,15 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
         s"Person ${self.path.name} inside Train ${sender.path.name} at Platform ${x.actorRef.path.name}")
       if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) {  // Person has arrived to intermediate node
         scribe.debug(s"Person ${self.path.name} to ${nextNode.get.path.name}  stopping at ${x.actorRef.path.name}")
-        context.become(receive)
+        context.become(inPlatform)
         sender ! ExitTrain
         currentNode ! EnteredPlatformFromTrain
-        nextNode.get ! EnteredStationFromPlatform
+        nextNode.get ! RequestEnterStation
       } else {
         scribe.debug(s"Person ${self.path.name} to ${nextNode.get.path.name} not stopping at ${x.actorRef.path.name}")
       }
+
+    case Debug => scribe.info(s"Person ${self.path.name} with $path")
 
     case x => scribe.warn(s"Person ${self.path.name} received unknown message $x")
   }

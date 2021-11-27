@@ -2,12 +2,29 @@
 <div class="line-people">
   Clock: {{displayClock()}}
 </div>
+
 <div class="all-people">
-  All people: {{allLines()}}
+  Platforms people: {{allPeople(platformsPeople)}}
+</div>
+
+<div class="all-people">
+  Stations people: {{allPeople(stationsPeople)}}
+</div>
+
+<div class="all-people">
+  Trains people: {{trainsPeople}}
+</div>
+
+<div class="all-people">
   Metro people: {{metroPeople}}
 </div>
+
+<div class="all-people">
+  Check people: {{computeCheckPeople()}}
+</div>
+
 <div class="line-people">
-  <div class="card" *ngFor="let line  of totalPeopleAccess()">
+  <div class="card" *ngFor="let line  of linePeople()">
     <div class="card-content">
       <h3 class="card-header" [style.color]="lineColors(line[0])">{{line[0]}}</h3>
       <p class="card-info">{{line[1]}}</p>

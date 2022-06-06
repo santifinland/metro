@@ -17,7 +17,7 @@ trait MetroNode {
 class StationNode(val name: String, val lines: Seq[String]) extends MetroNode
 class PlatformNode(val name: String, val lines:Seq[ String]) extends MetroNode
 
-class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
+class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Double, weightStationPlatform: Double) {
 
   def buildMetroGraph(): Graph[MetroNode, WDiEdge] = {
     val stationsLines: Iterable[MetroNode] = this.sortedLinePaths
@@ -57,11 +57,11 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
       nextStation: MetroNode = stations.filter(x => x.name == nextStationName).head
       nextPlatformName: String = Metro.platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
       nextPlatform: MetroNode = platforms.filter(x => x.name == nextPlatformName).head
-      s1: WDiEdge[MetroNode] = WDiEdge(currentStation, currentPlatform)(1)
-      s1bis: WDiEdge[MetroNode] = WDiEdge(currentPlatform, currentStation)(1)
+      s1: WDiEdge[MetroNode] = WDiEdge(currentStation, currentPlatform)(weightStationPlatform)
+      s1bis: WDiEdge[MetroNode] = WDiEdge(currentPlatform, currentStation)(weightStationPlatform)
       p: WDiEdge[MetroNode] = WDiEdge(currentPlatform, nextPlatform)(weight)
-      s2: WDiEdge[MetroNode] = WDiEdge(nextPlatform, nextStation)(1)
-      s2bis: WDiEdge[MetroNode] = WDiEdge(nextStation, nextPlatform)(1)
+      s2: WDiEdge[MetroNode] = WDiEdge(nextPlatform, nextStation)(weightStationPlatform)
+      s2bis: WDiEdge[MetroNode] = WDiEdge(nextStation, nextPlatform)(weightStationPlatform)
     } yield List(s1, s1bis, p, s2, s2bis)).flatten
   }
 
@@ -82,7 +82,7 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]]) {
       .map { case (x: Iterable[MetroNode]) => computePairs(x.toList) }
     transferPairs
       .flatten
-      .map { case (a: MetroNode, b: MetroNode) => WDiEdge(a, b)(5) }
+      .map { case (a: MetroNode, b: MetroNode) => WDiEdge(a, b)(weightStationStation) }
   }
 
   def computePairs[T](data: List[T]): List[(T, T)] =

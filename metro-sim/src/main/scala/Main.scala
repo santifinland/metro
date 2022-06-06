@@ -7,6 +7,7 @@ import scala.util.{Failure, Random, Success}
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
+import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.util.Timeout
 import messages.Messages.{NextPlatform, Simulate}
@@ -26,9 +27,9 @@ object Main extends App {
   implicit val materializer: Materializer = Materializer.matFromSystem
 
   // Create WebSocket server
-  val route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
+  val route: Route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
   Http().newServerAt("0.0.0.0", 8081).bind(route).onComplete {
-    case Success(binding) => println(s"Listening on ${binding.localAddress.getHostString}:${binding.localAddress.getPort}.")
+    case Success(binding) => println(s"Listen ${binding.localAddress.getHostString}:${binding.localAddress.getPort}.")
     case Failure(exception) => throw exception
   }
 
@@ -41,7 +42,7 @@ object Main extends App {
     .clearModifiers()
     .withHandler(minimumLevel = Some(Level.Info))
     .replace()
-  val timeMultiplier = 1 / metroConf.timeMultiplier
+  val timeMultiplier: Double = 1 / metroConf.timeMultiplier
   scribe.info(s"Time multiplier: $timeMultiplier")
   Thread.sleep(4000)
   WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
@@ -58,13 +59,16 @@ object Main extends App {
     .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
 
   // Build metro graph
-  val metroGraph: Graph[MetroNode, WDiEdge] = new Metro(sortedLinePaths).buildMetroGraph()
+  val WeightStationStation = 2000  // TODO: Weight stations depending on length or distance
+  val WeightStationPlatform = 10   // TODO: Weight platforms depending on length
+  val metroGraph: Graph[MetroNode, WDiEdge] =
+    new Metro(sortedLinePaths, WeightStationStation, WeightStationPlatform).buildMetroGraph()
   val stations: List[metroGraph.NodeT] = metroGraph
     .nodes
     .filter(x => x.value.name.startsWith(Metro.StationPrefix))
     .toList
 
-  // Build Line and User Interface actor
+  // Build User Interface actor
   val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
 
   // Build Line actors
@@ -109,20 +113,21 @@ object Main extends App {
 
   // Initialize simulation with trains
   val random = new Random
-  val percentageOfStationsWithTrains: Int = 40
+  val percentageOfStationsWithTrains: Int = 80
   val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
     Train.buildTrains(actorSystem, ui, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
   }
 
   // Start simulation creating people and computing shortestPath
-  val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui,
-    stationActors.toList ++ platformActors.values.flatten, metroGraph, timeMultiplier), "simulator")
-  var i = 0
-  while (i < 300) {
-    i += 1
-    scribe.info(s"iteración $i")
+  val stationAndPlatformsActors: List[ActorRef] = stationActors.toList ++ platformActors.values.flatten.toList
+  val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui, stationAndPlatformsActors, metroGraph,
+    timeMultiplier), "simulator")
+  //var i = 0
+  //while (i < 300) {
+    //i += 1
+    //scribe.info(s"iteración $i")
     //simulator ! Simulate(Some(3))
-    simulator ! Simulate(None)
-    Thread.sleep((100000L * timeMultiplier).toLong)
-  }
+    //simulator ! Simulate(None)
+    //Thread.sleep((100000L * timeMultiplier).toLong)
+  //}
 }

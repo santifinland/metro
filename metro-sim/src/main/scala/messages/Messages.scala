@@ -33,6 +33,7 @@ object Messages {
   // Person -> Simulator messages
   case class ArrivedToDestination(actorRef: ActorRef)
   case class PeopleInMetro(people: Int)
+  case class PeopleInSimulation(people: Int)
 
   // Person -> Train messages
   case class RequestEnterTrain(actorRef: ActorRef)

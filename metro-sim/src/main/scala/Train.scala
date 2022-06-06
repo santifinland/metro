@@ -13,6 +13,7 @@ import utils.WebSocket
 
 class Train(ui: ActorRef, allPaths: Seq[Path], timeMultiplier: Double) extends Actor {
 
+  // TODO: Make the time betwween platforms related with the distance from platform to nextPlatform
   val TimeBetweenPlatforms: FiniteDuration = FiniteDuration((Random.between(90, 180) * timeMultiplier).toLong, SECONDS)
   val TimeOpenDoors: FiniteDuration = FiniteDuration((Random.between(20, 40) * timeMultiplier).toLong, SECONDS)
 

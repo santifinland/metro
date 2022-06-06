@@ -1,12 +1,13 @@
 // Metro. SDMT
 
 import scala.collection.immutable.SortedMap
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationDouble, DurationInt}
 import scala.util.Random
 
 import Main.actorSystem.{dispatcher, scheduler}
+import Simulator.HourDistribution
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import messages.Messages.{ArrivedToDestination, PeopleInMetro, Simulate}
+import messages.Messages.{ArrivedToDestination, PeopleInMetro, PeopleInSimulation, Simulate}
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import utils.Distribution
@@ -16,11 +17,21 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
                 timeMultiplier: Double) extends Actor {
 
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
+  var simulationPeople: Int = 0
 
+  var time: Long = 6 * 3600 * 1000
+  val TimeStep: Int = 10
   val random = new Random
 
   override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => ui ! PeopleInMetro(people.size))
+    scheduler.scheduleAtFixedRate(1.seconds, (TimeStep * timeMultiplier).seconds)(() => {
+      time = time + TimeStep * 1000
+      self ! Simulate(None)
+    })
+    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => {
+      ui ! PeopleInMetro(people.size)
+      ui ! PeopleInSimulation(simulationPeople)
+    })
   }
 
   def receive: Receive = {
@@ -30,7 +41,7 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       simulate(timeMultiplier, x.limit)
 
     case x: ArrivedToDestination =>
-      scribe.info(s"Person ${sender.path.name} arrived to destination ${x.actorRef.path.name}. Removing it")
+      scribe.debug(s"Person ${sender.path.name} arrived to destination ${x.actorRef.path.name}. Removing it")
       people.remove(sender.path.name)
       context.stop(sender)
 
@@ -38,15 +49,21 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
   }
 
   def simulate(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
-    val daily_journeys = 50000
+    // TODO: spawn Persons depending on Metro entrance dataset per station. Maybe each station should spawn their own personss.
+    val dailyJourneys = 5000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
     val people: Int = 1
     // In each station people is created
+    val prob: Double = time / (24.0 * 3600 * 1000)
+    val dist = HourDistribution.value(prob)
+    val stepJourneys: Int = ((dailyJourneys * dist / 100) * TimeStep / 3600) + 1
+    scribe.info(s"Time: $time. Prob: $prob. Distribution: $dist. StepJourneys: $stepJourneys")
     val stations: List[metroGraph.NodeT] = metroGraph
       .nodes
       .filter(x => x.value.name.startsWith(Metro.StationPrefix))
       .toList
     for {
+      _ <- 1 to stepJourneys
       startNode <- if (limit.isDefined) stations.take(limit.get) else stations
       destinationNode = stations(random.nextInt(stations.size))
       journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
@@ -59,6 +76,7 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       uuid = java.util.UUID.randomUUID.toString
       person = actorSystem.actorOf(Props(classOf[Person], self, path, timeMultiplier), uuid)
       _ = this.people.addOne(person.path.name, person)
+      _ = this.simulationPeople += 1
     } yield person
   }
 }

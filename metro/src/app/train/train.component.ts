@@ -29,6 +29,7 @@ export class TrainComponent implements AfterViewInit {
   paths: Station[];
   trains: Train[] = [];
 
+  simulationPeople: number = 0;
   metroPeople: number = 0;
   platformsPeople: Map<string, number> = new Map();
   stationsPeople: Map<string, number> = new Map();
@@ -37,7 +38,7 @@ export class TrainComponent implements AfterViewInit {
   subscription!: Subscription;
   clockSubscription!: Subscription;
   period: number = 2000;
-  time: number = 6 * 3600;
+  time: number = 6 * 3600 * 1000;
   timeMultiplier: number = 1;
 
   constructor() {
@@ -122,6 +123,10 @@ export class TrainComponent implements AfterViewInit {
           this.metroPeople = m.people;
         }
 
+        if (m.message === "peopleInSimulation") {
+          this.simulationPeople = m.people;
+        }
+
         if (m.message === "platformOvercrowded") {
           console.log(m.platform + " with " + m.people)
         }
@@ -136,7 +141,6 @@ export class TrainComponent implements AfterViewInit {
 
         if (m.message === "timeMultiplier") {
           console.log(m);
-          this.time = 0;
           this.timeMultiplier = m.multiplier;
         }
       },
@@ -230,6 +234,7 @@ export class TrainComponent implements AfterViewInit {
   }
 
   clock(): void {
+    console.log(this.time);
     this.time = this.time + (this.period / this.timeMultiplier);
   }
 

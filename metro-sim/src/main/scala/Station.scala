@@ -1,10 +1,10 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.DurationInt
-
-import Main.actorSystem.{dispatcher, scheduler}
 import akka.actor.{Actor, ActorRef}
+import Main.actorSystem.{dispatcher, scheduler}
 import messages.Messages._
+
 
 class Station(line: ActorRef, name: String) extends Actor {
 

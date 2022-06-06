@@ -1,9 +1,8 @@
 // Metro. SDMT
 
 import scala.collection.immutable.SortedMap
-import scala.concurrent.duration.{DurationDouble, DurationInt}
+import scala.concurrent.duration.{DurationDouble, DurationInt, FiniteDuration}
 import scala.util.Random
-
 import Main.actorSystem.{dispatcher, scheduler}
 import Simulator.HourDistribution
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
@@ -38,7 +37,7 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
 
     case x: Simulate =>
       scribe.info(s"Simulator issuing Persons, with time multiplier $timeMultiplier")
-      simulate(timeMultiplier, x.limit)
+      this.simulateStep(timeMultiplier, x.limit)
 
     case x: ArrivedToDestination =>
       scribe.debug(s"Person ${sender.path.name} arrived to destination ${x.actorRef.path.name}. Removing it")
@@ -48,24 +47,26 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
     case x: Any => scribe.error(s"Simulator does not understand $x from ${sender.path.name}")
   }
 
-  def simulate(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
-    // TODO: spawn Persons depending on Metro entrance dataset per station. Maybe each station should spawn their own personss.
-    val dailyJourneys = 5000
+  def simulateStep(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
+    // TODO: spawn Persons depending on Metro entrance dataset per station.
+    //val dailyJourneys = 5000
     //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
-    val people: Int = 1
+    //val people: Int = 1
     // In each station people is created
-    val prob: Double = time / (24.0 * 3600 * 1000)
-    val dist = HourDistribution.value(prob)
-    val stepJourneys: Int = ((dailyJourneys * dist / 100) * TimeStep / 3600) + 1
-    scribe.info(s"Time: $time. Prob: $prob. Distribution: $dist. StepJourneys: $stepJourneys")
+    //val prob: Double = time / (24.0 * 3600 * 1000)
+    //val dist = HourDistribution.value(prob)
+    //val stepJourneys: Int = ((dailyJourneys * dist / 100) * TimeStep / 3600) + 1
+    //scribe.info(s"Time: $time. Prob: $prob. Distribution: $dist. StepJourneys: $stepJourneys")
     val stations: List[metroGraph.NodeT] = metroGraph
       .nodes
       .filter(x => x.value.name.startsWith(Metro.StationPrefix))
       .toList
     for {
-      _ <- 1 to stepJourneys
-      startNode <- if (limit.isDefined) stations.take(limit.get) else stations
-      destinationNode = stations(random.nextInt(stations.size))
+      startNode: metroGraph.NodeT <- if (limit.isDefined) stations.take(limit.get) else stations
+      //people: Int = (startNode.dailyEntrance * timeMultiplier / 1.day.toSeconds).toInt
+      _ <- 1 to 100
+      otherStations = stations.filter(x => !x.value.name.equals(startNode.value.name))
+      destinationNode = otherStations(random.nextInt(otherStations.size))
       journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
       path = journey
         .get

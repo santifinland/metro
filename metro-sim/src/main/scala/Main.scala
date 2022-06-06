@@ -3,21 +3,20 @@
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
-
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.util.Timeout
-import messages.Messages.{NextPlatform, Simulate}
-import parser.{MetroParser, Path}
+import parser.{Entrance, EntranceParser, MetroParser, Path, StationIds, StationParser}
 import pureconfig._
 import pureconfig.generic.auto._
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
-import utils.WebSocket
 import scribe.Level
+import messages.Messages.{NextPlatform, Simulate}
+import utils.WebSocket
 
 
 object Main extends App {
@@ -47,9 +46,26 @@ object Main extends App {
   Thread.sleep(4000)
   WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
 
+  // Get daily entrance for metro stations
+  val sourceEntrance = scala.io.Source.fromFile("data/entrance.json")
+  val entrance: String = try sourceEntrance.mkString finally sourceEntrance.close()
+  val entranceParser = new EntranceParser
+  val entrances: Seq[Entrance] = entranceParser.parseEntrances(entrance)
+  entrances.foreach(println)
+
+  // Get station different ids
+  val sourceStations = scala.io.Source.fromFile("data/stations.json")
+  val stationId: String = try sourceStations.mkString finally sourceStations.close()
+  val stationParser = new StationParser
+  val stationIds: Seq[StationIds] = stationParser.parseStations(stationId)
+  stationIds.foreach(println)
+  val stationIdsEntrance: Map[StationIds, Option[Entrance]] = stationIds
+    .map(x => x -> entrances.find(y => y.id == Integer.valueOf(x.secondaryId).toString)).toMap
+  stationIdsEntrance.foreach(println)
+
   // Metro net lines info
-  val source = scala.io.Source.fromFile("data/tramos.json")
-  val metro: String = try source.mkString finally source.close()
+  val sourcePaths = scala.io.Source.fromFile("data/tramos.json")
+  val metro: String = try sourcePaths.mkString finally sourcePaths.close()
   val metroParser = new MetroParser(metro)
   val paths: Seq[Path] = metroParser.parseMetro(metro)
 
@@ -80,8 +96,8 @@ object Main extends App {
   val stationActors: collection.Set[ActorRef] = metroGraph
       .nodes
       .filter(x => x.name.startsWith(Metro.StationPrefix))
-      .map(x => actorSystem.actorOf(Props(classOf[Station],
-        lineActors.filter(y => y.path.name == x.value.lines.head).head, x.value.name), x.value.name))
+      .map(x => actorSystem.actorOf(Props(classOf[Station], actorSystem, x.value,
+        lineActors.filter(y => y.path.name == x.value.lines.head).head, metroGraph, x.value.name, 23), x.value.name))
 
   // Iterate over lines to create Platform Actors
   val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {

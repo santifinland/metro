@@ -1,0 +1,1427 @@
+{
+  "entrances": [
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "101",
+        "ENTRANCE": 948.967
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "102",
+        "ENTRANCE": 193.500
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "103",
+        "ENTRANCE": 258.195
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "104",
+        "ENTRANCE": 354.255
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "105",
+        "ENTRANCE": 156.980
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "106",
+        "ENTRANCE": 459.529
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "107",
+        "ENTRANCE": 158.813
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "108",
+        "ENTRANCE": 231.579
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "109",
+        "ENTRANCE": 300.822
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "110",
+        "ENTRANCE": 361.021
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "111",
+        "ENTRANCE": 491.974
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "112",
+        "ENTRANCE": 1510.207
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "113",
+        "ENTRANCE": 279.028
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "114",
+        "ENTRANCE": 205.287
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "115",
+        "ENTRANCE": 192.626
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "116",
+        "ENTRANCE": 618.744
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "117",
+        "ENTRANCE": 149.525
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "118",
+        "ENTRANCE": 345.648
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "119",
+        "ENTRANCE": 310.798
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "120",
+        "ENTRANCE": 315.189
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "121",
+        "ENTRANCE": 188.604
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "122",
+        "ENTRANCE": 128.215
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "123",
+        "ENTRANCE": 153.602
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "124",
+        "ENTRANCE": 169.952
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "125",
+        "ENTRANCE": 188.994
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "126",
+        "ENTRANCE": 145.119
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "127",
+        "ENTRANCE": 107.841
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "128",
+        "ENTRANCE": 84.563
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "129",
+        "ENTRANCE": 141.209
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "130",
+        "ENTRANCE": 64.022
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "151",
+        "ENTRANCE": 379.041
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "152",
+        "ENTRANCE": 68.862
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "153",
+        "ENTRANCE": 272.568
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "201",
+        "ENTRANCE": 201.057
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "202",
+        "ENTRANCE": 300.423
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "203",
+        "ENTRANCE": 425.785
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "204",
+        "ENTRANCE": 166.426
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "205",
+        "ENTRANCE": 231.355
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "206",
+        "ENTRANCE": 221.791
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "207",
+        "ENTRANCE": 103.862
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "209",
+        "ENTRANCE": 401.438
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "210",
+        "ENTRANCE": 115.287
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "211",
+        "ENTRANCE": 132.195
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "212",
+        "ENTRANCE": 173.600
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "213",
+        "ENTRANCE": 180.203
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "214",
+        "ENTRANCE": 198.135
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "251",
+        "ENTRANCE": 204.731
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "252",
+        "ENTRANCE": 89.296
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "253",
+        "ENTRANCE": 133.377
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "254",
+        "ENTRANCE": 92.552
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "255",
+        "ENTRANCE": 89.853
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "301",
+        "ENTRANCE": 508.657
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "302",
+        "ENTRANCE": 245.110
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "303",
+        "ENTRANCE": 181.868
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "304",
+        "ENTRANCE": 428.805
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "305",
+        "ENTRANCE": 257.016
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "307",
+        "ENTRANCE": 502.406
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "308",
+        "ENTRANCE": 635.427
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "309",
+        "ENTRANCE": 105.371
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "310",
+        "ENTRANCE": 568.838
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "311",
+        "ENTRANCE": 1425.003
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "351",
+        "ENTRANCE": 174.456
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "352",
+        "ENTRANCE": 146.706
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "353",
+        "ENTRANCE": 183.269
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "354",
+        "ENTRANCE": 220.272
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "355",
+        "ENTRANCE": 299.801
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "356",
+        "ENTRANCE": 127.691
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "357",
+        "ENTRANCE": 222.737
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "404",
+        "ENTRANCE": 363.437
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "405",
+        "ENTRANCE": 80.088
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "406",
+        "ENTRANCE": 168.952
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "407",
+        "ENTRANCE": 137.080
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "409",
+        "ENTRANCE": 104.360
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "410",
+        "ENTRANCE": 414.264
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "411",
+        "ENTRANCE": 850.741
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "412",
+        "ENTRANCE": 140.719
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "413",
+        "ENTRANCE": 178.853
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "414",
+        "ENTRANCE": 70.795
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "415",
+        "ENTRANCE": 132.261
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "416",
+        "ENTRANCE": 114.756
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "417",
+        "ENTRANCE": 164.695
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "418",
+        "ENTRANCE": 224.835
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "419",
+        "ENTRANCE": 99.640
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "420",
+        "ENTRANCE": 77.804
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "421",
+        "ENTRANCE": 93.676
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "422",
+        "ENTRANCE": 66.770
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "501",
+        "ENTRANCE": 181.376
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "502",
+        "ENTRANCE": 112.032
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "503",
+        "ENTRANCE": 138.840
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "504",
+        "ENTRANCE": 210.344
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "505",
+        "ENTRANCE": 263.511
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "506",
+        "ENTRANCE": 182.339
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "507",
+        "ENTRANCE": 229.554
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "510",
+        "ENTRANCE": 243.682
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "511",
+        "ENTRANCE": 143.797
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "513",
+        "ENTRANCE": 147.569
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "517",
+        "ENTRANCE": 240.941
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "518",
+        "ENTRANCE": 139.885
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "519",
+        "ENTRANCE": 79.400
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "520",
+        "ENTRANCE": 109.196
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "521",
+        "ENTRANCE": 253.681
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "522",
+        "ENTRANCE": 204.076
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "523",
+        "ENTRANCE": 515.396
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "524",
+        "ENTRANCE": 170.327
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "525",
+        "ENTRANCE": 162.116
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "526",
+        "ENTRANCE": 95.026
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "527",
+        "ENTRANCE": 374.891
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "528",
+        "ENTRANCE": 87.571
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "529",
+        "ENTRANCE": 140.235
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "530",
+        "ENTRANCE": 110.110
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "551",
+        "ENTRANCE": 53.494
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "552",
+        "ENTRANCE": 103.985
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "601",
+        "ENTRANCE": 162.449
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "602",
+        "ENTRANCE": 272.967
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "604",
+        "ENTRANCE": 179.311
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "605",
+        "ENTRANCE": 553.636
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "606",
+        "ENTRANCE": 377.028
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "608",
+        "ENTRANCE": 84.140
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "609",
+        "ENTRANCE": 517.456
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "611",
+        "ENTRANCE": 381.348
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "612",
+        "ENTRANCE": 204.530
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "613",
+        "ENTRANCE": 261.182
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "617",
+        "ENTRANCE": 106.417
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "618",
+        "ENTRANCE": 909.561
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "620",
+        "ENTRANCE": 213.228
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "621",
+        "ENTRANCE": 115.717
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "622",
+        "ENTRANCE": 313.804
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "625",
+        "ENTRANCE": 1128.795
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "626",
+        "ENTRANCE": 235.002
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "627",
+        "ENTRANCE": 165.852
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "628",
+        "ENTRANCE": 251.249
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "701",
+        "ENTRANCE": 87.672
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "702",
+        "ENTRANCE": 98.599
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "703",
+        "ENTRANCE": 152.028
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "704",
+        "ENTRANCE": 157.095
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "705",
+        "ENTRANCE": 155.694
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "707",
+        "ENTRANCE": 157.062
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "708",
+        "ENTRANCE": 96.959
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "709",
+        "ENTRANCE": 98.746
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "711",
+        "ENTRANCE": 268.623
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "712",
+        "ENTRANCE": 128.197
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "714",
+        "ENTRANCE": 263.895
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "716",
+        "ENTRANCE": 181.285
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "717",
+        "ENTRANCE": 92.713
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "718",
+        "ENTRANCE": 99.210
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "719",
+        "ENTRANCE": 153.213
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "720",
+        "ENTRANCE": 88.023
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "721",
+        "ENTRANCE": 75.129
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "722",
+        "ENTRANCE": 17.882
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "723",
+        "ENTRANCE": 30.481
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "751",
+        "ENTRANCE": 100.134
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "754",
+        "ENTRANCE": 57.801
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "755",
+        "ENTRANCE": 150.082
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "756",
+        "ENTRANCE": 81.145
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "757",
+        "ENTRANCE": 59.935
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "758",
+        "ENTRANCE": 34.273
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "759",
+        "ENTRANCE": 30.792
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "760",
+        "ENTRANCE": 14.108
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "802",
+        "ENTRANCE": 404.890
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "803",
+        "ENTRANCE": 0
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "805",
+        "ENTRANCE": 81.312
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "806",
+        "ENTRANCE": 133.692
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "807",
+        "ENTRANCE": 100.637
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "808",
+        "ENTRANCE": 111.513
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "901",
+        "ENTRANCE": 102.541
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "902",
+        "ENTRANCE": 205.368
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "903",
+        "ENTRANCE": 91.634
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "905",
+        "ENTRANCE": 43.628
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "906",
+        "ENTRANCE": 97.946
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "908",
+        "ENTRANCE": 95.681
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "909",
+        "ENTRANCE": 82.304
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "913",
+        "ENTRANCE": 124.530
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "915",
+        "ENTRANCE": 125.372
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "916",
+        "ENTRANCE": 135.464
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "917",
+        "ENTRANCE": 167.254
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "918",
+        "ENTRANCE": 139.042
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "919",
+        "ENTRANCE": 133.654
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "920",
+        "ENTRANCE": 120.516
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "921",
+        "ENTRANCE": 61.215
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "922",
+        "ENTRANCE": 183.813
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "951",
+        "ENTRANCE": 66.010
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "952",
+        "ENTRANCE": 70.085
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1001",
+        "ENTRANCE": 109.729
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1002",
+        "ENTRANCE": 257.747
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1005",
+        "ENTRANCE": 227.851
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1006",
+        "ENTRANCE": 295.272
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1013",
+        "ENTRANCE": 82.821
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1014",
+        "ENTRANCE": 142.408
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1016",
+        "ENTRANCE": 403.181
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1018",
+        "ENTRANCE": 114.903
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1019",
+        "ENTRANCE": 138.664
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1020",
+        "ENTRANCE": 115.302
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1021",
+        "ENTRANCE": 197.147
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1051",
+        "ENTRANCE": 66.822
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1052",
+        "ENTRANCE": 70.169
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1053",
+        "ENTRANCE": 113.472
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1054",
+        "ENTRANCE": 28.714
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1055",
+        "ENTRANCE": 40.129
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1056",
+        "ENTRANCE": 68.748
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1057",
+        "ENTRANCE": 89.319
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1058",
+        "ENTRANCE": 49.398
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1059",
+        "ENTRANCE": 46.318
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1060",
+        "ENTRANCE": 50.435
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1061",
+        "ENTRANCE": 69.086
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1102",
+        "ENTRANCE": 64.516
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1103",
+        "ENTRANCE": 42.813
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1104",
+        "ENTRANCE": 80.600
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1105",
+        "ENTRANCE": 81.642
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1106",
+        "ENTRANCE": 68.143
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1107",
+        "ENTRANCE": 50.457
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1202",
+        "ENTRANCE": 86.138
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1203",
+        "ENTRANCE": 151.982
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1204",
+        "ENTRANCE": 83.333
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1205",
+        "ENTRANCE": 101.739
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1206",
+        "ENTRANCE": 154.719
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1207",
+        "ENTRANCE": 122.576
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1208",
+        "ENTRANCE": 105.746
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1209",
+        "ENTRANCE": 68.545
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1210",
+        "ENTRANCE": 114.103
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1212",
+        "ENTRANCE": 93.408
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1213",
+        "ENTRANCE": 77.659
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1214",
+        "ENTRANCE": 164.279
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1215",
+        "ENTRANCE": 95.461
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1217",
+        "ENTRANCE": 27.383
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1218",
+        "ENTRANCE": 53.528
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1219",
+        "ENTRANCE": 75.242
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1220",
+        "ENTRANCE": 228.423
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1221",
+        "ENTRANCE": 147.093
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1222",
+        "ENTRANCE": 125.822
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1223",
+        "ENTRANCE": 48.461
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1224",
+        "ENTRANCE": 49.143
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1225",
+        "ENTRANCE": 120.719
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1226",
+        "ENTRANCE": 101.850
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1227",
+        "ENTRANCE": 93.313
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1228",
+        "ENTRANCE": 61.662
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1229",
+        "ENTRANCE": 153.711
+      }
+    },
+    {
+      "entrance": {
+        "CODIGOEMPRESA": "1230",
+        "ENTRANCE": 94.034
+      }
+    }
+  ]
+}
+

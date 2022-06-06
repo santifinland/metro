@@ -1,15 +1,24 @@
 # Metro simulator
 
-Actor based metro monte carlo simulator with people, trains, platforms and stations.
+Actor based metro Monte Carlo simulator with people, trains, platforms and stations.
 
 An extra actor for gathering and communicating metrics to user interface exists.
 
 The following fluxes are simulated:
 
 ## Person
-A person is given a path through the metro network.
+A person is given a path to be followed through the metro network.
+This path starts and ends in a station.
 
-The person enters into a platform of a given station,
+The person requests to enter the assigned start station.
+
+Once the station grants the access to the person,
+the person request access to the next node.
+
+If the next node is a platform, the person request access to that platform.
+
+Once the platform grants access to the person, 
+the person enters into the platform of a given station,
 waits for a train to enter the platform,
 and enters the train when a train arrives to the platform.
 
@@ -138,4 +147,21 @@ The following messages are received by a station
 | ExitStation                | Person             |                      |
 
 
+# Simulator
+The metro simulator is managed by a single Simulator Actor
+The metro simulator spawns Persons as they are supposed to appear in stations.
+The metro simulator removes Persons from the simulation as they reach their final destination.
 
+The following messages are issued by the Simulator
+
+| Message  | Destination Actor | Message parameters |
+|----------|:-----------------:|:------------------:|
+| Simulate | Simulator         |                    |
+
+
+The following messages are received by the Simulator
+
+| Message              |  Origin Actor      |  Message parameters  |
+|----------------------|:------------------:|:--------------------:|
+| Simulate             | Simulator          |                      |
+| ArrivedToDestination | Person             |                      |

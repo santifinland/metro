@@ -50,6 +50,11 @@ class UI extends Actor {
       WebSocket.sendText(
         s"""{"message": "peopleInMetro", "people": ${x.people}}""")
 
+    case x: PeopleInSimulation =>
+      scribe.debug(s"""Simulation handled ${x.people}""")
+      WebSocket.sendText(
+        s"""{"message": "peopleInSimulation", "people": ${x.people}}""")
+
     case _ => scribe.warn("Message not understood")
   }
 

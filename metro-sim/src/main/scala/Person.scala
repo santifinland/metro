@@ -72,6 +72,8 @@ class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) e
       }
       if (nextNode.isDefined) {
         scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
+        // TODO: Wait at the station if next node is a platform with and scheduledOnce.
+        //       This simulates the walking through metro tunnels
         nextNode.get !
           (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
       }

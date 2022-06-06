@@ -12,7 +12,7 @@ object WebSocket {
   def listen(): Flow[Message, Message, NotUsed] = {
 
     val inbound: Sink[Message, Any] = Sink.ignore
-    val outbound: Source[Message, SourceQueueWithComplete[Message]] = Source.queue[Message](256,
+    val outbound: Source[Message, SourceQueueWithComplete[Message]] = Source.queue[Message](4096,
       OverflowStrategy.fail)
 
     Flow.fromSinkAndSourceMat(inbound, outbound)((_, outboundMat) => {

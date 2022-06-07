@@ -1,18 +1,17 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.DurationInt
-
-import Main.actorSystem.{dispatcher, scheduler}
 import akka.actor.{Actor, ActorRef}
+import Main.actorSystem.{dispatcher, scheduler}
 import messages.Messages._
 
-class Station(line: ActorRef, name: String, dailyEntrance: Integer) extends Actor {
+
+class Station(line: ActorRef, name: String) extends Actor {
 
   val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
   val MAX_CAPACITY = 3000
 
   override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, dailyEntrance / 86400.seconds)(() =>
     scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => line ! PeopleInStation(self, people.size))
     scheduler.scheduleAtFixedRate(3.seconds, 60.seconds)(() => {
       people.foreach{ case (p, _) => scribe.info(s"$p still in ${self.path.name}") }

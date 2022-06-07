@@ -10,8 +10,10 @@ import parser.Path
 trait MetroNode {
   val name: String
   val lines: Seq[String]
+  var partialPerson: Double = 0
 
   override def toString: String = this.name
+  def setPartialPerson(p: Double): Unit = this.partialPerson = p
 }
 
 class StationNode(val name: String, val lines: Seq[String]) extends MetroNode

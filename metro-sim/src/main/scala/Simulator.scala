@@ -50,22 +50,14 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
   }
 
   def simulateStep(timeMultiplier: Double, limit: Option[Int] = None): Unit = {
-    // TODO: spawn Persons depending on Metro entrance dataset per station.
-    //val dailyJourneys = 5000
-    //val people: Int = (HourDistribution.value(0.4) * daily_journeys * 0.2 / (2 * 24 * 360)).toInt
-    //val people: Int = 1
-    // In each station people is created
-    //val prob: Double = time / (24.0 * 3600 * 1000)
-    //val dist = HourDistribution.value(prob)
-    //val stepJourneys: Int = ((dailyJourneys * dist / 100) * TimeStep / 3600) + 1
-    //scribe.info(s"Time: $time. Prob: $prob. Distribution: $dist. StepJourneys: $stepJourneys")
-    val stations: List[metroGraph.NodeT] = metroGraph
+    val stations: List[MetroNode] = metroGraph
       .nodes
       .filter(x => x.value.name.startsWith(Metro.StationPrefix))
+      .map(x => x.toOuter)
       .toList
     for {
       startNode <- if (limit.isDefined) stations.take(limit.get) else stations
-      startStationId <- stationIdsEntrance.filter{ case (k, _) => startNode.value.name.contains(k.name) }.values.flatten
+      startStationId <- stationIdsEntrance.filter{ case (k, _) => startNode.name.contains(k.name) }.values.flatten
       dailyEntrance: Double = startStationId.entrance / 30
       _ = scribe.debug(s"""Daily entrance for ${startStationId.id}: $dailyEntrance""")
       hourMultiplier: Double = Simulator.HourDistribution((24 * (time.toDouble / (1.day.toSeconds * 1000))).toInt)
@@ -76,10 +68,14 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       _ = if (floatPart > 0) startNode.setPartialPerson(floatPart)
       _ = scribe.debug(s"""Persons spawning in ${startStationId.id}: $people""")
       _ <-  1 to integerPart
-      otherStations = stations.filter(x => !x.value.name.equals(startNode.value.name))
-      // TODO: select destination based on station daily entrance rather than ramdonly
+      otherStations: List[MetroNode] = stations.filter(x => !x.name.equals(startNode.name))
+      // TODO: select destination based on station daily entrance rather than randomly
+      dist: Map[MetroNode, Double] = Simulator.buildStationDistribution(otherStations, stationIdsEntrance)
+      randomized: Double = random.nextDouble() * dist.values.sum
+      destinationNode: MetroNode =
       destinationNode = otherStations(random.nextInt(otherStations.size))
-      journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
+      startNodeGraph = metroGraph.nodes.filter(x => x.value.name == startNode.name).head
+      journey: Option[metroGraph.Path] = startNodeGraph shortestPathTo destinationNode
       path = journey
         .get
         .nodes
@@ -92,6 +88,7 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       _ = this.simulationPeople += 1
     } yield person
   }
+
 }
 
 object Simulator {
@@ -116,4 +113,22 @@ object Simulator {
     22 -> 3,
     23 -> 2
   )
+
+  def buildStationDistribution(stations: List[MetroNode], stationIdsEntrance: Map[StationIds, Option[Entrance]]): Map[MetroNode, Double] = {
+    println(s"""stations ids $stationIdsEntrance""")
+    stations.foldLeft(Map[MetroNode, Double]()){(acc, station) => {
+      println(s"""Station $station""")
+      val startStationId = stationIdsEntrance.filter{ case (k, _) => station.name.contains(k.name) }.values.flatten.head
+      val entrance: Double = acc.values.sum + startStationId.entrance
+      println(s"""Entrance $entrance""")
+      acc ++ Map(station -> entrance)
+    }}
+  }
+
+  def getRandomStation(distribution: Map[MetroNode, Double], x: Double): MetroNode = {
+
+
+  }
+
+
 }

@@ -50,7 +50,8 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Doubl
       currentStationName: String = Metro.stationName(
         linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
       currentStation: MetroNode = stations.filter(x => x.name == currentStationName).head
-      weight: Double = linePaths(i).features.longitudtramoanterior
+      speed: Double = linePaths(i).features.velocidadtramoanterior * 1000 / 60 / 60
+      weight: Double = linePaths(i).features.longitudtramoanterior / speed
       currentPlatformName: String = Metro.platformName(
         linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
       currentPlatform: MetroNode = platforms.filter(x => x.name == currentPlatformName).head

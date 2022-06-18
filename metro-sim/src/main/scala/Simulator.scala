@@ -1,11 +1,12 @@
 // Metro. SDMT
 
+import scala.annotation.tailrec
 import scala.collection.immutable.SortedMap
 import scala.concurrent.duration.{DurationDouble, DurationInt, FiniteDuration}
 import scala.util.Random
 
 import Main.actorSystem.{dispatcher, scheduler}
-import Simulator.HourDistribution
+import Simulator.{HourDistribution, getRandomStation}
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import messages.Messages.{ArrivedToDestination, PeopleInMetro, PeopleInSimulation, Simulate}
 import parser.{Entrance, StationIds}
@@ -57,9 +58,10 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       .toList
     for {
       startNode <- if (limit.isDefined) stations.take(limit.get) else stations
-      startStationId <- stationIdsEntrance.filter{ case (k, _) => startNode.name.contains(k.name) }.values.flatten
+      _ = scribe.info(s"""size stationids entrance for ${startNode.name} ${stationIdsEntrance.filter{ case (k, _) => startNode.name.contains(k.name) }.values.flatten.size}""")
+      startStationId <- stationIdsEntrance.filter{ case (k, _) => startNode.name.contains(k.name) }.values.flatten  // Check if <- or = needed here
       dailyEntrance: Double = startStationId.entrance / 30
-      _ = scribe.debug(s"""Daily entrance for ${startStationId.id}: $dailyEntrance""")
+      _ = scribe.debug(s"""Daily entrance for ${startNode.name}: $dailyEntrance""")
       hourMultiplier: Double = Simulator.HourDistribution((24 * (time.toDouble / (1.day.toSeconds * 1000))).toInt)
       _ = scribe.debug(s"""hour multiplier $hourMultiplier""")
       people: Double = (dailyEntrance / (1.day.toSeconds * timeMultiplier) + startNode.partialPerson) * hourMultiplier
@@ -67,20 +69,23 @@ class Simulator(actorSystem: ActorSystem, ui: ActorRef, stationActors: List[Acto
       floatPart: Double = people - integerPart
       _ = if (floatPart > 0) startNode.setPartialPerson(floatPart)
       _ = scribe.debug(s"""Persons spawning in ${startStationId.id}: $people""")
-      _ <-  1 to integerPart
       otherStations: List[MetroNode] = stations.filter(x => !x.name.equals(startNode.name))
-      // TODO: select destination based on station daily entrance rather than randomly
       dist: Map[MetroNode, Double] = Simulator.buildStationDistribution(otherStations, stationIdsEntrance)
-      randomized: Double = random.nextDouble() * dist.values.sum
-      destinationNode: MetroNode =
-      destinationNode = otherStations(random.nextInt(otherStations.size))
+      _ <-  1 to integerPart
+      randomized: Double = random.nextLong(dist.values.sum.toLong)
+      // TODO: select destination based on station daily entrance rather than randomly
+      //_ = scribe.info(s"""Randomized $randomized""")
+      destinationNode: MetroNode = getRandomStation(dist, randomized)
+      //destinationNode = otherStations(random.nextInt(otherStations.size))
       startNodeGraph = metroGraph.nodes.filter(x => x.value.name == startNode.name).head
-      journey: Option[metroGraph.Path] = startNodeGraph shortestPathTo destinationNode
+      destinationNodeGraph = metroGraph.nodes.filter(x => x.value.name == destinationNode.name).head
+      journey: Option[metroGraph.Path] = startNodeGraph shortestPathTo destinationNodeGraph
       path = journey
         .get
         .nodes
         .map(x => stationActors.filter(y => y.path.name == x.name).head)
         .toSeq
+      _ = if (startNode.name.contains("SOL")) scribe.info(s"""Person going to $journey""")
       _ = scribe.debug(s"""Person going to $journey""")
       uuid = java.util.UUID.randomUUID.toString
       person = actorSystem.actorOf(Props(classOf[Person], self, path, timeMultiplier), uuid)
@@ -115,20 +120,28 @@ object Simulator {
   )
 
   def buildStationDistribution(stations: List[MetroNode], stationIdsEntrance: Map[StationIds, Option[Entrance]]): Map[MetroNode, Double] = {
-    println(s"""stations ids $stationIdsEntrance""")
     stations.foldLeft(Map[MetroNode, Double]()){(acc, station) => {
-      println(s"""Station $station""")
-      val startStationId = stationIdsEntrance.filter{ case (k, _) => station.name.contains(k.name) }.values.flatten.head
-      val entrance: Double = acc.values.sum + startStationId.entrance
-      println(s"""Entrance $entrance""")
-      acc ++ Map(station -> entrance)
+      val startStationId = stationIdsEntrance.filter{ case (k, _) => station.name.contains(k.name) }.values.flatten
+      if (startStationId.isEmpty) {
+        //println(s"""Empy startstation id $station""")
+        acc
+      }
+      else {
+        val entrance: Double = acc.values.sum + startStationId.head.entrance
+        //println(s"""Entrance $entrance""")
+        acc ++ Map(station -> entrance)
+      }
     }}
   }
 
+  @tailrec
   def getRandomStation(distribution: Map[MetroNode, Double], x: Double): MetroNode = {
-
-
+    if (distribution.nonEmpty) {
+      val currentStation = distribution.head
+      if (x > currentStation._2) getRandomStation(distribution.tail, x)
+      else currentStation._1
+    } else {
+      distribution.head._1
+    }
   }
-
-
 }

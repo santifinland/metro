@@ -76,8 +76,8 @@ object Main extends App {
     .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
 
   // Build metro graph
-  val WeightStationStation = 2000  // TODO: Weight stations depending on length or distance
-  val WeightStationPlatform = 10   // TODO: Weight platforms depending on length
+  val WeightStationStation = 30  // TODO: Weight stations depending on length or distance
+  val WeightStationPlatform = 120   // TODO: Weight platforms depending on length
   val metroGraph: Graph[MetroNode, WDiEdge] =
     new Metro(sortedLinePaths, WeightStationStation, WeightStationPlatform).buildMetroGraph()
   val stations: List[metroGraph.NodeT] = metroGraph

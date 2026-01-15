@@ -1,4 +1,8 @@
-# Metro
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
 
 Metro is a Madrid metro simulation system consisting of three components that work together via WebSocket communication.
 
@@ -74,3 +78,4 @@ time-multiplier = 10  # Higher = faster simulation
 ## GitHub Style
 
 - Branch naming: `feature/*` for new features, `fix/*` for bug fixes
+- Avoid the Generated with Claude Code disclaimer

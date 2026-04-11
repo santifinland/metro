@@ -115,13 +115,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   private drawStations(ctx: CanvasRenderingContext2D, stations: Station[]): void {
     ctx.font = '8px Verdana';
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'white';
     for (const station of stations) {
-      ctx.lineWidth = 0.6;
-      ctx.strokeText(station.name, station.position.x + 7, station.position.y + 3);
+      ctx.fillText(station.name, station.position.x + 7, station.position.y + 3);
       ctx.beginPath();
       ctx.lineWidth = 1.5;
       ctx.arc(station.position.x, station.position.y, 5, 0, Math.PI * 2, true);
-      ctx.fillStyle = 'white';
       ctx.fill();
       ctx.stroke();
       ctx.closePath();

@@ -1,3 +1,24 @@
-.footer {
-  background: aqua;
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #1e1e1e;
+  color: #888;
+  font-size: 0.8rem;
+  border-top: 1px solid #333;
+}
+
+.app-footer a {
+  color: #90caf9;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+.separator {
+  opacity: 0.4;
 }

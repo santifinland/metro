@@ -1,42 +1,81 @@
+<div class="layout">
 
-<div class="line-people">
-  Clock: {{displayClock()}}
-</div>
+  <!-- Stats panel (#34) -->
+  <aside class="stats-panel" [class.collapsed]="panelCollapsed">
+    <button class="panel-toggle" (click)="panelCollapsed = !panelCollapsed" title="Toggle panel">
+      <mat-icon>{{ panelCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+    </button>
 
-<div class="all-people">
-  Simulation people: {{simulationPeople}}
-</div>
+    <div class="panel-content" *ngIf="!panelCollapsed">
+      <mat-card appearance="outlined" class="stat-card">
+        <mat-card-header>
+          <mat-card-title>Simulation clock</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="clock">{{ displayClock() }}</p>
+          <p class="multiplier">×{{ state.timeMultiplier }} speed</p>
+        </mat-card-content>
+      </mat-card>
 
-<div class="all-people">
-  Platforms people: {{allPeople(platformsPeople)}}
-</div>
+      <mat-card appearance="outlined" class="stat-card">
+        <mat-card-header>
+          <mat-card-title>People</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-row">
+            <mat-icon>groups</mat-icon>
+            <span>Simulation</span>
+            <strong>{{ state.simulationPeople }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>subway</mat-icon>
+            <span>In metro</span>
+            <strong>{{ state.metroPeople }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>train</mat-icon>
+            <span>In trains</span>
+            <strong>{{ state.trainsPeople }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>platform</mat-icon>
+            <span>On platforms</span>
+            <strong>{{ allPeople(state.platformsPeople) }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>store</mat-icon>
+            <span>In stations</span>
+            <strong>{{ allPeople(state.stationsPeople) }}</strong>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-<div class="all-people">
-  Stations people: {{allPeople(stationsPeople)}}
-</div>
-
-<div class="all-people">
-  Trains people: {{trainsPeople}}
-</div>
-
-<div class="all-people">
-  Metro people: {{metroPeople}}
-</div>
-
-<div class="all-people">
-  Check people: {{computeCheckPeople()}}
-</div>
-
-<div class="line-people">
-  <div class="card" *ngFor="let line  of linePeople()">
-    <div class="card-content">
-      <h3 class="card-header" [style.color]="lineColors(line[0])">{{line[0]}}</h3>
-      <p class="card-info">{{line[1]}}</p>
+      <mat-card appearance="outlined" class="stat-card">
+        <mat-card-header>
+          <mat-card-title>By line</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="line-row" *ngFor="let line of linePeople()">
+            <span class="line-badge" [style.background]="lineColors(line[0])">{{ line[0] }}</span>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="linePercent(line[1])"
+              [style.--mdc-linear-progress-active-indicator-color]="lineColors(line[0])">
+            </mat-progress-bar>
+            <span class="line-count">{{ line[1] }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
-  </div>
-</div>
-<div class="metro">
-  <canvas #canvas_trains class="canvas-trains" width="{{width}}" height="{{height}}"></canvas>
-  <canvas #canvas_stations class="canvas-stations" width="{{width}}" height="{{height}}"></canvas>
-  <canvas #canvas_paths class="canvas-paths" width="{{width}}" height="{{height}}"></canvas>
+  </aside>
+
+  <!-- Canvas map -->
+  <main class="map-area">
+    <div class="canvas-wrapper">
+      <canvas #canvas_trains class="canvas-trains" [width]="width" [height]="height"></canvas>
+      <canvas #canvas_stations class="canvas-stations" [width]="width" [height]="height"></canvas>
+      <canvas #canvas_paths class="canvas-paths" [width]="width" [height]="height"></canvas>
+    </div>
+  </main>
+
 </div>

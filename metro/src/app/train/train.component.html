@@ -52,6 +52,34 @@
 
       <mat-card appearance="outlined" class="stat-card">
         <mat-card-header>
+          <mat-card-title>Train config</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-row">
+            <mat-icon>airline_seat_recline_normal</mat-icon>
+            <span>Wagon capacity</span>
+            <strong>{{ cfg.config.wagonCapacity }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>view_week</mat-icon>
+            <span>Wagons/train</span>
+            <strong>{{ cfg.config.wagonsPerTrain }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>schedule</mat-icon>
+            <span>Trains/15 min</span>
+            <strong>{{ cfg.config.trainsPerQuarterHour }}</strong>
+          </div>
+          <div class="stat-row">
+            <mat-icon>people</mat-icon>
+            <span>Train capacity</span>
+            <strong>{{ cfg.trainCapacity }}</strong>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="stat-card">
+        <mat-card-header>
           <mat-card-title>By line</mat-card-title>
         </mat-card-header>
         <mat-card-content>

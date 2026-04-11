@@ -6,4 +6,7 @@
     <mat-icon [style.color]="statusColor(s)">{{ statusIcon(s) }}</mat-icon>
     <span class="status-label" [style.color]="statusColor(s)">{{ s }}</span>
   </ng-container>
+  <button mat-icon-button (click)="openConfig()" title="Simulation settings">
+    <mat-icon>settings</mat-icon>
+  </button>
 </mat-toolbar>

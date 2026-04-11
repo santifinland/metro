@@ -13,6 +13,7 @@ import Panzoom from '@panzoom/panzoom';
 import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
+import { SimulationConfigService } from '../services/simulation-config.service';
 import { Station } from '../station';
 import { Train } from '../train';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../constants';
@@ -50,6 +51,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     private readonly wsService: WebSocketService,
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
+    readonly cfg: SimulationConfigService,
   ) {
     const lines = new Set(this.metroData.paths.map(p => p.line));
     this.state.initLines(Array.from(lines));

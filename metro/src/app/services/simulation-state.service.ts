@@ -8,6 +8,7 @@ export class SimulationStateService {
 
   readonly trains: Train[] = [];
 
+  dirty = false;
   simulationPeople = 0;
   metroPeople = 0;
   trainsPeople = 0;
@@ -30,11 +31,13 @@ export class SimulationStateService {
         if (train) {
           train.x = msg.x;
           train.y = msg.y;
+          this.dirty = true;
         }
         break;
       }
       case 'newTrain':
         this.trains.push(new Train(msg.train, msg.x, msg.y));
+        this.dirty = true;
         break;
       case 'peopleInLinePlatforms':
         this.platformsPeople.set(msg.line.slice(1), msg.people);

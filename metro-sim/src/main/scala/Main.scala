@@ -1,150 +1,176 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Random, Success}
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
-import akka.http.scaladsl.server.Route
-import akka.stream.Materializer
-import akka.util.Timeout
+
+import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.scaladsl.adapter._
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
+import org.apache.pekko.http.scaladsl.server.Route
+
 import parser.{Entrance, EntranceParser, MetroParser, Path, StationIds, StationParser}
 import pureconfig._
 import pureconfig.generic.auto._
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import scribe.Level
-import messages.Messages.NextPlatform
+import messages.Messages._
 import utils.WebSocket
 
 
-object Main extends App {
+object Main {
 
-  implicit val timeout: Timeout = Timeout(10.seconds)
-  implicit val actorSystem: ActorSystem = ActorSystem("system")
-  implicit val materializer: Materializer = Materializer.matFromSystem
+  def main(args: Array[String]): Unit = {
 
-  // Create WebSocket server
-  val route: Route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
-  Http().newServerAt("0.0.0.0", 8081).bind(route).onComplete {
-    case Success(binding) => println(s"Listen ${binding.localAddress.getHostString}:${binding.localAddress.getPort}.")
-    case Failure(exception) => throw exception
+    // Read configuration
+    val metroConf = ConfigSource.default.load[MetroConf].toOption.get
+    scribe.Logger.root
+      .clearHandlers()
+      .clearModifiers()
+      .withHandler(minimumLevel = Some(Level.Info))
+      .replace()
+    val timeMultiplier: Double = 1.0 / metroConf.timeMultiplier
+    scribe.info(s"Metro starting. Time multiplier: $timeMultiplier")
+
+    // Get daily entrance data
+    val entrance: String = scala.io.Source.fromFile("data/entrance.json").mkString
+    val entrances: Seq[Entrance] = new EntranceParser().parseEntrances(entrance)
+
+    // Get station IDs
+    val stationId: String = scala.io.Source.fromFile("data/stations.json").mkString
+    val stationIds: Seq[StationIds] = new StationParser().parseStations(stationId)
+
+    // Build station → entrance map
+    val stationIdsEntrance: Map[StationIds, Option[Entrance]] = stationIds
+      .map(s => s -> entrances.find(e => e.id == Integer.valueOf(s.secondaryId).toString))
+      .toMap
+      .filter { case (_, v) => v.isDefined }
+
+    // Metro network
+    val metro: String = scala.io.Source.fromFile("data/tramos.json").mkString
+    val paths: Seq[Path] = new MetroParser(metro).parseMetro(metro)
+
+    val sortedLinePaths: Map[String, Seq[Path]] = paths
+      .groupBy(_.features.numerolineausuario)
+      .map { case (line, ps) => line -> Path.sortLinePaths(ps) }
+
+    val WeightStationStation = 2000
+    val WeightStationPlatform = 10
+    val metroGraph: Graph[MetroNode, WDiEdge] =
+      new Metro(sortedLinePaths, WeightStationStation, WeightStationPlatform).buildMetroGraph()
+
+    // Launch typed ActorSystem with a Guardian behavior
+    val system: ActorSystem[Guardian.Command] = ActorSystem(
+      Guardian(metroConf, metroGraph, sortedLinePaths, paths, stationIdsEntrance, timeMultiplier),
+      "metro-system"
+    )
+
+    // Start WebSocket HTTP server using classic adapter
+    implicit val classicSystem: org.apache.pekko.actor.ActorSystem = system.toClassic
+    import classicSystem.dispatcher
+    val route: Route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
+    Http().newServerAt("0.0.0.0", 8081).bind(route).onComplete {
+      case Success(binding) =>
+        println(s"Listening at ${binding.localAddress.getHostString}:${binding.localAddress.getPort}")
+        Thread.sleep(4000)
+        WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
+      case Failure(ex) => throw ex
+    }
   }
+}
 
-  // Read configuration
-  val conf = ConfigSource.default.load[MetroConf]
-  val metroConf = conf.toOption.get
-  scribe.info(s"Metro")
-  scribe.Logger.root
-    .clearHandlers()
-    .clearModifiers()
-    .withHandler(minimumLevel = Some(Level.Info))
-    .replace()
-  val timeMultiplier: Double = 1 / metroConf.timeMultiplier
-  scribe.info(s"Time multiplier: $timeMultiplier")
-  Thread.sleep(4000)
-  WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
 
-  // Get daily entrance for metro stations
-  val sourceEntrance = scala.io.Source.fromFile("data/entrance.json")
-  val entrance: String = try sourceEntrance.mkString finally sourceEntrance.close()
-  val entranceParser = new EntranceParser
-  val entrances: Seq[Entrance] = entranceParser.parseEntrances(entrance)
+object Guardian {
 
-  // Get station different ids
-  val sourceStations = scala.io.Source.fromFile("data/stations.json")
-  val stationId: String = try sourceStations.mkString finally sourceStations.close()
-  val stationParser = new StationParser
-  val stationIds: Seq[StationIds] = stationParser.parseStations(stationId)
+  sealed trait Command
 
-  // Build station to entrance map
-  val stationIdsEntrance: Map[StationIds, Option[Entrance]] = stationIds
-    .map(station => station -> entrances.find(y => y.id == Integer.valueOf(station.secondaryId).toString))
-    .toMap
-    .filter{ case (_, v) => v.isDefined }
+  def apply(
+    metroConf: MetroConf,
+    metroGraph: Graph[MetroNode, WDiEdge],
+    sortedLinePaths: Map[String, Seq[Path]],
+    allPaths: Seq[Path],
+    stationIdsEntrance: Map[StationIds, Option[Entrance]],
+    timeMultiplier: Double
+  ): Behavior[Command] =
+    Behaviors.setup[Command] { context =>
 
-  // Metro net lines info
-  val sourcePaths = scala.io.Source.fromFile("data/tramos.json")
-  val metro: String = try sourcePaths.mkString finally sourcePaths.close()
-  val metroParser = new MetroParser(metro)
-  val paths: Seq[Path] = metroParser.parseMetro(metro)
+      // UI actor
+      val ui = context.spawn(UI(), "ui")
 
-  // Sort paths by order inside each line
-  val sortedLinePaths: Map[String, Seq[Path]] = paths
-    .groupBy(l => l.features.numerolineausuario)
-    .map { case (line, paths) => line -> Path.sortLinePaths(paths) }
+      // Line actors
+      val lineActors: Map[String, ActorRef[LineMessage]] = sortedLinePaths.keys.map { l =>
+        l -> context.spawn(Line(ui, "L" + l), "L" + l)
+      }.toMap
 
-  // Build metro graph
-  val WeightStationStation = 2000  // TODO: Weight stations depending on length or distance
-  val WeightStationPlatform = 10   // TODO: Weight platforms depending on length
-  val metroGraph: Graph[MetroNode, WDiEdge] =
-    new Metro(sortedLinePaths, WeightStationStation, WeightStationPlatform).buildMetroGraph()
-  val stations: List[metroGraph.NodeT] = metroGraph
-    .nodes
-    .filter(x => x.value.name.startsWith(Metro.StationPrefix))
-    .toList
+      // Station actors (one per unique station name in graph)
+      val stationActors: Map[String, ActorRef[StationMessage]] = metroGraph
+        .nodes
+        .filter(x => x.value.name.startsWith(Metro.StationPrefix))
+        .map { x =>
+          val lineId = x.value.lines.headOption.getOrElse("")
+          val lineActor = lineActors.getOrElse(lineId.stripPrefix("L"), lineActors.values.head)
+          x.value.name -> context.spawn(Station(lineActor, x.value.name), x.value.name)
+        }
+        .toMap
 
-  // Build User Interface actor
-  val ui: ActorRef = actorSystem.actorOf(Props[UI], "ui")
+      // Platform actors per line
+      val platformActors: Map[String, Map[String, ActorRef[PlatformMessage]]] =
+        (for {
+          (lineKey, lineActor) <- lineActors
+        } yield {
+          val linePlatforms: Map[String, ActorRef[PlatformMessage]] = metroGraph
+            .nodes
+            .filter(x => x.value.lines.contains("L" + lineKey))
+            .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
+            .map { x =>
+              x.value.name -> context.spawn(Platform(lineActor, x.value.name), x.value.name)
+            }
+            .toMap
+          lineKey -> linePlatforms
+        }).toMap
 
-  // Build Line actors
-  val lineActors: Iterable[ActorRef] = sortedLinePaths
-    .keys
-    .map(  l => actorSystem.actorOf(Props(classOf[Line], ui), "L" + l))
+      val allPlatformActors: Map[String, ActorRef[PlatformMessage]] =
+        platformActors.values.reduce(_ ++ _)
 
-  // Iterate over lines to create Station actors
-  val stationActors: collection.Set[ActorRef] = metroGraph
-      .nodes
-      .filter(x => x.name.startsWith(Metro.StationPrefix))
-      .map(x => actorSystem.actorOf(Props(classOf[Station],
-        lineActors.filter(y => y.path.name == x.value.lines.head).head, x.value.name), x.value.name))
+      // Wire platform → next platform
+      metroGraph
+        .nodes
+        .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
+        .foreach { x =>
+          val current = allPlatformActors(x.value.name)
+          x.diSuccessors
+            .filter(s => s.value.name.startsWith(Metro.PlatformPrefix))
+            .foreach { z =>
+              val next = allPlatformActors(z.value.name)
+              current ! SetNextPlatform(next)
+            }
+        }
 
-  // Iterate over lines to create Platform Actors
-  val platformActors: Map[ActorRef, Seq[ActorRef]] = (for {
-    l: ActorRef <- lineActors
-    linePlatformActors: collection.Set[ActorRef] = metroGraph
-      .nodes
-      .filter(x => x.lines.contains(l.path.name))
-      .filter(x => x.name.startsWith(Metro.PlatformPrefix))
-      .map(x => actorSystem.actorOf(Props(classOf[Platform], l, x.value.name), x.value.name))
-  } yield l -> linePlatformActors.toSeq).toMap
+      // Build trains
+      val random = new Random
+      val percentageOfStationsWithTrains = 80
+      platformActors.foreach { case (lineKey, linePlatforms) =>
+        val platforms = linePlatforms.values.toSeq
+        val trainCount = (percentageOfStationsWithTrains * platforms.length / 100) + 1
+        for (_ <- 1 to trainCount) {
+          val start = platforms(random.nextInt(platforms.size))
+          val uuid = java.util.UUID.randomUUID.toString
+          val train = context.spawn(Train(ui, allPaths, timeMultiplier), uuid)
+          train ! Move(start)
+        }
+      }
 
-  // Iterate over graph to set next Platform Actor for each Platform Actor
-  metroGraph
-    .nodes
-    .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
-    .foreach { x: metroGraph.NodeT => {
-      // Find actor for this node. This actor will sent Next message to all its successors
-      val currentActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == x.value.name).head
-      // Find all successors of this node
-      x
-        .diSuccessors
-        .filter(s => s.value.name.startsWith(Metro.PlatformPrefix))
-        .foreach { z: metroGraph.NodeT => {
-        // Find actor for this successor node
-        val nextActor: ActorRef = platformActors.values.flatten.filter(y => y.path.name == z.value.name).head
-        currentActor ! NextPlatform(nextActor)  // Send Next message to this successor node actor
-      }}
-    } }
+      // Simulator
+      val allStationAndPlatformActors: List[ActorRef[_]] =
+        stationActors.values.toList ++ allPlatformActors.values.toList
 
-  // Initialize simulation with trains
-  val random = new Random
-  val percentageOfStationsWithTrains: Int = 80
-  val trains: Iterable[ActorRef] = platformActors.flatMap { case (_: ActorRef, linePlatforms: Seq[ActorRef]) =>
-    Train.buildTrains(actorSystem, ui, paths, linePlatforms, percentageOfStationsWithTrains, timeMultiplier)
-  }
+      context.spawn(
+        Simulator(ui, allStationAndPlatformActors, metroGraph, stationIdsEntrance, timeMultiplier),
+        "simulator"
+      )
 
-  // Start simulation creating people and computing shortestPath
-  val stationAndPlatformsActors: List[ActorRef] = stationActors.toList ++ platformActors.values.flatten.toList
-  val simulator = actorSystem.actorOf(Props(classOf[Simulator], actorSystem, ui, stationAndPlatformsActors, metroGraph,
-    stationIdsEntrance, timeMultiplier), "simulator")
-  //var i = 0
-  //while (i < 300) {
-    //i += 1
-    //scribe.info(s"iteración $i")
-    //simulator ! Simulate(Some(3))
-    //simulator ! Simulate(None)
-    //Thread.sleep((100000L * timeMultiplier).toLong)
-  //}
+      Behaviors.empty[Command]
+    }
 }

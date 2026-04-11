@@ -1,43 +1,50 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.DurationInt
-import akka.actor.{Actor, ActorRef}
-import Main.actorSystem.{dispatcher, scheduler}
+
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+
 import messages.Messages._
 
 
-class Station(line: ActorRef, name: String) extends Actor {
+object Station {
 
-  val people: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map[String, ActorRef]()
-  val MAX_CAPACITY = 3000
+  def apply(line: ActorRef[LineMessage], name: String): Behavior[StationMessage] =
+    Behaviors.setup { context =>
+      Behaviors.withTimers { timers =>
+        timers.startTimerWithFixedDelay("stats-tick", StationStatsTick, 3.seconds, 1.second)
 
-  override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => line ! PeopleInStation(self, people.size))
-    scheduler.scheduleAtFixedRate(3.seconds, 60.seconds)(() => {
-      people.foreach{ case (p, _) => scribe.info(s"$p still in ${self.path.name}") }
-    })
-  }
+        val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
+          scala.collection.mutable.Map.empty
 
-  def receive: Receive = {
+        Behaviors.receiveMessage {
 
-    case RequestEnterStation =>
-      if (people.size < MAX_CAPACITY) {
-        this.people.addOne(sender.path.name, sender)
-        scribe.debug(s"""Station $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterStation
-      } else {
-        scribe.warn(s"""Station $name over capacity""")
-        sender ! NotAcceptedEnterStation
+          case StationStatsTick =>
+            line ! PeopleInStation(name, people.size)
+            Behaviors.same
+
+          case RequestEnterStation(person) =>
+            if (people.size < 3000) {
+              people(person.path.name) = person
+              scribe.debug(s"Station $name with ${people.size} people after adding")
+              person ! AcceptedEnterStation(context.self)
+            } else {
+              scribe.warn(s"Station $name over capacity")
+              person ! NotAcceptedEnterStation
+            }
+            Behaviors.same
+
+          case EnteredStationFromPlatform(person) =>
+            scribe.info(s"Person ${person.path.name} entered station $name from platform")
+            people(person.path.name) = person
+            person ! AcceptedEnterStation(context.self)
+            Behaviors.same
+
+          case ExitStation(personId) =>
+            people.remove(personId)
+            Behaviors.same
+        }
       }
-
-    case EnteredStationFromPlatform =>
-      scribe.info(s"""Person ${sender.path.name} entered station $name from platform""")
-      this.people.addOne(sender.path.name, sender)
-      sender ! AcceptedEnterStation
-
-    case ExitStation =>
-      people.remove(sender.path.name)
-
-    case x: Any =>  scribe.warn(s"Station does not understand message $x")
-  }
+    }
 }

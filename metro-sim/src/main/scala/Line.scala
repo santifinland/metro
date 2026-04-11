@@ -2,46 +2,45 @@
 
 import scala.concurrent.duration.DurationInt
 
-import akka.actor.{Actor, ActorRef}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
-import Main.actorSystem.{dispatcher, scheduler}
 import messages.Messages._
 
 
-class Line(ui: ActorRef) extends Actor {
+object Line {
 
-  val platforms: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map[String, Int]()
-  val stations: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map[String, Int]()
+  def apply(ui: ActorRef[UIMessage], lineId: String): Behavior[LineMessage] =
+    Behaviors.withTimers { timers =>
+      timers.startTimerWithFixedDelay("line-tick", LineTick, 3.seconds, 3.seconds)
 
-  override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, 3.seconds)(() => {
-      ui ! PeopleInLinePlatforms(computePeople(this.platforms))
-      ui ! PeopleInLineStations(computePeople(this.stations))
-    })
-  }
+      val platforms: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map.empty
+      val stations: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map.empty
 
-  def receive: Receive = {
+      Behaviors.receiveMessage {
 
-    case x: PeopleInPlatform =>
-      if (x.people > 0) {
-        scribe.debug(s"""There are ${x.people} people in ${sender.path.name}""")
-        if (x.people > 100) {
-          ui ! PlatformOvercrowded(sender, x.people)
-        }
+        case LineTick =>
+          val platformPeople = platforms.values.sum
+          val stationPeople = stations.values.sum
+          ui ! PeopleInLinePlatforms(lineId, platformPeople)
+          ui ! PeopleInLineStations(lineId, stationPeople)
+          Behaviors.same
+
+        case PeopleInPlatform(platformId, people) =>
+          if (people > 0) {
+            scribe.debug(s"There are $people people in platform $platformId")
+            if (people > 100) ui ! PlatformOvercrowded(platformId, people)
+          }
+          platforms(platformId) = people
+          Behaviors.same
+
+        case PeopleInStation(stationId, people) =>
+          if (people > 0) {
+            scribe.debug(s"There are $people people in station $stationId")
+            if (people > 1000) ui ! StationOvercrowded(stationId, people)
+          }
+          stations(stationId) = people
+          Behaviors.same
       }
-      platforms(sender.path.name) = x.people
-
-    case x: PeopleInStation =>
-      if (x.people > 0) {
-        scribe.debug(s"""There are ${x.people} people in ${sender.path.name}""")
-        if (x.people > 1000) {
-          ui ! StationOvercrowded(sender, x.people)
-        }
-      }
-      stations(sender.path.name) = x.people
-  }
-
-  def computePeople(recipient: scala.collection.mutable.Map[String, Int]): Int = {
-    recipient.map { case (_, people: Int) => people }.sum
-  }
+    }
 }

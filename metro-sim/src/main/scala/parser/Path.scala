@@ -2,10 +2,8 @@
 
 package parser
 
-import akka.actor.ActorRef
 import org.geolatte.geom.{G2D, LineString}
 
-import messages.Messages.NextPlatform
 import utils.Position
 
 
@@ -38,15 +36,6 @@ object Path {
     stationsDirectionHead ++ lineHead ++ stationsDirectionLast ++ lineLast
   }
 
-  def sendNextPlatform(lineActors: Seq[ActorRef]): Unit= {
-    val currentNextLineActors = for {
-      i <- lineActors.indices
-      next: Int = if (i + 1 < lineActors.length) i + 1 else 0
-      currentActor: ActorRef = lineActors(i)
-      nextActor: ActorRef = lineActors(next)
-    } yield (currentActor, nextActor)
-    currentNextLineActors.foreach { case (current, next) => current ! NextPlatform(next) }
-  }
 }
 
 case class LineFeatures(

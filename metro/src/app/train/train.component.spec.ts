@@ -70,7 +70,7 @@ describe('TrainComponent', () => {
     mockSimulationStateService.platformsPeople.set('1', 10);
     mockSimulationStateService.platformsPeople.set('2', 30);
     const result = component.linePeople();
-    expect(result[0][1]).toBeGreaterThanOrEqualTo(result[result.length - 1][1]);
+    expect(result[0][1]).toBeGreaterThanOrEqual(result[result.length - 1][1]);
   });
 
   it('allPeople should sum map values', () => {

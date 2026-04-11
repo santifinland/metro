@@ -3,6 +3,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -19,7 +20,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../c
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [NgFor, NgIf, MatCardModule, MatIconModule, MatProgressBarModule],
+  imports: [NgFor, NgIf, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
@@ -38,6 +39,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   panelCollapsed = false;
 
+  private panzoomInstances: ReturnType<typeof Panzoom>[] = [];
   private time = 6 * 3600 * 1000;
   private lastClockAdvance = 0;
   private rafId = 0;
@@ -97,9 +99,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   private panAndZoom(): void {
-    const panzoomStations = Panzoom(this.canvasStations.nativeElement, { maxScale: 10, canvas: true, step: 0.2 });
-    const panzoom = Panzoom(this.canvasPaths.nativeElement, { maxScale: 10, canvas: true, step: 0.2 });
-    const panzoomTrains = Panzoom(this.canvasTrains.nativeElement, { maxScale: 10, canvas: true, step: 0.2 });
+    const opts = { maxScale: 10, minScale: 0.2, canvas: true, step: 0.3 };
+    const panzoomStations = Panzoom(this.canvasStations.nativeElement, opts);
+    const panzoom = Panzoom(this.canvasPaths.nativeElement, opts);
+    const panzoomTrains = Panzoom(this.canvasTrains.nativeElement, opts);
+    this.panzoomInstances = [panzoomStations, panzoom, panzoomTrains];
 
     this.canvasTrains.nativeElement.parentElement.addEventListener('wheel', (event: any) => {
       if (!event.shiftKey) return;
@@ -111,6 +115,18 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       panzoomStations.pan(pan.x, pan.y);
       panzoomTrains.pan(pan.x, pan.y);
     });
+  }
+
+  zoomIn(): void {
+    this.panzoomInstances.forEach(p => p.zoomIn());
+  }
+
+  zoomOut(): void {
+    this.panzoomInstances.forEach(p => p.zoomOut());
+  }
+
+  zoomReset(): void {
+    this.panzoomInstances.forEach(p => p.reset());
   }
 
   private drawStations(ctx: CanvasRenderingContext2D, stations: Station[]): void {

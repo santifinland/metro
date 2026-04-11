@@ -1,0 +1,19 @@
+services:
+  metro-server:
+    build: ./metro-server
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  metro-frontend:
+    build: ./metro
+    ports:
+      - "4200:80"
+    depends_on:
+      - metro-server
+    restart: unless-stopped
+
+# metro-sim (Scala/Akka) is not containerized due to JVM image size.
+# Run manually: cd metro-sim && sbt run
+# It must be started separately and will broadcast on ws://localhost:8081/ws
+# metro-server acts as the WebSocket relay between metro-sim and the frontend.

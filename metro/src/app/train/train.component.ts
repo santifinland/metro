@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { interval, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import Panzoom from '@panzoom/panzoom';
@@ -30,7 +30,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   readonly height = CANVAS_HEIGHT;
 
   private time = 6 * 3600 * 1000;
+  private lastClockAdvance = 0;
+  private rafId = 0;
   private readonly destroy$ = new Subject<void>();
+  private destroyed = false;
 
   constructor(
     private readonly wsService: WebSocketService,
@@ -55,17 +58,33 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(msg => this.state.process(msg));
 
-    interval(REDRAW_PERIOD_MS)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.drawTrains(this.state.trains);
-        this.advanceClock();
-      });
+    this.startRenderLoop();
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    cancelAnimationFrame(this.rafId);
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private startRenderLoop(): void {
+    const loop = (timestamp: number) => {
+      if (this.destroyed) return;
+
+      if (this.state.dirty) {
+        this.drawTrains(this.state.trains);
+        this.state.dirty = false;
+      }
+
+      if (timestamp - this.lastClockAdvance >= REDRAW_PERIOD_MS) {
+        this.advanceClock();
+        this.lastClockAdvance = timestamp;
+      }
+
+      this.rafId = requestAnimationFrame(loop);
+    };
+    this.rafId = requestAnimationFrame(loop);
   }
 
   private panAndZoom(): void {

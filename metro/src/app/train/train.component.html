@@ -71,6 +71,11 @@
 
   <!-- Canvas map -->
   <main class="map-area">
+    <div class="zoom-controls">
+      <button mat-mini-fab color="primary" (click)="zoomIn()" title="Zoom in"><mat-icon>add</mat-icon></button>
+      <button mat-mini-fab color="primary" (click)="zoomOut()" title="Zoom out"><mat-icon>remove</mat-icon></button>
+      <button mat-mini-fab (click)="zoomReset()" title="Reset zoom"><mat-icon>center_focus_strong</mat-icon></button>
+    </div>
     <div class="canvas-wrapper">
       <canvas #canvas_trains class="canvas-trains" [width]="width" [height]="height"></canvas>
       <canvas #canvas_stations class="canvas-stations" [width]="width" [height]="height"></canvas>

@@ -35,7 +35,7 @@ describe('TrainComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TrainComponent],
+      imports: [TrainComponent],
       providers: [
         { provide: WebSocketService, useValue: mockWebSocketService },
         { provide: MetroDataService, useValue: mockMetroDataService },

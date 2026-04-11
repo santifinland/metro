@@ -1,22 +1,71 @@
-mat-toolbar {
-  position: sticky;
-  top: 0;
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 16px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
   z-index: 100;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.title {
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin-left: 8px;
+.topbar-icon {
+  font-size: 20px;
+  color: #58a6ff;
 }
 
-.spacer {
-  flex: 1;
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e6edf3;
+  letter-spacing: 0.01em;
 }
 
-.status-label {
-  font-size: 0.85rem;
-  text-transform: capitalize;
-  margin-left: 4px;
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6e7681;
+  transition: background 0.3s;
+}
+
+.status-dot.connected    { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
+.status-dot.reconnecting { background: #d29922; box-shadow: 0 0 6px #d2992266; }
+.status-dot.disconnected { background: #f85149; }
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #8b949e;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.icon-btn:hover {
+  color: #e6edf3;
+  border-color: #30363d;
+  background: #21262d;
+}
+
+.icon-btn .material-icons {
+  font-size: 18px;
 }

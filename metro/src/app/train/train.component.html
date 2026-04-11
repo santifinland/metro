@@ -1,118 +1,112 @@
-<div class="layout">
+<div class="map-root">
 
-  <!-- Stats panel (#34) -->
-  <aside class="stats-panel" [class.collapsed]="panelCollapsed">
-    <button class="panel-toggle" (click)="panelCollapsed = !panelCollapsed" title="Toggle panel">
-      <mat-icon>{{ panelCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+  <!-- Canvas layers -->
+  <div class="canvas-container" #canvasContainer>
+    <canvas #canvas_paths   class="canvas-layer" [width]="width" [height]="height"></canvas>
+    <canvas #canvas_stations class="canvas-layer" [width]="width" [height]="height"></canvas>
+    <canvas #canvas_trains  class="canvas-layer" [width]="width" [height]="height"></canvas>
+  </div>
+
+  <!-- Stats panel (floating) -->
+  <aside class="panel" [class.panel--collapsed]="panelCollapsed">
+    <button class="panel-toggle" (click)="panelCollapsed = !panelCollapsed"
+            [title]="panelCollapsed ? 'Expand' : 'Collapse'">
+      <span class="material-icons">{{ panelCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
     </button>
 
     @if (!panelCollapsed) {
-    <div class="panel-content">
-      <mat-card appearance="outlined" class="stat-card">
-        <mat-card-header>
-          <mat-card-title>Simulation clock</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p class="clock">{{ displayClock() }}</p>
-          <p class="multiplier">×{{ state.timeMultiplier }} speed</p>
-        </mat-card-content>
-      </mat-card>
+      <div class="panel-body">
 
-      <mat-card appearance="outlined" class="stat-card">
-        <mat-card-header>
-          <mat-card-title>People</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="stat-row">
-            <mat-icon>groups</mat-icon>
-            <span>Simulation</span>
-            <strong>{{ state.simulationPeople }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>subway</mat-icon>
-            <span>In metro</span>
-            <strong>{{ state.metroPeople }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>train</mat-icon>
-            <span>In trains</span>
-            <strong>{{ state.trainsPeople }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>platform</mat-icon>
-            <span>On platforms</span>
-            <strong>{{ allPeople(state.platformsPeople) }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>store</mat-icon>
-            <span>In stations</span>
-            <strong>{{ allPeople(state.stationsPeople) }}</strong>
-          </div>
-        </mat-card-content>
-      </mat-card>
+        <div class="panel-section">
+          <span class="panel-label">CLOCK</span>
+          <span class="panel-clock">{{ displayClock() }}</span>
+          <span class="panel-sub">×{{ state.timeMultiplier }} speed</span>
+        </div>
 
-      <mat-card appearance="outlined" class="stat-card">
-        <mat-card-header>
-          <mat-card-title>Train config</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="stat-row">
-            <mat-icon>airline_seat_recline_normal</mat-icon>
-            <span>Wagon capacity</span>
-            <strong>{{ cfg.config.wagonCapacity }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>view_week</mat-icon>
-            <span>Wagons/train</span>
-            <strong>{{ cfg.config.wagonsPerTrain }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>schedule</mat-icon>
-            <span>Trains/15 min</span>
-            <strong>{{ cfg.config.trainsPerQuarterHour }}</strong>
-          </div>
-          <div class="stat-row">
-            <mat-icon>people</mat-icon>
-            <span>Train capacity</span>
-            <strong>{{ cfg.trainCapacity }}</strong>
-          </div>
-        </mat-card-content>
-      </mat-card>
+        <div class="panel-divider"></div>
 
-      <mat-card appearance="outlined" class="stat-card">
-        <mat-card-header>
-          <mat-card-title>By line</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
+        <div class="panel-section">
+          <span class="panel-label">PEOPLE</span>
+          <div class="stat-row">
+            <span class="stat-name">Simulation</span>
+            <span class="stat-val">{{ state.simulationPeople }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">In metro</span>
+            <span class="stat-val">{{ state.metroPeople }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">In trains</span>
+            <span class="stat-val">{{ state.trainsPeople }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Platforms</span>
+            <span class="stat-val">{{ allPeople(state.platformsPeople) }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Stations</span>
+            <span class="stat-val">{{ allPeople(state.stationsPeople) }}</span>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">TRAIN CONFIG</span>
+          <div class="stat-row">
+            <span class="stat-name">Wagon cap.</span>
+            <span class="stat-val">{{ cfg.config.wagonCapacity }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Wagons/train</span>
+            <span class="stat-val">{{ cfg.config.wagonsPerTrain }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Trains/15 min</span>
+            <span class="stat-val">{{ cfg.config.trainsPerQuarterHour }}</span>
+          </div>
+          <div class="stat-row capacity">
+            <span class="stat-name">Capacity</span>
+            <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">BY LINE</span>
           @for (line of linePeople(); track line[0]) {
-          <div class="line-row">
-            <span class="line-badge" [style.background]="lineColors(line[0])">{{ line[0] }}</span>
-            <mat-progress-bar
-              mode="determinate"
-              [value]="linePercent(line[1])"
-              [style.--mdc-linear-progress-active-indicator-color]="lineColors(line[0])">
-            </mat-progress-bar>
-            <span class="line-count">{{ line[1] }}</span>
-          </div>
+            <div class="line-row">
+              <span class="line-dot" [style.background]="lineColors(line[0])"></span>
+              <span class="line-num">{{ line[0] }}</span>
+              <div class="line-bar-bg">
+                <div class="line-bar-fill"
+                     [style.width.%]="linePercent(line[1])"
+                     [style.background]="lineColors(line[0])">
+                </div>
+              </div>
+              <span class="line-count">{{ line[1] }}</span>
+            </div>
           }
-        </mat-card-content>
-      </mat-card>
-    </div>
+        </div>
+
+      </div>
     }
   </aside>
 
-  <!-- Canvas map -->
-  <main class="map-area">
-    <div class="zoom-controls">
-      <button mat-mini-fab color="primary" (click)="zoomIn()" title="Zoom in"><mat-icon>add</mat-icon></button>
-      <button mat-mini-fab color="primary" (click)="zoomOut()" title="Zoom out"><mat-icon>remove</mat-icon></button>
-      <button mat-mini-fab (click)="zoomReset()" title="Reset zoom"><mat-icon>center_focus_strong</mat-icon></button>
-    </div>
-    <div class="canvas-wrapper">
-      <canvas #canvas_trains class="canvas-trains" [width]="width" [height]="height"></canvas>
-      <canvas #canvas_stations class="canvas-stations" [width]="width" [height]="height"></canvas>
-      <canvas #canvas_paths class="canvas-paths" [width]="width" [height]="height"></canvas>
-    </div>
-  </main>
+  <!-- Zoom controls -->
+  <div class="zoom-bar">
+    <button class="zoom-btn" (click)="zoomIn()"    title="Zoom in">
+      <span class="material-icons">add</span>
+    </button>
+    <div class="zoom-sep"></div>
+    <button class="zoom-btn" (click)="zoomOut()"   title="Zoom out">
+      <span class="material-icons">remove</span>
+    </button>
+    <div class="zoom-sep"></div>
+    <button class="zoom-btn" (click)="zoomReset()" title="Reset zoom">
+      <span class="material-icons">center_focus_strong</span>
+    </button>
+  </div>
 
 </div>

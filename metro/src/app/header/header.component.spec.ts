@@ -43,6 +43,6 @@ describe('HeaderComponent', () => {
   });
 
   it('statusColor should return green for connected', () => {
-    expect(component.statusColor('connected')).toBe('#4caf50');
+    expect(component.statusColor('connected')).toBe('#3fb950');
   });
 });

@@ -1,28 +1,5 @@
-.wrapper {
+.app-main {
+  flex: 1;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.content {
-  flex: 1
-}
-
-.header {
-  position: sticky;
-  flex-shrink: 0;
-  flex-grow: 0;
-  top: 0;
-  z-index: 2;
-}
-
-.cookies {
-  position: fixed;
-  width: 100%;
-  bottom: 0;
-  z-index: 3;
-}
-
-.footer {
-  z-index: 1;
 }

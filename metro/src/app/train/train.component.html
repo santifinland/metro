@@ -6,7 +6,8 @@
       <mat-icon>{{ panelCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
     </button>
 
-    <div class="panel-content" *ngIf="!panelCollapsed">
+    @if (!panelCollapsed) {
+    <div class="panel-content">
       <mat-card appearance="outlined" class="stat-card">
         <mat-card-header>
           <mat-card-title>Simulation clock</mat-card-title>
@@ -83,7 +84,8 @@
           <mat-card-title>By line</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div class="line-row" *ngFor="let line of linePeople()">
+          @for (line of linePeople(); track line[0]) {
+          <div class="line-row">
             <span class="line-badge" [style.background]="lineColors(line[0])">{{ line[0] }}</span>
             <mat-progress-bar
               mode="determinate"
@@ -92,9 +94,11 @@
             </mat-progress-bar>
             <span class="line-count">{{ line[1] }}</span>
           </div>
+          }
         </mat-card-content>
       </mat-card>
     </div>
+    }
   </aside>
 
   <!-- Canvas map -->

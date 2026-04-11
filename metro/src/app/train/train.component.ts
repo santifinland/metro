@@ -1,5 +1,4 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -21,7 +20,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../c
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [NgFor, NgIf, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +11,7 @@ import { ConfigDialogComponent } from '../config-dialog/config-dialog.component'
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [AsyncPipe, NgIf, MatToolbarModule, MatIconModule, MatButtonModule],
+  imports: [AsyncPipe, MatToolbarModule, MatIconModule, MatButtonModule],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })

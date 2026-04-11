@@ -8,25 +8,33 @@
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Wagon capacity (people per wagon)</mat-label>
     <input matInput type="number" formControlName="wagonCapacity" min="1" max="500">
-    <mat-error *ngIf="form.get('wagonCapacity')?.invalid">Enter a value between 1 and 500</mat-error>
+    @if (form.get('wagonCapacity')?.invalid) {
+      <mat-error>Enter a value between 1 and 500</mat-error>
+    }
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Wagons per train</mat-label>
     <input matInput type="number" formControlName="wagonsPerTrain" min="1" max="20">
-    <mat-error *ngIf="form.get('wagonsPerTrain')?.invalid">Enter a value between 1 and 20</mat-error>
+    @if (form.get('wagonsPerTrain')?.invalid) {
+      <mat-error>Enter a value between 1 and 20</mat-error>
+    }
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Trains per quarter hour (per line)</mat-label>
     <input matInput type="number" formControlName="trainsPerQuarterHour" min="1" max="30">
-    <mat-error *ngIf="form.get('trainsPerQuarterHour')?.invalid">Enter a value between 1 and 30</mat-error>
+    @if (form.get('trainsPerQuarterHour')?.invalid) {
+      <mat-error>Enter a value between 1 and 30</mat-error>
+    }
   </mat-form-field>
 
-  <div class="capacity-summary" *ngIf="form.valid">
+  @if (form.valid) {
+  <div class="capacity-summary">
     <mat-icon>info</mat-icon>
     Effective train capacity: <strong>{{ trainCapacity }} people</strong>
   </div>
+  }
 
 </mat-dialog-content>
 

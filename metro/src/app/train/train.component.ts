@@ -1,5 +1,4 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -13,6 +12,7 @@ import Panzoom from '@panzoom/panzoom';
 import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
+import { SimulationConfigService } from '../services/simulation-config.service';
 import { Station } from '../station';
 import { Train } from '../train';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../constants';
@@ -20,7 +20,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../c
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [NgFor, NgIf, MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
@@ -50,6 +50,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     private readonly wsService: WebSocketService,
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
+    readonly cfg: SimulationConfigService,
   ) {
     const lines = new Set(this.metroData.paths.map(p => p.line));
     this.state.initLines(Array.from(lines));

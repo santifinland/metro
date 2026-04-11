@@ -2,8 +2,11 @@
   <mat-icon>train</mat-icon>
   <span class="title">Metro Madrid</span>
   <span class="spacer"></span>
-  <ng-container *ngIf="status$ | async as s">
+  @if (status$ | async; as s) {
     <mat-icon [style.color]="statusColor(s)">{{ statusIcon(s) }}</mat-icon>
     <span class="status-label" [style.color]="statusColor(s)">{{ s }}</span>
-  </ng-container>
+  }
+  <button mat-icon-button (click)="openConfig()" title="Simulation settings">
+    <mat-icon>settings</mat-icon>
+  </button>
 </mat-toolbar>

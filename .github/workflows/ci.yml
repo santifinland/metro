@@ -29,9 +29,13 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Test
         run: npm test -- --watch=false --browsers=ChromeHeadless
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
 
   server:
     name: WebSocket Server

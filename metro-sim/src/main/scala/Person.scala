@@ -1,160 +1,154 @@
 // Metro. SDMT
 
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
-import akka.actor.{Actor, ActorRef}
+import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
 
-import Main.actorSystem.dispatcher
-import Main.materializer.system
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+
 import messages.Messages._
 
 
-class Person(simulator: ActorRef, path: Seq[ActorRef], timeMultiplier: Double) extends Actor {
+object Person {
 
-  val WaitAtStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
-  val WaitForStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
-  val WaitAtPlatform: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
+  def apply(
+    simulator: ActorRef[SimulatorMessage],
+    path: Seq[ActorRef[_]],
+    timeMultiplier: Double
+  ): Behavior[PersonMessage] =
+    Behaviors.setup { context =>
+      val waitAtStation: FiniteDuration  = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
+      val waitForStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
+      val waitAtPlatform: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
+      val personName = context.self.path.name
 
-  var currentNode: ActorRef = path.head
-  var nextNode: Option[ActorRef] = None
+      def isStation(ref: ActorRef[_]): Boolean = ref.path.name.startsWith(Metro.StationPrefix)
 
-  override def preStart(): Unit = {
-    scribe.debug(s"Person ${self.path.name} to ${path.last.path.name} wants to enter ${path.head.path.name}")
-    scribe.debug(s"Person path: ${path}")
-    path.head ! RequestEnterStation
-  }
+      def stationRef(ref: ActorRef[_]): ActorRef[StationMessage] =
+        ref.asInstanceOf[ActorRef[StationMessage]]
+      def platformRef(ref: ActorRef[_]): ActorRef[PlatformMessage] =
+        ref.asInstanceOf[ActorRef[PlatformMessage]]
 
-  def receive: Receive = {
+      def nextNodeIndex(currentRef: ActorRef[_]): Int =
+        path.indexWhere(_.path.name == currentRef.path.name) + 1
 
-    case AcceptedEnterStation =>
-      currentNode = sender
-      scribe.debug(s"Person ${self.path.name} entered station ${currentNode.path.name}")
-      nextNode = {
-        if (path.indexOf(currentNode) == path.size - 1) {
-          scribe.debug(s"Person ${self.path.name} arrived final destination. Path: $path")
-          currentNode ! ExitStation
-          simulator ! ArrivedToDestination(currentNode)
-          None
-        } else {
-          Some(path(path.indexOf(currentNode) + 1))
+      // Start: request entry into first node (always a station)
+      scribe.debug(s"Person $personName to ${path.last.path.name} wants to enter ${path.head.path.name}")
+      stationRef(path.head) ! RequestEnterStation(context.self)
+
+      def initial(): Behavior[PersonMessage] =
+        Behaviors.receiveMessage {
+
+          case AcceptedEnterStation(station) =>
+            val idx = nextNodeIndex(station)
+            if (idx >= path.size) {
+              scribe.debug(s"Person $personName arrived final destination")
+              station ! ExitStation(personName)
+              simulator ! ArrivedToDestination(context.self)
+              Behaviors.stopped
+            } else {
+              val next = path(idx)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
+              else platformRef(next) ! RequestEnterPlatform(context.self)
+              inStation(station)
+            }
+
+          case NotAcceptedEnterStation =>
+            context.system.scheduler.scheduleOnce(waitForStation, () =>
+              stationRef(path.head) ! RequestEnterStation(context.self))(context.executionContext)
+            Behaviors.same
+
+          case _ => Behaviors.same
         }
-      }
-      if (nextNode.isDefined) {
-        scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
-        nextNode.get !
-          (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
-      }
-      context.become(inStation)
 
-    case NotAcceptedEnterStation =>
-      scribe.debug(s"Person ${self.path.name} not accepted in station ${sender.path.name}")
-      system.scheduler.scheduleOnce(WaitForStation, sender, RequestEnterStation)
+      def inStation(currentStation: ActorRef[StationMessage]): Behavior[PersonMessage] =
+        Behaviors.receiveMessage {
 
-    case Debug => scribe.debug(s"Person ${self.path.name} with $path")
+          case AcceptedEnterStation(newStation) =>
+            currentStation ! ExitStation(personName)
+            scribe.debug(s"Person $personName moved from ${currentStation.path.name} to ${newStation.path.name}")
+            val idx = nextNodeIndex(newStation)
+            if (idx >= path.size) {
+              scribe.debug(s"Person $personName arrived final destination")
+              newStation ! ExitStation(personName)
+              simulator ! ArrivedToDestination(context.self)
+              Behaviors.stopped
+            } else {
+              val next = path(idx)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
+              else platformRef(next) ! RequestEnterPlatform(context.self)
+              inStation(newStation)
+            }
 
-    case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
-  }
+          case AcceptedEnterPlatform(platform) =>
+            currentStation ! ExitStation(personName)
+            scribe.debug(s"Person $personName entered platform ${platform.path.name}")
+            inPlatform(platform, path(nextNodeIndex(platform)))
 
-  def inStation: Receive = {
+          case NotAcceptedEnterPlatform =>
+            context.system.scheduler.scheduleOnce(waitAtStation, () => {
+              val idx = nextNodeIndex(currentStation)
+              if (idx < path.size) platformRef(path(idx)) ! RequestEnterPlatform(context.self)
+            })(context.executionContext)
+            Behaviors.same
 
-    case AcceptedEnterStation =>
-      currentNode ! ExitStation
-      scribe.debug(s"Person ${self.path.name} from ${currentNode.path.name} entered ${sender.path.name}")
-      currentNode = sender
-      nextNode = {
-        if (path.indexOf(currentNode) == path.size - 1) {
-          scribe.debug(s"Person ${self.path.name} arrived final destination")
-          currentNode ! ExitStation
-          simulator ! ArrivedToDestination(sender)
-          None
-        } else {
-          Some(path(path.indexOf(currentNode) + 1))
+          case _ => Behaviors.same
         }
-      }
-      if (nextNode.isDefined) {
-        scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
-        // TODO: Wait at the station if next node is a platform with and scheduledOnce.
-        //       This simulates the walking through metro tunnels
-        nextNode.get !
-          (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
-      }
 
-    case x: AcceptedEnterPlatform =>
-      currentNode ! ExitStation
-      currentNode = x.actorRef
-      nextNode = Some(path(path.indexOf(currentNode) + 1))
-      scribe.debug(s"Person ${self.path.name} entered platform ${this.currentNode.path.name}")
-      context.become(inPlatform)
+      def inPlatform(currentPlatform: ActorRef[PlatformMessage], nextNode: ActorRef[_]): Behavior[PersonMessage] =
+        Behaviors.receiveMessage {
 
-    case NotAcceptedEnterPlatform =>
-      scribe.debug(s"Person ${self.path.name} not accepted in platform ${sender.path.name}")
-      system.scheduler.scheduleOnce(WaitAtStation, sender, RequestEnterPlatform)
+          case TrainInPlatform(train) =>
+            scribe.debug(s"Train ${train.path.name} available at ${currentPlatform.path.name}")
+            train ! RequestEnterTrain(context.self)
+            Behaviors.same
 
-    case Debug => scribe.info(s"Person ${self.path.name} with $path")
-  }
+          case AcceptedEnterTrain(platform) =>
+            scribe.debug(s"Person $personName inside train at ${platform.path.name}")
+            platform ! ExitPlatform(personName)
+            inTrain(currentPlatform)
 
-  def inPlatform: Receive = {
+          case NotAcceptedEnterTrain =>
+            scribe.debug(s"Person $personName not accepted in train")
+            // retry — the train will re-check capacity
+            Behaviors.same
 
-    case x: TrainInPlatform =>
-      scribe.debug(
-        s"Train ${x.actorRef.path.name} available for ${self.path.name} at platform ${sender.path.name}")
-      x.actorRef ! RequestEnterTrain(self)
+          case AcceptedEnterStation(station) =>
+            currentPlatform ! ExitPlatform(personName)
+            val idx = nextNodeIndex(station)
+            if (idx >= path.size) {
+              station ! ExitStation(personName)
+              simulator ! ArrivedToDestination(context.self)
+              Behaviors.stopped
+            } else {
+              val next = path(idx)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
+              else platformRef(next) ! RequestEnterPlatform(context.self)
+              inStation(station)
+            }
 
-    case x: AcceptedEnterTrain =>
-      scribe.debug(
-        s"Person ${self.path.name} inside Train ${sender.path.name} at platform ${x.actorRef.path.name}")
-      x.actorRef ! ExitPlatform
-      context.become(inTrain)
-
-    case NotAcceptedEnterTrain =>
-      scribe.debug(s"Person ${self.path.name} not accepted in Train")
-      sender ! RequestEnterTrain(self)
-
-    case AcceptedEnterStation =>
-      currentNode ! ExitPlatform
-      currentNode = sender
-      nextNode = {
-        if (path.indexOf(currentNode) == path.size - 1) {
-          scribe.debug(s"Person ${self.path.name} arrived final destination")
-          currentNode ! ExitStation
-          simulator ! ArrivedToDestination(currentNode)
-          None
-        } else {
-          Some(path(path.indexOf(currentNode) + 1))
+          case _ => Behaviors.same
         }
-      }
-      if (nextNode.isDefined) {
-        scribe.debug(s"Person ${self.path.name} now has next node ${nextNode.get.path.name}")
-        nextNode.get !
-          (if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) RequestEnterStation else RequestEnterPlatform)
-      }
-      context.become(inStation)
 
-    case Debug => scribe.info(s"Person ${self.path.name} with $path")
+      def inTrain(lastPlatform: ActorRef[PlatformMessage]): Behavior[PersonMessage] =
+        Behaviors.receiveMessage {
 
-    case _ => scribe.warn(s"Person ${self.path.name} received unknown message")
-  }
+          case ArrivedAtPlatformToPeople(platform) =>
+            scribe.debug(s"Person $personName at platform ${platform.path.name}")
+            val idx = nextNodeIndex(platform)
+            if (idx < path.size && isStation(path(idx))) {
+              // Next stop is a station — disembark
+              scribe.debug(s"Person $personName disembarking at ${platform.path.name}")
+              platform ! EnteredPlatformFromTrain(context.self)
+              stationRef(path(idx)) ! RequestEnterStation(context.self)
+              inPlatform(platform, path(idx))
+            } else {
+              // Stay on train
+              Behaviors.same
+            }
 
-  def inTrain: Receive = {
+          case _ => Behaviors.same
+        }
 
-    case x: ArrivedAtPlatformToPeople =>
-      currentNode = x.actorRef
-      nextNode = Some(path(path.indexOf(currentNode) + 1))
-      scribe.debug(
-        s"Person ${self.path.name} inside Train ${sender.path.name} at Platform ${x.actorRef.path.name}")
-      if (nextNode.get.path.name.startsWith(Metro.StationPrefix)) {  // Person has arrived to intermediate node
-        scribe.debug(s"Person ${self.path.name} to ${nextNode.get.path.name}  stopping at ${x.actorRef.path.name}")
-        context.become(inPlatform)
-        sender ! ExitTrain
-        currentNode ! EnteredPlatformFromTrain
-        nextNode.get ! RequestEnterStation
-      } else {
-        scribe.debug(s"Person ${self.path.name} to ${nextNode.get.path.name} not stopping at ${x.actorRef.path.name}")
-      }
-
-    case Debug => scribe.info(s"Person ${self.path.name} with $path")
-
-    case x => scribe.warn(s"Person ${self.path.name} received unknown message $x")
-  }
+      initial()
+    }
 }
-
-

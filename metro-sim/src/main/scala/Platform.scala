@@ -2,92 +2,130 @@
 
 import scala.concurrent.duration.DurationInt
 
-import akka.actor.{Actor, ActorRef}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
-import Main.actorSystem.{dispatcher, scheduler}
 import messages.Messages._
 
 
-class Platform(line: ActorRef, name: String) extends Actor {
+object Platform {
 
-  // Key is name of Person. Value is actor, coming from train flag tuple
-  val people: scala.collection.mutable.Map[String, (ActorRef, Boolean)] =
-    scala.collection.mutable.Map[String, (ActorRef, Boolean)]()
-  var next: Option[ActorRef] = None
-  val MAX_CAPACITY = 500
+  private val MAX_CAPACITY = 500
 
-  def receive: Receive = {
+  def apply(line: ActorRef[LineMessage], name: String): Behavior[PlatformMessage] =
+    Behaviors.setup { _ => waitingForNext(line, name) }
 
-    case x: NextPlatform =>
-      this.next = Some(x.actorRef)
-      scribe.debug(s"Setting platform ${self.path.name} to empty mode. Next actor ${x.actorRef.path.name}")
-      context.become(empty)
-      scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => line ! PeopleInPlatform(self, people.size))
-    case _ => scribe.warn("Next platform not set yet")
-  }
+  private def waitingForNext(line: ActorRef[LineMessage], name: String): Behavior[PlatformMessage] =
+    Behaviors.receiveMessage {
+      case SetNextPlatform(next) =>
+        scribe.debug(s"Setting platform $name to empty mode. Next: ${next.path.name}")
+        Behaviors.setup { context =>
+          Behaviors.withTimers { timers =>
+            timers.startTimerWithFixedDelay("stats-tick", PlatformStatsTick, 3.seconds, 1.second)
+            val people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)] =
+              scala.collection.mutable.Map.empty
+            empty(context.self, line, name, next, people)
+          }
+        }
+      case _ =>
+        scribe.warn(s"Platform $name: next not set yet")
+        Behaviors.same
+    }
 
-  def full: Receive = {
+  private def empty(
+    self: ActorRef[PlatformMessage],
+    line: ActorRef[LineMessage],
+    name: String,
+    next: ActorRef[PlatformMessage],
+    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)]
+  ): Behavior[PlatformMessage] =
+    Behaviors.receiveMessage {
 
-    case RequestEnterPlatform =>
-      if (people.size < MAX_CAPACITY) {
-        this.people.addOne(sender.path.name, (sender, true))
-        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterPlatform(self)
-      } else {
-        scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterPlatform
-      }
+      case PlatformStatsTick =>
+        line ! PeopleInPlatform(name, people.size)
+        Behaviors.same
 
-    case ReservePlatform =>
-      scribe.debug(s"Platform $name is not Free!")
-      sender ! FullPlatform(self)
+      case RequestEnterPlatform(person) =>
+        if (people.size < MAX_CAPACITY) {
+          people(person.path.name) = (person, true)
+          scribe.debug(s"Platform $name with ${people.size} people")
+          person ! AcceptedEnterPlatform(self)
+        } else {
+          scribe.warn(s"Platform $name over capacity")
+          person ! NotAcceptedEnterPlatform
+        }
+        Behaviors.same
 
-    case LeavingPlatform =>
-      context.become(empty)
-      scribe.debug(s"Platform $name freed by ${sender.path.name}!")
+      case ReservePlatform(train) =>
+        scribe.debug(s"Platform $name reserved by ${train.path.name}!")
+        train ! PlatformReserved(self)
+        full(self, line, name, next, people)
 
-    case GetNextPlatform => sender ! NextPlatform(this.next.get)
+      case ExitPlatform(personId) =>
+        people.remove(personId)
+        Behaviors.same
 
-    case ArrivedAtPlatform =>
-      scribe.debug(s"Train ${sender.path.name} arrived to platform $name")
-      this.people.foreach { case(_, (p, waiting)) => if (waiting) p ! TrainInPlatform(sender) }
+      case EnteredPlatformFromTrain(person) =>
+        people(person.path.name) = (person, false)
+        Behaviors.same
 
-    case ExitPlatform =>
-      people.remove(sender.path.name)
+      case _ =>
+        scribe.warn(s"Empty platform $name received unexpected message")
+        Behaviors.same
+    }
 
-    case EnteredPlatformFromTrain =>
-      this.people.addOne(sender.path.name, (sender, false))
+  private def full(
+    self: ActorRef[PlatformMessage],
+    line: ActorRef[LineMessage],
+    name: String,
+    next: ActorRef[PlatformMessage],
+    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)]
+  ): Behavior[PlatformMessage] =
+    Behaviors.receiveMessage {
 
-    case x: Any =>
-      scribe.error(s"Full platform does not understand $x from ${sender.path.name}")
-      sender ! Debug
-  }
+      case PlatformStatsTick =>
+        line ! PeopleInPlatform(name, people.size)
+        Behaviors.same
 
-  def empty: Receive = {
+      case RequestEnterPlatform(person) =>
+        if (people.size < MAX_CAPACITY) {
+          people(person.path.name) = (person, true)
+          scribe.debug(s"Platform $name with ${people.size} people")
+          person ! AcceptedEnterPlatform(self)
+        } else {
+          scribe.warn(s"Platform $name over capacity")
+          person ! NotAcceptedEnterPlatform
+        }
+        Behaviors.same
 
-    case RequestEnterPlatform =>
-      if (people.size < MAX_CAPACITY) {
-        this.people.addOne(sender.path.name, (sender, true))
-        scribe.debug(s"""Platform $name with ${this.people.size} people after adding""")
-        sender ! AcceptedEnterPlatform(self)
-      } else {
-        scribe.warn(s"""Platform $name over capacity""")
-        sender ! NotAcceptedEnterPlatform
-      }
+      case ReservePlatform(train) =>
+        scribe.debug(s"Platform $name is not free!")
+        train ! FullPlatform(self)
+        Behaviors.same
 
-    case ReservePlatform =>
-      scribe.debug(s"Platform $name reserved by ${sender.path.name}!")
-      sender ! PlatformReserved(self)
-      context.become(full)
+      case LeavingPlatform =>
+        scribe.debug(s"Platform $name freed!")
+        empty(self, line, name, next, people)
 
-    case ExitPlatform =>
-      people.remove(sender.path.name)
+      case GetNextPlatform(train) =>
+        train ! NextPlatformForTrain(next)
+        Behaviors.same
 
-    case EnteredPlatformFromTrain =>
-      this.people.addOne(sender.path.name, (sender, false))
+      case ArrivedAtPlatform(train) =>
+        scribe.debug(s"Train ${train.path.name} arrived to platform $name")
+        people.foreach { case (_, (p, waiting)) => if (waiting) p ! TrainInPlatform(train) }
+        Behaviors.same
 
-    case x: Any =>
-      scribe.warn(s"Empty Platform does not understand message $x from ${sender.path.name}")
-      sender ! Debug
-  }
+      case ExitPlatform(personId) =>
+        people.remove(personId)
+        Behaviors.same
+
+      case EnteredPlatformFromTrain(person) =>
+        people(person.path.name) = (person, false)
+        Behaviors.same
+
+      case _ =>
+        scribe.error(s"Full platform $name received unexpected message")
+        Behaviors.same
+    }
 }

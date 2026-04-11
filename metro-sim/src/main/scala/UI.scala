@@ -2,63 +2,62 @@
 
 import scala.concurrent.duration.DurationInt
 
-import Main.actorSystem.{dispatcher, scheduler}
-import akka.actor.Actor
-import utils.WebSocket
+import org.apache.pekko.actor.typed.Behavior
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+
 import messages.Messages._
+import utils.WebSocket
 
 
-class UI extends Actor {
+object UI {
 
-  val trains: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map[String, Int]()
+  def apply(): Behavior[UIMessage] =
+    Behaviors.withTimers { timers =>
+      timers.startTimerWithFixedDelay("trains-tick", UITrainsTick, 3.seconds, 1.second)
 
-  override def preStart(): Unit = {
-    scheduler.scheduleAtFixedRate(3.seconds, 1.seconds)(() => {
-      val trainsPeople = computePeople(this.trains)
-      WebSocket.sendText(s"""{"message": "peopleInTrains", "people": ${trainsPeople}}""")
-    })
-  }
+      val trains: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map.empty
 
-  def receive: Receive = {
+      Behaviors.receiveMessage {
 
-    case x: PeopleInLinePlatforms =>
-      scribe.debug(s"""There are ${x.people} people in line ${sender.path.name} platforms""")
-      WebSocket.sendText(
-        s"""{"message": "peopleInLinePlatforms", "line": "${sender.path.name}", "people": ${x.people}}""")
+        case UITrainsTick =>
+          val trainsPeople = trains.values.sum
+          WebSocket.sendText(s"""{"message": "peopleInTrains", "people": $trainsPeople}""")
+          Behaviors.same
 
-    case x: PeopleInLineStations =>
-      scribe.debug(s"""There are ${x.people} people in line ${sender.path.name} stations""")
-      WebSocket.sendText(
-        s"""{"message": "peopleInLineStations", "line": "${sender.path.name}", "people": ${x.people}}""")
+        case PeopleInTrain(trainId, people) =>
+          scribe.debug(s"There are $people people in train $trainId")
+          trains(trainId) = people
+          Behaviors.same
 
-    case x: PlatformOvercrowded =>
-      scribe.debug(s"""There are ${x.people} people in platform ${sender.path.name}""")
-      WebSocket.sendText(
-        s"""{"message": "platformOvercrowded", "platform": "${x.actorRef.path.name}", "people": ${x.people}}""")
+        case PeopleInLinePlatforms(lineId, people) =>
+          scribe.debug(s"There are $people people in line $lineId platforms")
+          WebSocket.sendText(s"""{"message": "peopleInLinePlatforms", "line": "$lineId", "people": $people}""")
+          Behaviors.same
 
-    case x: StationOvercrowded =>
-      scribe.debug(s"""There are ${x.people} people in platform ${sender.path.name}""")
-      WebSocket.sendText(
-        s"""{"message": "stationOvercrowded", "station": "${x.actorRef.path.name}", "people": ${x.people}}""")
+        case PeopleInLineStations(lineId, people) =>
+          scribe.debug(s"There are $people people in line $lineId stations")
+          WebSocket.sendText(s"""{"message": "peopleInLineStations", "line": "$lineId", "people": $people}""")
+          Behaviors.same
 
-    case x: PeopleInTrain =>
-      scribe.debug(s"""There are ${x.people} people in platform ${sender.path.name}""")
-      trains(sender.path.name) = x.people
+        case PlatformOvercrowded(platformId, people) =>
+          scribe.debug(s"There are $people people in platform $platformId")
+          WebSocket.sendText(s"""{"message": "platformOvercrowded", "platform": "$platformId", "people": $people}""")
+          Behaviors.same
 
-    case x: PeopleInMetro =>
-      scribe.debug(s"""There are ${x.people} people in Metro""")
-      WebSocket.sendText(
-        s"""{"message": "peopleInMetro", "people": ${x.people}}""")
+        case StationOvercrowded(stationId, people) =>
+          scribe.debug(s"There are $people people in station $stationId")
+          WebSocket.sendText(s"""{"message": "stationOvercrowded", "station": "$stationId", "people": $people}""")
+          Behaviors.same
 
-    case x: PeopleInSimulation =>
-      scribe.debug(s"""Simulation handled ${x.people}""")
-      WebSocket.sendText(
-        s"""{"message": "peopleInSimulation", "people": ${x.people}}""")
+        case PeopleInMetro(people) =>
+          scribe.debug(s"There are $people people in Metro")
+          WebSocket.sendText(s"""{"message": "peopleInMetro", "people": $people}""")
+          Behaviors.same
 
-    case _ => scribe.warn("Message not understood")
-  }
-
-  def computePeople(recipient: scala.collection.mutable.Map[String, Int]): Int = {
-    recipient.map { case (_, people: Int) => people }.sum
-  }
+        case PeopleInSimulation(people) =>
+          scribe.debug(s"Simulation handled $people people")
+          WebSocket.sendText(s"""{"message": "peopleInSimulation", "people": $people}""")
+          Behaviors.same
+      }
+    }
 }

@@ -1,12 +1,14 @@
-<mat-toolbar color="primary">
-  <mat-icon>train</mat-icon>
-  <span class="title">Metro Madrid</span>
-  <span class="spacer"></span>
-  @if (status$ | async; as s) {
-    <mat-icon [style.color]="statusColor(s)">{{ statusIcon(s) }}</mat-icon>
-    <span class="status-label" [style.color]="statusColor(s)">{{ s }}</span>
-  }
-  <button mat-icon-button (click)="openConfig()" title="Simulation settings">
-    <mat-icon>settings</mat-icon>
-  </button>
-</mat-toolbar>
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="material-icons topbar-icon">train</span>
+    <span class="topbar-title">Metro Madrid</span>
+  </div>
+  <div class="topbar-right">
+    @if (status$ | async; as s) {
+      <span class="status-dot" [class]="s" [title]="s"></span>
+    }
+    <button class="icon-btn" (click)="openConfig()" title="Simulation settings">
+      <span class="material-icons">settings</span>
+    </button>
+  </div>
+</header>

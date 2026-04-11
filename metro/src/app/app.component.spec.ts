@@ -22,10 +22,10 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('metro');
   });
 
-  it('should render the wrapper', () => {
+  it('should render main content area', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.wrapper')).toBeTruthy();
+    expect(compiled.querySelector('.app-main')).toBeTruthy();
   });
 });

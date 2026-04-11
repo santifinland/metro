@@ -2,11 +2,6 @@ import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@ang
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-
 import Panzoom from '@panzoom/panzoom';
 
 import { WebSocketService } from '../services/websocket.service';
@@ -20,12 +15,13 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../c
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule],
+  imports: [],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
 export class TrainComponent implements AfterViewInit, OnDestroy {
 
+  @ViewChild('canvasContainer', { static: false, read: ElementRef }) canvasContainer!: ElementRef;
   @ViewChild('canvas_stations', { static: false, read: ElementRef }) canvasStations!: ElementRef;
   @ViewChild('canvas_paths', { static: false, read: ElementRef }) canvasPaths!: ElementRef;
   @ViewChild('canvas_trains', { static: false, read: ElementRef }) canvasTrains!: ElementRef;
@@ -100,22 +96,43 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   private panAndZoom(): void {
-    const opts = { maxScale: 10, minScale: 0.2, canvas: true, step: 0.3 };
-    const panzoomStations = Panzoom(this.canvasStations.nativeElement, opts);
-    const panzoom = Panzoom(this.canvasPaths.nativeElement, opts);
-    const panzoomTrains = Panzoom(this.canvasTrains.nativeElement, opts);
-    this.panzoomInstances = [panzoomStations, panzoom, panzoomTrains];
+    const container: HTMLElement = this.canvasContainer.nativeElement;
+    const W = container.clientWidth;
+    const H = container.clientHeight;
+    const fitScale = Math.min(W / CANVAS_WIDTH, H / CANVAS_HEIGHT);
 
-    this.canvasTrains.nativeElement.parentElement.addEventListener('wheel', (event: any) => {
-      if (!event.shiftKey) return;
-      const pan = panzoomTrains.getPan();
-      panzoomStations.zoomWithWheel(event);
-      panzoomTrains.zoomWithWheel(event);
-      panzoom.zoomWithWheel(event);
-      panzoom.pan(pan.x, pan.y);
-      panzoomStations.pan(pan.x, pan.y);
-      panzoomTrains.pan(pan.x, pan.y);
+    // Transform is: scale(s) translate(x, y) with origin 50% 50%.
+    // To center canvas center (OX,OY) at viewport (W/2,H/2): x = (W/2 - OX) / s
+    const startX = (W / 2 - CANVAS_WIDTH / 2) / fitScale;
+    const startY = (H / 2 - CANVAS_HEIGHT / 2) / fitScale;
+
+    // "Driver" instance — owns all interaction (canvas:true binds to parent)
+    const driver = Panzoom(this.canvasTrains.nativeElement, {
+      maxScale: 10, minScale: 0.05, canvas: true, step: 0.3,
+      startScale: fitScale, startX, startY,
     });
+    // Follower instances — canvas:false so they do NOT attach their own listeners
+    const followers = [
+      Panzoom(this.canvasPaths.nativeElement,    { canvas: false, startScale: fitScale, startX, startY }),
+      Panzoom(this.canvasStations.nativeElement,  { canvas: false, startScale: fitScale, startX, startY }),
+    ];
+    this.panzoomInstances = [driver, ...followers];
+
+    // Mirror every pan/zoom from driver to followers
+    const sync = (e: any) => {
+      const { x, y, scale } = e.detail;
+      followers.forEach(f => {
+        f.zoom(scale, { animate: false });
+        f.pan(x, y, { animate: false });
+      });
+    };
+    this.canvasTrains.nativeElement.addEventListener('panzoompan',  sync);
+    this.canvasTrains.nativeElement.addEventListener('panzoomzoom', sync);
+
+    // Wheel zoom (driver handles it; sync fires automatically via events above)
+    container.addEventListener('wheel', (event: any) => {
+      driver.zoomWithWheel(event);
+    }, { passive: false });
   }
 
   zoomIn(): void {
@@ -127,7 +144,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   zoomReset(): void {
-    this.panzoomInstances.forEach(p => p.reset());
+    const container: HTMLElement = this.canvasContainer.nativeElement;
+    const W = container.clientWidth;
+    const H = container.clientHeight;
+    const fitScale = Math.min(W / CANVAS_WIDTH, H / CANVAS_HEIGHT);
+    const x = (W / 2 - CANVAS_WIDTH / 2) / fitScale;
+    const y = (H / 2 - CANVAS_HEIGHT / 2) / fitScale;
+    this.panzoomInstances.forEach(p => p.zoom(fitScale, { animate: true }));
+    this.panzoomInstances.forEach(p => p.pan(x, y, { animate: true }));
   }
 
   private drawStations(ctx: CanvasRenderingContext2D, stations: Station[]): void {

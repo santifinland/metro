@@ -1,43 +1,186 @@
-.metro {
+.layout {
   display: flex;
-  flex-direction: column;
+  height: calc(100vh - 64px - 45px); /* minus header + footer */
+  overflow: hidden;
+  background: #121212;
+}
+
+/* Stats panel */
+.stats-panel {
+  position: relative;
+  width: 260px;
+  min-width: 260px;
+  background: #1e1e1e;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+  transition: width 0.2s ease, min-width 0.2s ease;
+  flex-shrink: 0;
+}
+
+.stats-panel.collapsed {
+  width: 40px;
+  min-width: 40px;
+}
+
+.panel-toggle {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: #2a2a2a;
+  border: none;
+  border-bottom: 1px solid #333;
+  color: #aaa;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  background: #CCC;
-}
-
-.canvas-paths {
-  margin-top: -2000px;
-  z-index: 0;
-}
-
-.canvas-trains {
-  z-index: 2;
-}
-
-.canvas-stations {
-  margin-top: -2000px;
   z-index: 1;
 }
 
-.line-people {
+.panel-toggle:hover {
+  background: #333;
+}
+
+.panel-content {
+  padding: 12px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.card {
-  width: 100px;
-  height: 100px;
-  text-align: center;
-  background: #DDD;
-  border-radius: 10px;
+.stat-card {
+  background: #2a2a2a !important;
 }
 
-.card-content {
-  border-radius: 5px;
+.clock {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 4px 0;
+  color: #90caf9;
 }
 
-.card-header {
-  text-transform: uppercase;
-  font-size: 20px;
+.multiplier {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 0.85rem;
+}
+
+.stat-row mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #888;
+}
+
+.stat-row span {
+  flex: 1;
+  color: #bbb;
+}
+
+.stat-row strong {
+  color: #e0e0e0;
+}
+
+.line-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.line-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+mat-progress-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.line-count {
+  font-size: 0.75rem;
+  color: #888;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Map area */
+.map-area {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.canvas-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1a1a2e;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.canvas-paths {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.canvas-stations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.canvas-trains {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+/* Responsive: collapse panel on small screens */
+@media (max-width: 768px) {
+  .stats-panel {
+    width: 40px;
+    min-width: 40px;
+  }
+
+  .stats-panel.collapsed {
+    width: 40px;
+    min-width: 40px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .stats-panel {
+    width: 200px;
+    min-width: 200px;
+  }
 }

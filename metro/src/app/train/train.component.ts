@@ -1,7 +1,11 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import Panzoom from '@panzoom/panzoom';
 
@@ -15,7 +19,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT, REDRAW_PERIOD_MS, LINE_COLORS } from '../c
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [NgFor],
+  imports: [NgFor, NgIf, MatCardModule, MatIconModule, MatProgressBarModule],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
@@ -32,6 +36,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   readonly width = CANVAS_WIDTH;
   readonly height = CANVAS_HEIGHT;
 
+  panelCollapsed = false;
+
   private time = 6 * 3600 * 1000;
   private lastClockAdvance = 0;
   private rafId = 0;
@@ -40,7 +46,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly wsService: WebSocketService,
-    private readonly metroData: MetroDataService,
+    readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
   ) {
     const lines = new Set(this.metroData.paths.map(p => p.line));
@@ -147,14 +153,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.time += REDRAW_PERIOD_MS / this.state.timeMultiplier;
   }
 
-  // --- Template-facing helpers ---
-
-  get simulationPeople(): number { return this.state.simulationPeople; }
-  get metroPeople(): number { return this.state.metroPeople; }
-  get trainsPeople(): number { return this.state.trainsPeople; }
-  get platformsPeople(): Map<string, number> { return this.state.platformsPeople; }
-  get stationsPeople(): Map<string, number> { return this.state.stationsPeople; }
-
   displayClock(): string {
     return new Date(this.time).toLocaleTimeString('en-GB', {
       timeZone: 'Etc/UTC',
@@ -173,6 +171,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   allPeople(recipient: Map<string, number>): number {
     const values = Array.from(recipient.values());
     return values.length === 0 ? 0 : values.reduce((p, c) => p + c);
+  }
+
+  linePercent(count: number): number {
+    const max = Math.max(...Array.from(this.state.platformsPeople.values()), 1);
+    return Math.round((count / max) * 100);
   }
 
   computeCheckPeople(): number {

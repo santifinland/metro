@@ -1,0 +1,692 @@
+{
+  "_description": "Per-line: origin/destination stations, journey time, trains in service per time slot. Derived from CRTM GTFS weekday trips+frequencies.",
+  "_source": "CRTM GTFS 20250527",
+  "_updated": "2026-04-12",
+  "_notes": "trains_in_service = ceil(round_trip_time / headway). Round trip = 2×journey + 4 min turnaround. Direction 0 only.",
+  "lines": {
+    "1": {
+      "origin": "PINAR DE CHAMARTIN",
+      "destination": "VALDECARROS",
+      "journey_time_s": 3422,
+      "journey_time_min": 57.0,
+      "round_trip_s": 7084,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 510,
+          "headway_min": 8.5,
+          "trains_in_service": 14
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 30
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 210,
+          "headway_min": 3.5,
+          "trains_in_service": 34
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "11:00-14:00",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 21
+        },
+        {
+          "period": "14:00-18:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "18:00-20:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 26
+        },
+        {
+          "period": "20:00-21:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "21:00-22:00",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 21
+        },
+        {
+          "period": "22:00-23:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 16
+        },
+        {
+          "period": "23:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 16
+        }
+      ]
+    },
+    "2": {
+      "origin": "LAS ROSAS",
+      "destination": "CUATRO CAMINOS",
+      "journey_time_s": 1987,
+      "journey_time_min": 33.1,
+      "round_trip_s": 4214,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 5
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 9
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 16
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 18
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 16
+        },
+        {
+          "period": "11:00-14:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 14
+        },
+        {
+          "period": "14:00-20:00",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 18
+        },
+        {
+          "period": "20:00-21:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 16
+        },
+        {
+          "period": "21:00-22:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 14
+        },
+        {
+          "period": "22:00-23:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 9
+        },
+        {
+          "period": "23:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 9
+        }
+      ]
+    },
+    "4": {
+      "origin": "ARGÜELLES",
+      "destination": "PINAR DE CHAMARTIN",
+      "journey_time_s": 2297,
+      "journey_time_min": 38.3,
+      "round_trip_s": 4834,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 5
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 11
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 20
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 210,
+          "headway_min": 3.5,
+          "trains_in_service": 23
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 20
+        },
+        {
+          "period": "11:00-14:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 18
+        },
+        {
+          "period": "14:00-18:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 18
+        },
+        {
+          "period": "18:00-20:00",
+          "headway_s": 210,
+          "headway_min": 3.5,
+          "trains_in_service": 23
+        },
+        {
+          "period": "20:00-22:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 16
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 11
+        }
+      ]
+    },
+    "5": {
+      "origin": "ALAMEDA DE OSUNA",
+      "destination": "CASA DE CAMPO",
+      "journey_time_s": 3459,
+      "journey_time_min": 57.6,
+      "round_trip_s": 7158,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 540,
+          "headway_min": 9.0,
+          "trains_in_service": 13
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 27
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "11:00-18:00",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 22
+        },
+        {
+          "period": "18:00-20:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 24
+        },
+        {
+          "period": "20:00-22:00",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 22
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 16
+        }
+      ]
+    },
+    "6": {
+      "origin": "LAGUNA",
+      "destination": "LAGUNA",
+      "journey_time_s": 3293,
+      "journey_time_min": 54.9,
+      "round_trip_s": 6826,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 540,
+          "headway_min": 9.0,
+          "trains_in_service": 13
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 28
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 210,
+          "headway_min": 3.5,
+          "trains_in_service": 33
+        },
+        {
+          "period": "09:30-22:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 23
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 15
+        }
+      ]
+    },
+    "7": {
+      "origin": "HOSPITAL DEL HENARES",
+      "destination": "ESTADIO METROPOLITANO",
+      "journey_time_s": 946,
+      "journey_time_min": 15.8,
+      "round_trip_s": 2132,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 2
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 540,
+          "headway_min": 9.0,
+          "trains_in_service": 4
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 6
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 6
+        },
+        {
+          "period": "09:30-22:00",
+          "headway_s": 390,
+          "headway_min": 6.5,
+          "trains_in_service": 5
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 5
+        }
+      ]
+    },
+    "8": {
+      "origin": "NUEVOS MINISTERIOS",
+      "destination": "AEROPUERTO T-4",
+      "journey_time_s": 1288,
+      "journey_time_min": 21.5,
+      "round_trip_s": 2816,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 3
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 510,
+          "headway_min": 8.5,
+          "trains_in_service": 6
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 9
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 12
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 10
+        },
+        {
+          "period": "11:00-14:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "14:00-18:00",
+          "headway_s": 270,
+          "headway_min": 4.5,
+          "trains_in_service": 10
+        },
+        {
+          "period": "18:00-20:00",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 12
+        },
+        {
+          "period": "20:00-22:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 6
+        }
+      ]
+    },
+    "9": {
+      "origin": "PUERTA DE ARGANDA",
+      "destination": "ARGANDA DEL REY",
+      "journey_time_s": 1258,
+      "journey_time_min": 21.0,
+      "round_trip_s": 2756,
+      "service_slots": [
+        {
+          "period": "06:05-07:00",
+          "headway_s": 660,
+          "headway_min": 11.0,
+          "trains_in_service": 4
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 420,
+          "headway_min": 7.0,
+          "trains_in_service": 7
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 390,
+          "headway_min": 6.5,
+          "trains_in_service": 7
+        },
+        {
+          "period": "09:30-10:00",
+          "headway_s": 630,
+          "headway_min": 10.5,
+          "trains_in_service": 4
+        },
+        {
+          "period": "10:00-14:00",
+          "headway_s": 630,
+          "headway_min": 10.5,
+          "trains_in_service": 4
+        },
+        {
+          "period": "14:00-20:00",
+          "headway_s": 510,
+          "headway_min": 8.5,
+          "trains_in_service": 5
+        },
+        {
+          "period": "20:00-23:00",
+          "headway_s": 630,
+          "headway_min": 10.5,
+          "trains_in_service": 4
+        },
+        {
+          "period": "23:00-26:00",
+          "headway_s": 1350,
+          "headway_min": 22.5,
+          "trains_in_service": 2
+        }
+      ]
+    },
+    "10": {
+      "origin": "HOSPITAL INFANTA SOFIA",
+      "destination": "TRES OLIVOS",
+      "journey_time_s": 1477,
+      "journey_time_min": 24.6,
+      "round_trip_s": 3194,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 4
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 510,
+          "headway_min": 8.5,
+          "trains_in_service": 6
+        },
+        {
+          "period": "07:00-07:30",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 11
+        },
+        {
+          "period": "07:30-09:30",
+          "headway_s": 240,
+          "headway_min": 4.0,
+          "trains_in_service": 13
+        },
+        {
+          "period": "09:30-11:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 9
+        },
+        {
+          "period": "11:00-18:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 9
+        },
+        {
+          "period": "18:00-20:00",
+          "headway_s": 300,
+          "headway_min": 5.0,
+          "trains_in_service": 11
+        },
+        {
+          "period": "20:00-21:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 9
+        },
+        {
+          "period": "21:00-22:00",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 9
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 7
+        }
+      ]
+    },
+    "11": {
+      "origin": "PLAZA ELIPTICA",
+      "destination": "LA FORTUNA",
+      "journey_time_s": 932,
+      "journey_time_min": 15.5,
+      "round_trip_s": 2104,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 2
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 630,
+          "headway_min": 10.5,
+          "trains_in_service": 3
+        },
+        {
+          "period": "07:00-09:30",
+          "headway_s": 360,
+          "headway_min": 6.0,
+          "trains_in_service": 6
+        },
+        {
+          "period": "09:30-10:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 5
+        },
+        {
+          "period": "10:00-22:00",
+          "headway_s": 420,
+          "headway_min": 7.0,
+          "trains_in_service": 5
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 5
+        }
+      ]
+    },
+    "12": {
+      "origin": "PUERTA DEL SUR",
+      "destination": "PUERTA DEL SUR",
+      "journey_time_s": 3605,
+      "journey_time_min": 60.1,
+      "round_trip_s": 7450,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 8
+        },
+        {
+          "period": "06:05-07:00",
+          "headway_s": 540,
+          "headway_min": 9.0,
+          "trains_in_service": 14
+        },
+        {
+          "period": "07:00-09:30",
+          "headway_s": 390,
+          "headway_min": 6.5,
+          "trains_in_service": 19
+        },
+        {
+          "period": "09:30-10:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 17
+        },
+        {
+          "period": "10:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 17
+        }
+      ]
+    },
+    "R": {
+      "origin": "OPERA",
+      "destination": "PRINCIPE PIO",
+      "journey_time_s": 185,
+      "journey_time_min": 3.1,
+      "round_trip_s": 610,
+      "service_slots": [
+        {
+          "period": "00:00-02:00",
+          "headway_s": 900,
+          "headway_min": 15.0,
+          "trains_in_service": 1
+        },
+        {
+          "period": "06:05-22:00",
+          "headway_s": 330,
+          "headway_min": 5.5,
+          "trains_in_service": 2
+        },
+        {
+          "period": "22:00-24:00",
+          "headway_s": 450,
+          "headway_min": 7.5,
+          "trains_in_service": 1
+        }
+      ]
+    }
+  }
+}

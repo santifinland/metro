@@ -1,0 +1,1541 @@
+{
+  "_description": "Madrid Metro headways (train frequency) by line, day type, and time slot. Source: CRTM GTFS feed, version 20250527.",
+  "_source": "https://crtm.maps.arcgis.com/sharing/rest/content/items/5c7f2951962540d69ffe8f640d94c246/data",
+  "_license": "CC-BY-SA — Consorcio Regional de Transportes de Madrid",
+  "_updated": "2026-04-12",
+  "_notes": "headway_secs = seconds between trains. Direction 0 only (direction 1 is identical). Friday has distinct service pattern from Mon-Thu.",
+  "lines": {
+    "1": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "14:00:00-18:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "20:00:00-21:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-01:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "01:00:00-02:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "14:00:00-16:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "16:00:00-20:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "20:00:00-21:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "01:00:00-02:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "10:00:00-13:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "13:00:00-18:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "18:00:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-25:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "2": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "14:00:00-20:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "20:00:00-21:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "01:00:00-02:00:00": {
+          "headway_secs": 600,
+          "headway_min": 10.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "14:00:00-22:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "23:00:00-25:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        }
+      },
+      "saturday": {
+        "00:00:00-01:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "01:00:00-02:00:00": {
+          "headway_secs": 600,
+          "headway_min": 10.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-16:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "16:00:00-22:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-16:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "16:00:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "4": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "14:00:00-18:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 750,
+          "headway_min": 12.5
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "14:00:00-16:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "16:00:00-18:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 750,
+          "headway_min": 12.5
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "5": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "11:00:00-18:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 600,
+          "headway_min": 10.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 600,
+          "headway_min": 10.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "6": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-22:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-01:00:00": {
+          "headway_secs": 750,
+          "headway_min": 12.5
+        },
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "01:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-09:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "09:00:00-10:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "10:00:00-22:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "22:00:00-23:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-21:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "7": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "09:30:00-21:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "09:30:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "09:30:00-21:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "09:30:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "10:00:00-21:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "10:00:00-21:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "8": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "14:00:00-18:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "14:00:00-18:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-15:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "15:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-10:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "10:00:00-15:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "15:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "9": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "09:30:00-10:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "09:30:00-20:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "10:00:00-14:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "14:00:00-20:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "20:00:00-23:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-26:00:00": {
+          "headway_secs": 1350,
+          "headway_min": 22.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "09:30:00-10:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "09:30:00-20:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "10:00:00-14:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "14:00:00-20:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "20:00:00-22:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "20:00:00-23:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "06:05:00-23:00:00": {
+          "headway_secs": 720,
+          "headway_min": 12.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-21:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "06:05:00-23:00:00": {
+          "headway_secs": 720,
+          "headway_min": 12.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "11:00:00-21:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 480,
+          "headway_min": 8.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-26:00:00": {
+          "headway_secs": 1350,
+          "headway_min": 22.5
+        }
+      }
+    },
+    "R": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "10": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "11:00:00-18:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "20:00:00-21:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-01:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "01:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 510,
+          "headway_min": 8.5
+        },
+        "07:00:00-07:30:00": {
+          "headway_secs": 240,
+          "headway_min": 4.0
+        },
+        "07:30:00-09:30:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "09:30:00-11:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "09:30:00-14:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "11:00:00-14:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "14:00:00-16:00:00": {
+          "headway_secs": 210,
+          "headway_min": 3.5
+        },
+        "14:00:00-17:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "16:00:00-18:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "17:00:00-20:00:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "18:00:00-20:00:00": {
+          "headway_secs": 270,
+          "headway_min": 4.5
+        },
+        "20:00:00-21:00:00": {
+          "headway_secs": 300,
+          "headway_min": 5.0
+        },
+        "21:00:00-22:00:00": {
+          "headway_secs": 336,
+          "headway_min": 5.6
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-01:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "01:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "11:00:00-18:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "18:00:00-23:00:00": {
+          "headway_secs": 330,
+          "headway_min": 5.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "11:00:00-18:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "18:00:00-23:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "23:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "11": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "07:00:00-09:30:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "09:30:00-10:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "10:00:00-22:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 630,
+          "headway_min": 10.5
+        },
+        "07:00:00-09:30:00": {
+          "headway_secs": 360,
+          "headway_min": 6.0
+        },
+        "09:30:00-10:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "10:00:00-22:00:00": {
+          "headway_secs": 420,
+          "headway_min": 7.0
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    },
+    "12": {
+      "weekday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-09:30:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "09:30:00-10:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "10:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "friday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-11:00:00": {
+          "headway_secs": 390,
+          "headway_min": 6.5
+        },
+        "11:00:00-22:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        },
+        "22:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "saturday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      },
+      "sunday": {
+        "00:00:00-02:00:00": {
+          "headway_secs": 900,
+          "headway_min": 15.0
+        },
+        "06:05:00-07:00:00": {
+          "headway_secs": 540,
+          "headway_min": 9.0
+        },
+        "07:00:00-24:00:00": {
+          "headway_secs": 450,
+          "headway_min": 7.5
+        }
+      }
+    }
+  }
+}

@@ -38,10 +38,6 @@ object Train {
           allPaths.find(pp =>
             Metro.platformName(pp.features.denominacion, pp.features.codigoanden) == p.path.name)
 
-        def sendMovement(): Unit =
-          WebSocket.sendText(
-            s"""{"message": "moveTrain", "train": "$trainName", "x": $x, "y": $y}""")
-
         Behaviors.receiveMessage {
 
           case TrainStatsTick =>
@@ -59,8 +55,7 @@ object Train {
               scribe.debug(s"Train $trainName starting at ${p.path.name}")
               findPlatformPath(p).foreach { pp =>
                 x = pp.x; y = pp.y
-                WebSocket.sendText(
-                  s"""{"message": "newTrain", "train": "$trainName", "x": $x, "y": $y}""")
+                WebSocket.sendTrain(trainName, x, y, isNew = true)
               }
               context.system.scheduler.scheduleOnce(timeBetweenPlatforms, () =>
                 platform.get ! GetNextPlatform(context.self))(context.executionContext)
@@ -79,7 +74,7 @@ object Train {
             platform.get ! ArrivedAtPlatform(context.self)
             people.foreach { case (_, person) => person ! ArrivedAtPlatformToPeople(platform.get) }
             findPlatformPath(platform.get).foreach { pp => x = pp.x; y = pp.y }
-            sendMovement()
+            WebSocket.sendTrain(trainName, x, y, isNew = false)
             nextPlatform = None
             context.system.scheduler.scheduleOnce(timeOpenDoors, () =>
               platform.get ! GetNextPlatform(context.self))(context.executionContext)

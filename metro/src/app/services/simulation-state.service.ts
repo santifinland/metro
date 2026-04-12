@@ -6,7 +6,9 @@ import { SimulationMessage } from '../messages';
 @Injectable({ providedIn: 'root' })
 export class SimulationStateService {
 
-  readonly trains: Train[] = [];
+  // Keyed by train ID so newTrain from a snapshot replay does an upsert, not a duplicate push
+  private readonly trainsMap = new Map<string, Train>();
+  get trains(): Train[] { return Array.from(this.trainsMap.values()); }
 
   dirty = false;
   simulationPeople = 0;
@@ -27,7 +29,7 @@ export class SimulationStateService {
   process(msg: SimulationMessage): void {
     switch (msg.message) {
       case 'moveTrain': {
-        const train = this.trains.find(t => t.id === msg.train);
+        const train = this.trainsMap.get(msg.train);
         if (train) {
           train.x = msg.x;
           train.y = msg.y;
@@ -35,10 +37,17 @@ export class SimulationStateService {
         }
         break;
       }
-      case 'newTrain':
-        this.trains.push(new Train(msg.train, msg.x, msg.y));
+      case 'newTrain': {
+        const existing = this.trainsMap.get(msg.train);
+        if (existing) {
+          existing.x = msg.x;
+          existing.y = msg.y;
+        } else {
+          this.trainsMap.set(msg.train, new Train(msg.train, msg.x, msg.y));
+        }
         this.dirty = true;
         break;
+      }
       case 'peopleInLinePlatforms':
         this.platformsPeople.set(msg.line.slice(1), msg.people);
         break;

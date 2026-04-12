@@ -20,8 +20,9 @@ object UI {
       Behaviors.receiveMessage {
 
         case UITrainsTick =>
-          val trainsPeople = trains.values.sum
-          WebSocket.sendText(s"""{"message": "peopleInTrains", "people": $trainsPeople}""")
+          val people = trains.values.sum
+          WebSocket.sendStat("peopleInTrains",
+            s"""{"message": "peopleInTrains", "people": $people}""")
           Behaviors.same
 
         case PeopleInTrain(trainId, people) =>
@@ -31,32 +32,38 @@ object UI {
 
         case PeopleInLinePlatforms(lineId, people) =>
           scribe.debug(s"There are $people people in line $lineId platforms")
-          WebSocket.sendText(s"""{"message": "peopleInLinePlatforms", "line": "$lineId", "people": $people}""")
+          WebSocket.sendStat(s"peopleInLinePlatforms:$lineId",
+            s"""{"message": "peopleInLinePlatforms", "line": "$lineId", "people": $people}""")
           Behaviors.same
 
         case PeopleInLineStations(lineId, people) =>
           scribe.debug(s"There are $people people in line $lineId stations")
-          WebSocket.sendText(s"""{"message": "peopleInLineStations", "line": "$lineId", "people": $people}""")
+          WebSocket.sendStat(s"peopleInLineStations:$lineId",
+            s"""{"message": "peopleInLineStations", "line": "$lineId", "people": $people}""")
           Behaviors.same
 
         case PlatformOvercrowded(platformId, people) =>
           scribe.debug(s"There are $people people in platform $platformId")
-          WebSocket.sendText(s"""{"message": "platformOvercrowded", "platform": "$platformId", "people": $people}""")
+          WebSocket.sendText(
+            s"""{"message": "platformOvercrowded", "platform": "$platformId", "people": $people}""")
           Behaviors.same
 
         case StationOvercrowded(stationId, people) =>
           scribe.debug(s"There are $people people in station $stationId")
-          WebSocket.sendText(s"""{"message": "stationOvercrowded", "station": "$stationId", "people": $people}""")
+          WebSocket.sendText(
+            s"""{"message": "stationOvercrowded", "station": "$stationId", "people": $people}""")
           Behaviors.same
 
         case PeopleInMetro(people) =>
           scribe.debug(s"There are $people people in Metro")
-          WebSocket.sendText(s"""{"message": "peopleInMetro", "people": $people}""")
+          WebSocket.sendStat("peopleInMetro",
+            s"""{"message": "peopleInMetro", "people": $people}""")
           Behaviors.same
 
         case PeopleInSimulation(people) =>
           scribe.debug(s"Simulation handled $people people")
-          WebSocket.sendText(s"""{"message": "peopleInSimulation", "people": $people}""")
+          WebSocket.sendStat("peopleInSimulation",
+            s"""{"message": "peopleInSimulation", "people": $people}""")
           Behaviors.same
       }
     }

@@ -75,7 +75,7 @@ object Main {
       case Success(binding) =>
         println(s"Listening at ${binding.localAddress.getHostString}:${binding.localAddress.getPort}")
         Thread.sleep(4000)
-        WebSocket.sendText(s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
+        WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
       case Failure(ex) => throw ex
     }
   }

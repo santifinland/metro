@@ -10,7 +10,7 @@ import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
-import { REDRAW_PERIOD_MS, LINE_COLORS } from '../constants';
+import { LINE_COLORS } from '../constants';
 
 @Component({
   selector: 'app-train',
@@ -45,7 +45,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private readonly dpr = window.devicePixelRatio || 1;
 
   private time = 6 * 3600 * 1000;
-  private lastClockAdvance = 0;
+  private lastRafTimestamp = 0;
+  private lastCdTick = 0;
   private rafId = 0;
   private needsStaticRedraw = false;
   private needsTrainRedraw  = false;
@@ -247,6 +248,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const loop = (timestamp: number) => {
       if (this.destroyed) return;
 
+      // Advance simulation clock every frame (smooth)
+      const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
+      this.lastRafTimestamp = timestamp;
+      this.time += dt / this.state.timeMultiplier;
+
       if (this.needsStaticRedraw) {
         this.drawPaths();
         this.drawStations();
@@ -259,9 +265,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         this.needsTrainRedraw = false;
       }
 
-      if (timestamp - this.lastClockAdvance >= REDRAW_PERIOD_MS) {
-        this.lastClockAdvance = timestamp;
-        this.ngZone.run(() => this.advanceClock());
+      // Trigger Angular CD at ~5 fps so the template (clock, people) stays current
+      if (timestamp - this.lastCdTick >= 200) {
+        this.lastCdTick = timestamp;
+        this.ngZone.run(() => {});
       }
 
       this.rafId = requestAnimationFrame(loop);
@@ -382,15 +389,30 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const r  =  h / 2;       // full half-height → pill shape
     const lw =  1 / scale;
 
-    ctx.fillStyle   = '#e6edf3';
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth   = lw;
+    ctx.lineWidth = lw;
 
     for (const train of this.state.trains) {
-      const x = train.x - w / 2;
-      const y = train.y - h / 2;
+      const x   = train.x - w / 2;
+      const y   = train.y - h / 2;
+      const occ = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+
+      ctx.save();
+
+      // Background fill
       this.pillRect(ctx, x, y, w, h, r);
+      ctx.fillStyle = '#21262d';
       ctx.fill();
+
+      // Occupancy fill — clipped to pill shape
+      ctx.clip();
+      ctx.fillStyle = occ < 0.5 ? '#3fb950' : occ < 0.8 ? '#d29922' : '#f85149';
+      ctx.fillRect(x, y, w * occ, h);
+
+      ctx.restore();
+
+      // Outline
+      this.pillRect(ctx, x, y, w, h, r);
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
       ctx.stroke();
     }
   }
@@ -411,10 +433,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   // ── Clock ────────────────────────────────────────────────────
-
-  private advanceClock(): void {
-    this.time += REDRAW_PERIOD_MS / this.state.timeMultiplier;
-  }
 
   displayClock(): string {
     return new Date(this.time).toLocaleTimeString('en-GB', {

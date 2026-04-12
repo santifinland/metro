@@ -55,7 +55,7 @@ object Train {
               scribe.debug(s"Train $trainName starting at ${p.path.name}")
               findPlatformPath(p).foreach { pp =>
                 x = pp.x; y = pp.y
-                WebSocket.sendTrain(trainName, x, y, isNew = true)
+                WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, isNew = true)
               }
               context.system.scheduler.scheduleOnce(timeBetweenPlatforms, () =>
                 platform.get ! GetNextPlatform(context.self))(context.executionContext)
@@ -74,7 +74,7 @@ object Train {
             platform.get ! ArrivedAtPlatform(context.self)
             people.foreach { case (_, person) => person ! ArrivedAtPlatformToPeople(platform.get) }
             findPlatformPath(platform.get).foreach { pp => x = pp.x; y = pp.y }
-            WebSocket.sendTrain(trainName, x, y, isNew = false)
+            WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, isNew = false)
             nextPlatform = None
             context.system.scheduler.scheduleOnce(timeOpenDoors, () =>
               platform.get ! GetNextPlatform(context.self))(context.executionContext)

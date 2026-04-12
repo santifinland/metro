@@ -1,0 +1,43 @@
+Data in this directory is derived from two sources, both under CC-BY-SA.
+
+──────────────────────────────────────────────────────────────────────────────
+1. CRTM GTFS feed
+──────────────────────────────────────────────────────────────────────────────
+Files derived from this source:
+  frequencies.json, inter_station_times.json, initial_conditions.json,
+  train_service.json, schedules.json (depot/terminal sections)
+
+Source:   Consorcio Regional de Transportes de Madrid (CRTM)
+URL:      https://crtm.maps.arcgis.com/home/item.html?id=5c7f2951962540d69ffe8f640d94c246
+Feed ver: 20250527
+License:  Creative Commons Attribution-ShareAlike (CC-BY-SA)
+          https://creativecommons.org/licenses/by-sa/4.0/
+
+Attribution: "Powered by CRTM — www.crtm.es"
+
+The information has not had its meaning altered. CRTM does not endorse this
+project.
+
+──────────────────────────────────────────────────────────────────────────────
+2. Wikipedia (Metro de Madrid articles)
+──────────────────────────────────────────────────────────────────────────────
+Files derived from this source:
+  lines.json, rolling_stock.json, station_depths.json
+
+Source:   Wikipedia contributors, "Metro de Madrid" and related articles
+URL:      https://es.wikipedia.org/wiki/Metro_de_Madrid (and linked articles)
+License:  Creative Commons Attribution-ShareAlike 4.0 International (CC-BY-SA 4.0)
+          https://creativecommons.org/licenses/by-sa/4.0/
+
+──────────────────────────────────────────────────────────────────────────────
+Derived works
+──────────────────────────────────────────────────────────────────────────────
+All JSON files in this directory are derivative works of the above sources and
+are therefore also distributed under CC-BY-SA 4.0.
+
+If you redistribute or build upon these files you must:
+  1. Attribute CRTM and Wikipedia as described above.
+  2. Distribute your derivative work under CC-BY-SA 4.0 or a compatible license.
+
+This license applies to data/ files only. The Metro Simu application code in
+the rest of this repository is governed by the project's own license.

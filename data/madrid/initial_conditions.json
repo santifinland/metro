@@ -1,0 +1,4363 @@
+{
+  "_description": "Initial train positions for warm-start simulation. At each snapshot time, trains are already distributed along the line: train k is at elapsed = k × headway seconds into the journey. Formula: n_trains = ceil(journey_time / headway).",
+  "_source": "CRTM GTFS 20250527 weekday",
+  "_updated": "2026-04-12",
+  "snapshots": {
+    "1": {
+      "06:05": {
+        "dir0": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "VALDECARROS",
+          "journey_min": 57.0,
+          "headway_min": 8.5,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.149,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.298,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1530,
+              "fraction": 0.447,
+              "at_stop": "SOL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2040,
+              "fraction": 0.596,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2550,
+              "fraction": 0.745,
+              "at_stop": "ALTO DEL ARENAL"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3060,
+              "fraction": 0.894,
+              "at_stop": "CONGOSTO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "VALDECARROS",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 57.0,
+          "headway_min": 8.5,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "VALDECARROS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.149,
+              "at_stop": "CONGOSTO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.298,
+              "at_stop": "ALTO DEL ARENAL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1530,
+              "fraction": 0.447,
+              "at_stop": "MENENDEZ PELAYO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2040,
+              "fraction": 0.596,
+              "at_stop": "GRAN VIA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2550,
+              "fraction": 0.745,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3060,
+              "fraction": 0.894,
+              "at_stop": "PLAZA DE CASTILLA"
+            }
+          ]
+        },
+        "total_trains": 14
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "VALDECARROS",
+          "journey_min": 57.0,
+          "headway_min": 3.5,
+          "trains": 17,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.061,
+              "at_stop": "BAMBU"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.123,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.184,
+              "at_stop": "VALDEACEDERAS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.245,
+              "at_stop": "ESTRECHO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.307,
+              "at_stop": "RIOS ROSAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.368,
+              "at_stop": "BILBAO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.43,
+              "at_stop": "GRAN VIA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.491,
+              "at_stop": "ANTON MARTIN"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.552,
+              "at_stop": "ATOCHA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.614,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.675,
+              "at_stop": "PORTAZGO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.736,
+              "at_stop": "ALTO DEL ARENAL"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.798,
+              "at_stop": "MIGUEL HERNANDEZ"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.859,
+              "at_stop": "VILLA DE VALLECAS"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.921,
+              "at_stop": "LA GAVIA"
+            },
+            {
+              "train": 17,
+              "elapsed_s": 3360,
+              "fraction": 0.982,
+              "at_stop": "LAS SUERTES"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "VALDECARROS",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 57.0,
+          "headway_min": 3.5,
+          "trains": 17,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "VALDECARROS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.061,
+              "at_stop": "LAS SUERTES"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.123,
+              "at_stop": "LA GAVIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.184,
+              "at_stop": "SIERRA DE GUADALUPE"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.245,
+              "at_stop": "MIGUEL HERNANDEZ"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.307,
+              "at_stop": "BUENOS AIRES"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.368,
+              "at_stop": "NUEVA NUMANCIA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.43,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.491,
+              "at_stop": "ESTACION DEL ARTE"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.552,
+              "at_stop": "TIRSO DE MOLINA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.614,
+              "at_stop": "TRIBUNAL"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.675,
+              "at_stop": "IGLESIA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.736,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.798,
+              "at_stop": "ESTRECHO"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.859,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.921,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 17,
+              "elapsed_s": 3360,
+              "fraction": 0.982,
+              "at_stop": "BAMBU"
+            }
+          ]
+        },
+        "total_trains": 34
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "VALDECARROS",
+          "journey_min": 57.0,
+          "headway_min": 3.5,
+          "trains": 17,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.061,
+              "at_stop": "BAMBU"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.123,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.184,
+              "at_stop": "VALDEACEDERAS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.245,
+              "at_stop": "ESTRECHO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.307,
+              "at_stop": "RIOS ROSAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.368,
+              "at_stop": "BILBAO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.43,
+              "at_stop": "GRAN VIA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.491,
+              "at_stop": "ANTON MARTIN"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.552,
+              "at_stop": "ATOCHA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.614,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.675,
+              "at_stop": "PORTAZGO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.736,
+              "at_stop": "ALTO DEL ARENAL"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.798,
+              "at_stop": "MIGUEL HERNANDEZ"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.859,
+              "at_stop": "VILLA DE VALLECAS"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.921,
+              "at_stop": "LA GAVIA"
+            },
+            {
+              "train": 17,
+              "elapsed_s": 3360,
+              "fraction": 0.982,
+              "at_stop": "LAS SUERTES"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "VALDECARROS",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 57.0,
+          "headway_min": 3.5,
+          "trains": 17,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "VALDECARROS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.061,
+              "at_stop": "LAS SUERTES"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.123,
+              "at_stop": "LA GAVIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.184,
+              "at_stop": "SIERRA DE GUADALUPE"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.245,
+              "at_stop": "MIGUEL HERNANDEZ"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.307,
+              "at_stop": "BUENOS AIRES"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.368,
+              "at_stop": "NUEVA NUMANCIA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.43,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.491,
+              "at_stop": "ESTACION DEL ARTE"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.552,
+              "at_stop": "TIRSO DE MOLINA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.614,
+              "at_stop": "TRIBUNAL"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.675,
+              "at_stop": "IGLESIA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.736,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.798,
+              "at_stop": "ESTRECHO"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.859,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.921,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 17,
+              "elapsed_s": 3360,
+              "fraction": 0.982,
+              "at_stop": "BAMBU"
+            }
+          ]
+        },
+        "total_trains": 34
+      }
+    },
+    "2": {
+      "06:05": {
+        "dir0": {
+          "origin": "LAS ROSAS",
+          "destination": "CUATRO CAMINOS",
+          "journey_min": 33.1,
+          "headway_min": 7.5,
+          "trains": 5,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAS ROSAS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 450,
+              "fraction": 0.226,
+              "at_stop": "ALSACIA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 900,
+              "fraction": 0.453,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1350,
+              "fraction": 0.679,
+              "at_stop": "BANCO DE ESPAÑA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1800,
+              "fraction": 0.906,
+              "at_stop": "QUEVEDO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CUATRO CAMINOS",
+          "destination": "LAS ROSAS",
+          "journey_min": 33.1,
+          "headway_min": 7.5,
+          "trains": 5,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 450,
+              "fraction": 0.226,
+              "at_stop": "SANTO DOMINGO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 900,
+              "fraction": 0.453,
+              "at_stop": "PRINCIPE DE VERGARA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1350,
+              "fraction": 0.679,
+              "at_stop": "LA ELIPA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1800,
+              "fraction": 0.906,
+              "at_stop": "ALSACIA"
+            }
+          ]
+        },
+        "total_trains": 10
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "LAS ROSAS",
+          "destination": "CUATRO CAMINOS",
+          "journey_min": 33.1,
+          "headway_min": 4.0,
+          "trains": 9,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAS ROSAS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.121,
+              "at_stop": "AVENIDA DE GUADALAJARA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.242,
+              "at_stop": "ALSACIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.362,
+              "at_stop": "LA ELIPA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.483,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.604,
+              "at_stop": "PRINCIPE DE VERGARA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1440,
+              "fraction": 0.725,
+              "at_stop": "SOL"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1680,
+              "fraction": 0.845,
+              "at_stop": "NOVICIADO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1920,
+              "fraction": 0.966,
+              "at_stop": "CANAL"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CUATRO CAMINOS",
+          "destination": "LAS ROSAS",
+          "journey_min": 33.1,
+          "headway_min": 4.0,
+          "trains": 9,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.121,
+              "at_stop": "QUEVEDO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.242,
+              "at_stop": "OPERA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.362,
+              "at_stop": "BANCO DE ESPAÑA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.483,
+              "at_stop": "GOYA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.604,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1440,
+              "fraction": 0.725,
+              "at_stop": "LA ELIPA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1680,
+              "fraction": 0.845,
+              "at_stop": "LA ALMUDENA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1920,
+              "fraction": 0.966,
+              "at_stop": "AVENIDA DE GUADALAJARA"
+            }
+          ]
+        },
+        "total_trains": 18
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "LAS ROSAS",
+          "destination": "CUATRO CAMINOS",
+          "journey_min": 33.1,
+          "headway_min": 4.0,
+          "trains": 9,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAS ROSAS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.121,
+              "at_stop": "AVENIDA DE GUADALAJARA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.242,
+              "at_stop": "ALSACIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.362,
+              "at_stop": "LA ELIPA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.483,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.604,
+              "at_stop": "PRINCIPE DE VERGARA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1440,
+              "fraction": 0.725,
+              "at_stop": "SOL"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1680,
+              "fraction": 0.845,
+              "at_stop": "NOVICIADO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1920,
+              "fraction": 0.966,
+              "at_stop": "CANAL"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CUATRO CAMINOS",
+          "destination": "LAS ROSAS",
+          "journey_min": 33.1,
+          "headway_min": 4.0,
+          "trains": 9,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.121,
+              "at_stop": "QUEVEDO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.242,
+              "at_stop": "OPERA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.362,
+              "at_stop": "BANCO DE ESPAÑA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.483,
+              "at_stop": "GOYA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.604,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1440,
+              "fraction": 0.725,
+              "at_stop": "LA ELIPA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1680,
+              "fraction": 0.845,
+              "at_stop": "LA ALMUDENA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1920,
+              "fraction": 0.966,
+              "at_stop": "AVENIDA DE GUADALAJARA"
+            }
+          ]
+        },
+        "total_trains": 18
+      }
+    },
+    "4": {
+      "06:05": {
+        "dir0": {
+          "origin": "ARGÜELLES",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 38.3,
+          "headway_min": 7.5,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 450,
+              "fraction": 0.196,
+              "at_stop": "SERRANO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 900,
+              "fraction": 0.392,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1350,
+              "fraction": 0.588,
+              "at_stop": "ARTURO SORIA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1800,
+              "fraction": 0.784,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2250,
+              "fraction": 0.98,
+              "at_stop": "MANOTERAS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "ARGÜELLES",
+          "journey_min": 38.3,
+          "headway_min": 7.5,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 450,
+              "fraction": 0.196,
+              "at_stop": "PARQUE DE SANTA MARIA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 900,
+              "fraction": 0.392,
+              "at_stop": "ESPERANZA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1350,
+              "fraction": 0.588,
+              "at_stop": "ALFONSO XIII"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1800,
+              "fraction": 0.784,
+              "at_stop": "GOYA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2250,
+              "fraction": 0.98,
+              "at_stop": "SAN BERNARDO"
+            }
+          ]
+        },
+        "total_trains": 12
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "ARGÜELLES",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 38.3,
+          "headway_min": 3.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.091,
+              "at_stop": "BILBAO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.183,
+              "at_stop": "SERRANO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.274,
+              "at_stop": "LISTA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.366,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.457,
+              "at_stop": "PROSPERIDAD"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.549,
+              "at_stop": "AVENIDA DE LA PAZ"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.64,
+              "at_stop": "ESPERANZA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.731,
+              "at_stop": "CANILLAS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.823,
+              "at_stop": "SAN LORENZO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.914,
+              "at_stop": "HORTALEZA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "ARGÜELLES",
+          "journey_min": 38.3,
+          "headway_min": 3.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.091,
+              "at_stop": "MANOTERAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.183,
+              "at_stop": "PARQUE DE SANTA MARIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.274,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.366,
+              "at_stop": "CANILLAS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.457,
+              "at_stop": "ARTURO SORIA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.549,
+              "at_stop": "ALFONSO XIII"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.64,
+              "at_stop": "PROSPERIDAD"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.731,
+              "at_stop": "LISTA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.823,
+              "at_stop": "VELAZQUEZ"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.914,
+              "at_stop": "ALONSO MARTINEZ"
+            }
+          ]
+        },
+        "total_trains": 22
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "ARGÜELLES",
+          "destination": "PINAR DE CHAMARTIN",
+          "journey_min": 38.3,
+          "headway_min": 3.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.091,
+              "at_stop": "BILBAO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.183,
+              "at_stop": "SERRANO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.274,
+              "at_stop": "LISTA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.366,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.457,
+              "at_stop": "PROSPERIDAD"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.549,
+              "at_stop": "AVENIDA DE LA PAZ"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.64,
+              "at_stop": "ESPERANZA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.731,
+              "at_stop": "CANILLAS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.823,
+              "at_stop": "SAN LORENZO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.914,
+              "at_stop": "HORTALEZA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PINAR DE CHAMARTIN",
+          "destination": "ARGÜELLES",
+          "journey_min": 38.3,
+          "headway_min": 3.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PINAR DE CHAMARTIN"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.091,
+              "at_stop": "MANOTERAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.183,
+              "at_stop": "PARQUE DE SANTA MARIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.274,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.366,
+              "at_stop": "CANILLAS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.457,
+              "at_stop": "ARTURO SORIA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.549,
+              "at_stop": "ALFONSO XIII"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.64,
+              "at_stop": "PROSPERIDAD"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.731,
+              "at_stop": "LISTA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.823,
+              "at_stop": "VELAZQUEZ"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.914,
+              "at_stop": "ALONSO MARTINEZ"
+            }
+          ]
+        },
+        "total_trains": 22
+      }
+    },
+    "5": {
+      "06:05": {
+        "dir0": {
+          "origin": "ALAMEDA DE OSUNA",
+          "destination": "CASA DE CAMPO",
+          "journey_min": 57.6,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ALAMEDA DE OSUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "TORRE ARIAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "EL CARMEN"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "PUERTA DE TOLEDO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "OPORTO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "EMPALME"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CASA DE CAMPO",
+          "destination": "ALAMEDA DE OSUNA",
+          "journey_min": 57.6,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "EUGENIA DE MONTIJO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "MARQUES DE VADILLO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "OPERA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "NUÑEZ DE BALBOA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "PUEBLO NUEVO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "CANILLEJAS"
+            }
+          ]
+        },
+        "total_trains": 14
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "ALAMEDA DE OSUNA",
+          "destination": "CASA DE CAMPO",
+          "journey_min": 57.6,
+          "headway_min": 4.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ALAMEDA DE OSUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.078,
+              "at_stop": "EL CAPRICHO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "TORRE ARIAS"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.234,
+              "at_stop": "CIUDAD LINEAL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "EL CARMEN"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.39,
+              "at_stop": "DIEGO DE LEON"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.546,
+              "at_stop": "CALLAO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "PUERTA DE TOLEDO"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.703,
+              "at_stop": "PIRAMIDES"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "OPORTO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2970,
+              "fraction": 0.859,
+              "at_stop": "EUGENIA DE MONTIJO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "EMPALME"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CASA DE CAMPO",
+          "destination": "ALAMEDA DE OSUNA",
+          "journey_min": 57.6,
+          "headway_min": 4.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.078,
+              "at_stop": "EMPALME"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "EUGENIA DE MONTIJO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.234,
+              "at_stop": "OPORTO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "MARQUES DE VADILLO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.39,
+              "at_stop": "ACACIAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "OPERA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.546,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "NUÑEZ DE BALBOA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.703,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "PUEBLO NUEVO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2970,
+              "fraction": 0.859,
+              "at_stop": "SUANZES"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "CANILLEJAS"
+            }
+          ]
+        },
+        "total_trains": 26
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "ALAMEDA DE OSUNA",
+          "destination": "CASA DE CAMPO",
+          "journey_min": 57.6,
+          "headway_min": 4.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ALAMEDA DE OSUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.078,
+              "at_stop": "EL CAPRICHO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "TORRE ARIAS"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.234,
+              "at_stop": "CIUDAD LINEAL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "EL CARMEN"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.39,
+              "at_stop": "DIEGO DE LEON"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.546,
+              "at_stop": "CALLAO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "PUERTA DE TOLEDO"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.703,
+              "at_stop": "PIRAMIDES"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "OPORTO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2970,
+              "fraction": 0.859,
+              "at_stop": "EUGENIA DE MONTIJO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "EMPALME"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "CASA DE CAMPO",
+          "destination": "ALAMEDA DE OSUNA",
+          "journey_min": 57.6,
+          "headway_min": 4.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.078,
+              "at_stop": "EMPALME"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.156,
+              "at_stop": "EUGENIA DE MONTIJO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.234,
+              "at_stop": "OPORTO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.312,
+              "at_stop": "MARQUES DE VADILLO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.39,
+              "at_stop": "ACACIAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.468,
+              "at_stop": "OPERA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.546,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.624,
+              "at_stop": "NUÑEZ DE BALBOA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.703,
+              "at_stop": "VENTAS"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.781,
+              "at_stop": "PUEBLO NUEVO"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2970,
+              "fraction": 0.859,
+              "at_stop": "SUANZES"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 3240,
+              "fraction": 0.937,
+              "at_stop": "CANILLEJAS"
+            }
+          ]
+        },
+        "total_trains": 26
+      }
+    },
+    "6": {
+      "06:05": {
+        "dir0": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 54.9,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.164,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.328,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.492,
+              "at_stop": "DIEGO DE LEON"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.656,
+              "at_stop": "GUZMAN EL BUENO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.82,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.984,
+              "at_stop": "LUCERO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 55.1,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.163,
+              "at_stop": "PUERTA DEL ANGEL"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.327,
+              "at_stop": "CIUDAD UNIVERSITARIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.49,
+              "at_stop": "REPUBLICA ARGENTINA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.654,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.817,
+              "at_stop": "LEGAZPI"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.981,
+              "at_stop": "CARPETANA"
+            }
+          ]
+        },
+        "total_trains": 14
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 54.9,
+          "headway_min": 3.5,
+          "trains": 16,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.064,
+              "at_stop": "CARPETANA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.128,
+              "at_stop": "OPAÑEL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.191,
+              "at_stop": "USERA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.255,
+              "at_stop": "ARGANZUELA-PLANETARIO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.319,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.383,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.446,
+              "at_stop": "MANUEL BECERRA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.51,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.574,
+              "at_stop": "REPUBLICA ARGENTINA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.638,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.701,
+              "at_stop": "CIUDAD UNIVERSITARIA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.765,
+              "at_stop": "MONCLOA"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.829,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.893,
+              "at_stop": "PUERTA DEL ANGEL"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.957,
+              "at_stop": "ALTO DE EXTREMADURA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 55.1,
+          "headway_min": 3.5,
+          "trains": 16,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.064,
+              "at_stop": "LUCERO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.127,
+              "at_stop": "PUERTA DEL ANGEL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.191,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.254,
+              "at_stop": "MONCLOA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.318,
+              "at_stop": "CIUDAD UNIVERSITARIA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.381,
+              "at_stop": "GUZMAN EL BUENO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.445,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.508,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.572,
+              "at_stop": "MANUEL BECERRA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.636,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.699,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.763,
+              "at_stop": "ARGANZUELA-PLANETARIO"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.826,
+              "at_stop": "LEGAZPI"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.89,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.953,
+              "at_stop": "OPORTO"
+            }
+          ]
+        },
+        "total_trains": 32
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 54.9,
+          "headway_min": 3.5,
+          "trains": 16,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.064,
+              "at_stop": "CARPETANA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.128,
+              "at_stop": "OPAÑEL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.191,
+              "at_stop": "USERA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.255,
+              "at_stop": "ARGANZUELA-PLANETARIO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.319,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.383,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.446,
+              "at_stop": "MANUEL BECERRA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.51,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.574,
+              "at_stop": "REPUBLICA ARGENTINA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.638,
+              "at_stop": "CUATRO CAMINOS"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.701,
+              "at_stop": "CIUDAD UNIVERSITARIA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.765,
+              "at_stop": "MONCLOA"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.829,
+              "at_stop": "ARGÜELLES"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.893,
+              "at_stop": "PUERTA DEL ANGEL"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.957,
+              "at_stop": "ALTO DE EXTREMADURA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LAGUNA",
+          "destination": "LAGUNA",
+          "journey_min": 55.1,
+          "headway_min": 3.5,
+          "trains": 16,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LAGUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.064,
+              "at_stop": "LUCERO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.127,
+              "at_stop": "PUERTA DEL ANGEL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.191,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.254,
+              "at_stop": "MONCLOA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.318,
+              "at_stop": "CIUDAD UNIVERSITARIA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.381,
+              "at_stop": "GUZMAN EL BUENO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.445,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.508,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.572,
+              "at_stop": "MANUEL BECERRA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.636,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.699,
+              "at_stop": "PACIFICO"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.763,
+              "at_stop": "ARGANZUELA-PLANETARIO"
+            },
+            {
+              "train": 14,
+              "elapsed_s": 2730,
+              "fraction": 0.826,
+              "at_stop": "LEGAZPI"
+            },
+            {
+              "train": 15,
+              "elapsed_s": 2940,
+              "fraction": 0.89,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 16,
+              "elapsed_s": 3150,
+              "fraction": 0.953,
+              "at_stop": "OPORTO"
+            }
+          ]
+        },
+        "total_trains": 32
+      }
+    },
+    "7": {
+      "06:05": {
+        "dir0": {
+          "origin": "ESTADIO METROPOLITANO",
+          "destination": "PITIS",
+          "journey_min": 41.3,
+          "headway_min": 9.0,
+          "trains": 5,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ESTADIO METROPOLITANO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.218,
+              "at_stop": "GARCIA NOBLEJAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.436,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.654,
+              "at_stop": "ISLAS FILIPINAS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.872,
+              "at_stop": "PEÑAGRANDE"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PITIS",
+          "destination": "ESTADIO METROPOLITANO",
+          "journey_min": 41.3,
+          "headway_min": 9.0,
+          "trains": 5,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PITIS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.218,
+              "at_stop": "VALDEZARZA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.436,
+              "at_stop": "ISLAS FILIPINAS"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.654,
+              "at_stop": "PARQUE DE LAS AVENIDAS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.872,
+              "at_stop": "SIMANCAS"
+            }
+          ]
+        },
+        "total_trains": 10
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "ESTADIO METROPOLITANO",
+          "destination": "PITIS",
+          "journey_min": 41.3,
+          "headway_min": 5.5,
+          "trains": 8,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ESTADIO METROPOLITANO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 330,
+              "fraction": 0.133,
+              "at_stop": "SAN BLAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 660,
+              "fraction": 0.267,
+              "at_stop": "PUEBLO NUEVO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 990,
+              "fraction": 0.4,
+              "at_stop": "CARTAGENA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1320,
+              "fraction": 0.533,
+              "at_stop": "ALONSO CANO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1650,
+              "fraction": 0.666,
+              "at_stop": "ISLAS FILIPINAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1980,
+              "fraction": 0.8,
+              "at_stop": "VALDEZARZA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2310,
+              "fraction": 0.933,
+              "at_stop": "AVENIDA DE LA ILUSTRACION"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PITIS",
+          "destination": "ESTADIO METROPOLITANO",
+          "journey_min": 41.3,
+          "headway_min": 5.5,
+          "trains": 8,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PITIS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 330,
+              "fraction": 0.133,
+              "at_stop": "PEÑAGRANDE"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 660,
+              "fraction": 0.267,
+              "at_stop": "VALDEZARZA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 990,
+              "fraction": 0.4,
+              "at_stop": "GUZMAN EL BUENO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1320,
+              "fraction": 0.533,
+              "at_stop": "GREGORIO MARAÑON"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1650,
+              "fraction": 0.666,
+              "at_stop": "PARQUE DE LAS AVENIDAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1980,
+              "fraction": 0.8,
+              "at_stop": "ASCAO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2310,
+              "fraction": 0.933,
+              "at_stop": "SAN BLAS"
+            }
+          ]
+        },
+        "total_trains": 16
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "ESTADIO METROPOLITANO",
+          "destination": "PITIS",
+          "journey_min": 41.3,
+          "headway_min": 5.5,
+          "trains": 8,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "ESTADIO METROPOLITANO"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 330,
+              "fraction": 0.133,
+              "at_stop": "SAN BLAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 660,
+              "fraction": 0.267,
+              "at_stop": "PUEBLO NUEVO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 990,
+              "fraction": 0.4,
+              "at_stop": "CARTAGENA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1320,
+              "fraction": 0.533,
+              "at_stop": "ALONSO CANO"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1650,
+              "fraction": 0.666,
+              "at_stop": "ISLAS FILIPINAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1980,
+              "fraction": 0.8,
+              "at_stop": "VALDEZARZA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2310,
+              "fraction": 0.933,
+              "at_stop": "AVENIDA DE LA ILUSTRACION"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PITIS",
+          "destination": "ESTADIO METROPOLITANO",
+          "journey_min": 41.3,
+          "headway_min": 5.5,
+          "trains": 8,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PITIS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 330,
+              "fraction": 0.133,
+              "at_stop": "PEÑAGRANDE"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 660,
+              "fraction": 0.267,
+              "at_stop": "VALDEZARZA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 990,
+              "fraction": 0.4,
+              "at_stop": "GUZMAN EL BUENO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1320,
+              "fraction": 0.533,
+              "at_stop": "GREGORIO MARAÑON"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1650,
+              "fraction": 0.666,
+              "at_stop": "PARQUE DE LAS AVENIDAS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1980,
+              "fraction": 0.8,
+              "at_stop": "ASCAO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2310,
+              "fraction": 0.933,
+              "at_stop": "SAN BLAS"
+            }
+          ]
+        },
+        "total_trains": 16
+      }
+    },
+    "8": {
+      "06:05": {
+        "dir0": {
+          "origin": "NUEVOS MINISTERIOS",
+          "destination": "AEROPUERTO T-4",
+          "journey_min": 21.5,
+          "headway_min": 8.5,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.396,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.792,
+              "at_stop": "AEROPUERTO T1-T2-T3"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "AEROPUERTO T-4",
+          "destination": "NUEVOS MINISTERIOS",
+          "journey_min": 21.5,
+          "headway_min": 8.5,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "AEROPUERTO T-4"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.396,
+              "at_stop": "AEROPUERTO T1-T2-T3"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.792,
+              "at_stop": "PINAR DEL REY"
+            }
+          ]
+        },
+        "total_trains": 6
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "NUEVOS MINISTERIOS",
+          "destination": "AEROPUERTO T-4",
+          "journey_min": 21.5,
+          "headway_min": 4.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.186,
+              "at_stop": "COLOMBIA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.373,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.559,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.745,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.932,
+              "at_stop": "BARAJAS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "AEROPUERTO T-4",
+          "destination": "NUEVOS MINISTERIOS",
+          "journey_min": 21.5,
+          "headway_min": 4.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "AEROPUERTO T-4"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.186,
+              "at_stop": "BARAJAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.373,
+              "at_stop": "AEROPUERTO T1-T2-T3"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.559,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.745,
+              "at_stop": "PINAR DEL REY"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.932,
+              "at_stop": "COLOMBIA"
+            }
+          ]
+        },
+        "total_trains": 12
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "NUEVOS MINISTERIOS",
+          "destination": "AEROPUERTO T-4",
+          "journey_min": 21.5,
+          "headway_min": 4.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.186,
+              "at_stop": "COLOMBIA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.373,
+              "at_stop": "MAR DE CRISTAL"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.559,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.745,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.932,
+              "at_stop": "BARAJAS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "AEROPUERTO T-4",
+          "destination": "NUEVOS MINISTERIOS",
+          "journey_min": 21.5,
+          "headway_min": 4.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "AEROPUERTO T-4"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 240,
+              "fraction": 0.186,
+              "at_stop": "BARAJAS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 480,
+              "fraction": 0.373,
+              "at_stop": "AEROPUERTO T1-T2-T3"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 720,
+              "fraction": 0.559,
+              "at_stop": "FERIA DE MADRID"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 960,
+              "fraction": 0.745,
+              "at_stop": "PINAR DEL REY"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1200,
+              "fraction": 0.932,
+              "at_stop": "COLOMBIA"
+            }
+          ]
+        },
+        "total_trains": 12
+      }
+    },
+    "9": {
+      "06:05": {
+        "dir0": {
+          "origin": "PACO DE LUCIA",
+          "destination": "PUERTA DE ARGANDA",
+          "journey_min": 45.9,
+          "headway_min": 9.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PACO DE LUCIA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "BARRIO DEL PILAR"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "COLOMBIA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "IBIZA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "ARTILLEROS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "SAN CIPRIANO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DE ARGANDA",
+          "destination": "PACO DE LUCIA",
+          "journey_min": 45.9,
+          "headway_min": 9.0,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DE ARGANDA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "PAVONES"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "CRUZ DEL RAYO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "VENTILLA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "MIRASIERRA"
+            }
+          ]
+        },
+        "total_trains": 12
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "PACO DE LUCIA",
+          "destination": "PUERTA DE ARGANDA",
+          "journey_min": 45.9,
+          "headway_min": 4.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PACO DE LUCIA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.098,
+              "at_stop": "MIRASIERRA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "BARRIO DEL PILAR"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.294,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "COLOMBIA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.49,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "IBIZA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.687,
+              "at_stop": "ESTRELLA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "ARTILLEROS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.883,
+              "at_stop": "VALDEBERNARDO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "SAN CIPRIANO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DE ARGANDA",
+          "destination": "PACO DE LUCIA",
+          "journey_min": 45.9,
+          "headway_min": 4.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DE ARGANDA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.098,
+              "at_stop": "VICALVARO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "PAVONES"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.294,
+              "at_stop": "VINATEROS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.49,
+              "at_stop": "NUÑEZ DE BALBOA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "CRUZ DEL RAYO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.687,
+              "at_stop": "PIO XII"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "VENTILLA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.883,
+              "at_stop": "HERRERA ORIA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "MIRASIERRA"
+            }
+          ]
+        },
+        "total_trains": 22
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "PACO DE LUCIA",
+          "destination": "PUERTA DE ARGANDA",
+          "journey_min": 45.9,
+          "headway_min": 4.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PACO DE LUCIA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.098,
+              "at_stop": "MIRASIERRA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "BARRIO DEL PILAR"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.294,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "COLOMBIA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.49,
+              "at_stop": "AVENIDA DE AMERICA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "IBIZA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.687,
+              "at_stop": "ESTRELLA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "ARTILLEROS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.883,
+              "at_stop": "VALDEBERNARDO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "SAN CIPRIANO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DE ARGANDA",
+          "destination": "PACO DE LUCIA",
+          "journey_min": 45.9,
+          "headway_min": 4.5,
+          "trains": 11,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DE ARGANDA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 270,
+              "fraction": 0.098,
+              "at_stop": "VICALVARO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 540,
+              "fraction": 0.196,
+              "at_stop": "PAVONES"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 810,
+              "fraction": 0.294,
+              "at_stop": "VINATEROS"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1080,
+              "fraction": 0.392,
+              "at_stop": "SAINZ DE BARANDA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1350,
+              "fraction": 0.49,
+              "at_stop": "NUÑEZ DE BALBOA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1620,
+              "fraction": 0.588,
+              "at_stop": "CRUZ DEL RAYO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1890,
+              "fraction": 0.687,
+              "at_stop": "PIO XII"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 2160,
+              "fraction": 0.785,
+              "at_stop": "VENTILLA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 2430,
+              "fraction": 0.883,
+              "at_stop": "HERRERA ORIA"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2700,
+              "fraction": 0.981,
+              "at_stop": "MIRASIERRA"
+            }
+          ]
+        },
+        "total_trains": 22
+      }
+    },
+    "R": {
+      "06:05": {
+        "dir0": {
+          "origin": "OPERA",
+          "destination": "PRINCIPE PIO",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "OPERA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PRINCIPE PIO",
+          "destination": "OPERA",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PRINCIPE PIO"
+            }
+          ]
+        },
+        "total_trains": 2
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "OPERA",
+          "destination": "PRINCIPE PIO",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "OPERA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PRINCIPE PIO",
+          "destination": "OPERA",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PRINCIPE PIO"
+            }
+          ]
+        },
+        "total_trains": 2
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "OPERA",
+          "destination": "PRINCIPE PIO",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "OPERA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PRINCIPE PIO",
+          "destination": "OPERA",
+          "journey_min": 3.1,
+          "headway_min": 5.5,
+          "trains": 1,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PRINCIPE PIO"
+            }
+          ]
+        },
+        "total_trains": 2
+      }
+    },
+    "10": {
+      "06:05": {
+        "dir0": {
+          "origin": "TRES OLIVOS",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 45.3,
+          "headway_min": 8.5,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "TRES OLIVOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.188,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.375,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1530,
+              "fraction": 0.563,
+              "at_stop": "LAGO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2040,
+              "fraction": 0.751,
+              "at_stop": "COLONIA JARDIN"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2550,
+              "fraction": 0.939,
+              "at_stop": "CUATRO VIENTOS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "TRES OLIVOS",
+          "journey_min": 44.9,
+          "headway_min": 8.5,
+          "trains": 6,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 510,
+              "fraction": 0.189,
+              "at_stop": "CUATRO VIENTOS"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1020,
+              "fraction": 0.379,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1530,
+              "fraction": 0.568,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2040,
+              "fraction": 0.757,
+              "at_stop": "SANTIAGO BERNABEU"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2550,
+              "fraction": 0.947,
+              "at_stop": "BEGOÑA"
+            }
+          ]
+        },
+        "total_trains": 12
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "TRES OLIVOS",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 45.3,
+          "headway_min": 3.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "TRES OLIVOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.077,
+              "at_stop": "FUENCARRAL"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.155,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.232,
+              "at_stop": "CUZCO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.309,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.386,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.464,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.541,
+              "at_stop": "LAGO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.618,
+              "at_stop": "BATAN"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.696,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.773,
+              "at_stop": "COLONIA JARDIN"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.85,
+              "at_stop": "CUATRO VIENTOS"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.927,
+              "at_stop": "CUATRO VIENTOS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "TRES OLIVOS",
+          "journey_min": 44.9,
+          "headway_min": 3.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.078,
+              "at_stop": "JOAQUIN VILUMBRALES"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.156,
+              "at_stop": "JOAQUIN VILUMBRALES"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.234,
+              "at_stop": "AVIACION ESPAÑOLA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.312,
+              "at_stop": "COLONIA JARDIN"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.39,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.468,
+              "at_stop": "BATAN"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.546,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.624,
+              "at_stop": "TRIBUNAL"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.702,
+              "at_stop": "GREGORIO MARAÑON"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.78,
+              "at_stop": "SANTIAGO BERNABEU"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.857,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.935,
+              "at_stop": "BEGOÑA"
+            }
+          ]
+        },
+        "total_trains": 26
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "TRES OLIVOS",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 45.3,
+          "headway_min": 3.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "TRES OLIVOS"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.077,
+              "at_stop": "FUENCARRAL"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.155,
+              "at_stop": "CHAMARTIN"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.232,
+              "at_stop": "CUZCO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.309,
+              "at_stop": "NUEVOS MINISTERIOS"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.386,
+              "at_stop": "ALONSO MARTINEZ"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.464,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.541,
+              "at_stop": "LAGO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.618,
+              "at_stop": "BATAN"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.696,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.773,
+              "at_stop": "COLONIA JARDIN"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.85,
+              "at_stop": "CUATRO VIENTOS"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.927,
+              "at_stop": "CUATRO VIENTOS"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "TRES OLIVOS",
+          "journey_min": 44.9,
+          "headway_min": 3.5,
+          "trains": 13,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 210,
+              "fraction": 0.078,
+              "at_stop": "JOAQUIN VILUMBRALES"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 420,
+              "fraction": 0.156,
+              "at_stop": "JOAQUIN VILUMBRALES"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 630,
+              "fraction": 0.234,
+              "at_stop": "AVIACION ESPAÑOLA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 840,
+              "fraction": 0.312,
+              "at_stop": "COLONIA JARDIN"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1050,
+              "fraction": 0.39,
+              "at_stop": "CASA DE CAMPO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 1260,
+              "fraction": 0.468,
+              "at_stop": "BATAN"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 1470,
+              "fraction": 0.546,
+              "at_stop": "PRINCIPE PIO"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 1680,
+              "fraction": 0.624,
+              "at_stop": "TRIBUNAL"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 1890,
+              "fraction": 0.702,
+              "at_stop": "GREGORIO MARAÑON"
+            },
+            {
+              "train": 11,
+              "elapsed_s": 2100,
+              "fraction": 0.78,
+              "at_stop": "SANTIAGO BERNABEU"
+            },
+            {
+              "train": 12,
+              "elapsed_s": 2310,
+              "fraction": 0.857,
+              "at_stop": "PLAZA DE CASTILLA"
+            },
+            {
+              "train": 13,
+              "elapsed_s": 2520,
+              "fraction": 0.935,
+              "at_stop": "BEGOÑA"
+            }
+          ]
+        },
+        "total_trains": 26
+      }
+    },
+    "11": {
+      "06:05": {
+        "dir0": {
+          "origin": "PLAZA ELIPTICA",
+          "destination": "LA FORTUNA",
+          "journey_min": 15.5,
+          "headway_min": 10.5,
+          "trains": 2,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 630,
+              "fraction": 0.676,
+              "at_stop": "LA PESETA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LA FORTUNA",
+          "destination": "PLAZA ELIPTICA",
+          "journey_min": 15.5,
+          "headway_min": 10.5,
+          "trains": 2,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LA FORTUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 630,
+              "fraction": 0.676,
+              "at_stop": "SAN FRANCISCO"
+            }
+          ]
+        },
+        "total_trains": 4
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "PLAZA ELIPTICA",
+          "destination": "LA FORTUNA",
+          "journey_min": 15.5,
+          "headway_min": 6.0,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 360,
+              "fraction": 0.386,
+              "at_stop": "SAN FRANCISCO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 720,
+              "fraction": 0.773,
+              "at_stop": "LA PESETA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LA FORTUNA",
+          "destination": "PLAZA ELIPTICA",
+          "journey_min": 15.5,
+          "headway_min": 6.0,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LA FORTUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 360,
+              "fraction": 0.386,
+              "at_stop": "LA PESETA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 720,
+              "fraction": 0.773,
+              "at_stop": "PAN BENDITO"
+            }
+          ]
+        },
+        "total_trains": 6
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "PLAZA ELIPTICA",
+          "destination": "LA FORTUNA",
+          "journey_min": 15.5,
+          "headway_min": 6.0,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PLAZA ELIPTICA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 360,
+              "fraction": 0.386,
+              "at_stop": "SAN FRANCISCO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 720,
+              "fraction": 0.773,
+              "at_stop": "LA PESETA"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "LA FORTUNA",
+          "destination": "PLAZA ELIPTICA",
+          "journey_min": 15.5,
+          "headway_min": 6.0,
+          "trains": 3,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "LA FORTUNA"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 360,
+              "fraction": 0.386,
+              "at_stop": "LA PESETA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 720,
+              "fraction": 0.773,
+              "at_stop": "PAN BENDITO"
+            }
+          ]
+        },
+        "total_trains": 6
+      }
+    },
+    "12": {
+      "06:05": {
+        "dir0": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.1,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.15,
+              "at_stop": "PARQUE OESTE"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.3,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.449,
+              "at_stop": "FUENLABRADA CENTRAL"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.599,
+              "at_stop": "ALONSO DE MENDOZA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.749,
+              "at_stop": "EL BERCIAL"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.899,
+              "at_stop": "LEGANES CENTRAL"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.0,
+          "headway_min": 9.0,
+          "trains": 7,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 540,
+              "fraction": 0.15,
+              "at_stop": "HOSPITAL SEVERO OCHOA"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 1080,
+              "fraction": 0.3,
+              "at_stop": "LOS ESPARTALES"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1620,
+              "fraction": 0.45,
+              "at_stop": "CONSERVATORIO"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 2160,
+              "fraction": 0.6,
+              "at_stop": "PARQUE EUROPA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 2700,
+              "fraction": 0.75,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 3240,
+              "fraction": 0.9,
+              "at_stop": "UNIVERSIDAD REY JUAN CARLOS"
+            }
+          ]
+        },
+        "total_trains": 14
+      },
+      "07:30": {
+        "dir0": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.1,
+          "headway_min": 6.5,
+          "trains": 10,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 390,
+              "fraction": 0.108,
+              "at_stop": "PARQUE OESTE"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 780,
+              "fraction": 0.216,
+              "at_stop": "PRADILLO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1170,
+              "fraction": 0.325,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1560,
+              "fraction": 0.433,
+              "at_stop": "PARQUE EUROPA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1950,
+              "fraction": 0.541,
+              "at_stop": "ARROYO CULEBRO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 2340,
+              "fraction": 0.649,
+              "at_stop": "GETAFE CENTRAL"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2730,
+              "fraction": 0.757,
+              "at_stop": "EL BERCIAL"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 3120,
+              "fraction": 0.865,
+              "at_stop": "HOSPITAL SEVERO OCHOA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 3510,
+              "fraction": 0.974,
+              "at_stop": "SAN NICASIO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.0,
+          "headway_min": 6.5,
+          "trains": 10,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 390,
+              "fraction": 0.108,
+              "at_stop": "SAN NICASIO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 780,
+              "fraction": 0.217,
+              "at_stop": "JULIAN BESTEIRO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1170,
+              "fraction": 0.325,
+              "at_stop": "EL CASAR"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1560,
+              "fraction": 0.433,
+              "at_stop": "ALONSO DE MENDOZA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1950,
+              "fraction": 0.542,
+              "at_stop": "PARQUE DE LOS ESTADOS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 2340,
+              "fraction": 0.65,
+              "at_stop": "HOSPITAL DE FUENLABRADA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2730,
+              "fraction": 0.758,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 3120,
+              "fraction": 0.866,
+              "at_stop": "UNIVERSIDAD REY JUAN CARLOS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 3510,
+              "fraction": 0.975,
+              "at_stop": "ALCORCON CENTRAL"
+            }
+          ]
+        },
+        "total_trains": 20
+      },
+      "09:00": {
+        "dir0": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.1,
+          "headway_min": 6.5,
+          "trains": 10,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 390,
+              "fraction": 0.108,
+              "at_stop": "PARQUE OESTE"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 780,
+              "fraction": 0.216,
+              "at_stop": "PRADILLO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1170,
+              "fraction": 0.325,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1560,
+              "fraction": 0.433,
+              "at_stop": "PARQUE EUROPA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1950,
+              "fraction": 0.541,
+              "at_stop": "ARROYO CULEBRO"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 2340,
+              "fraction": 0.649,
+              "at_stop": "GETAFE CENTRAL"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2730,
+              "fraction": 0.757,
+              "at_stop": "EL BERCIAL"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 3120,
+              "fraction": 0.865,
+              "at_stop": "HOSPITAL SEVERO OCHOA"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 3510,
+              "fraction": 0.974,
+              "at_stop": "SAN NICASIO"
+            }
+          ]
+        },
+        "dir1": {
+          "origin": "PUERTA DEL SUR",
+          "destination": "PUERTA DEL SUR",
+          "journey_min": 60.0,
+          "headway_min": 6.5,
+          "trains": 10,
+          "positions": [
+            {
+              "train": 1,
+              "elapsed_s": 0,
+              "fraction": 0.0,
+              "at_stop": "PUERTA DEL SUR"
+            },
+            {
+              "train": 2,
+              "elapsed_s": 390,
+              "fraction": 0.108,
+              "at_stop": "SAN NICASIO"
+            },
+            {
+              "train": 3,
+              "elapsed_s": 780,
+              "fraction": 0.217,
+              "at_stop": "JULIAN BESTEIRO"
+            },
+            {
+              "train": 4,
+              "elapsed_s": 1170,
+              "fraction": 0.325,
+              "at_stop": "EL CASAR"
+            },
+            {
+              "train": 5,
+              "elapsed_s": 1560,
+              "fraction": 0.433,
+              "at_stop": "ALONSO DE MENDOZA"
+            },
+            {
+              "train": 6,
+              "elapsed_s": 1950,
+              "fraction": 0.542,
+              "at_stop": "PARQUE DE LOS ESTADOS"
+            },
+            {
+              "train": 7,
+              "elapsed_s": 2340,
+              "fraction": 0.65,
+              "at_stop": "HOSPITAL DE FUENLABRADA"
+            },
+            {
+              "train": 8,
+              "elapsed_s": 2730,
+              "fraction": 0.758,
+              "at_stop": "MANUELA MALASAÑA"
+            },
+            {
+              "train": 9,
+              "elapsed_s": 3120,
+              "fraction": 0.866,
+              "at_stop": "UNIVERSIDAD REY JUAN CARLOS"
+            },
+            {
+              "train": 10,
+              "elapsed_s": 3510,
+              "fraction": 0.975,
+              "at_stop": "ALCORCON CENTRAL"
+            }
+          ]
+        },
+        "total_trains": 20
+      }
+    }
+  }
+}

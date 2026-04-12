@@ -1,0 +1,89 @@
+{
+  "_description": "Madrid Metro operating schedules: opening times, closing times, headways by time of day. Metro de Madrid does not publish per-train timetables — trains run on frequency, not fixed times. Data from metromadrid.es and Wikipedia.",
+  "_updated": "2026-04-12",
+
+  "general": {
+    "open_all_lines": "06:05",
+    "close_all_lines": "02:00",
+    "last_train_departs": "01:30–01:33",
+    "applies_to": "Every day of the year including public holidays",
+    "notes": "Metro de Madrid runs 365 days a year with consistent hours. No reduced Christmas or summer schedule."
+  },
+
+  "headways_by_period": {
+    "_notes": "Metro de Madrid does not publish exact headways per line publicly. The following are the best available approximations from Wikipedia, user reports and the CRTM (Consorcio Regional de Transportes de Madrid).",
+    "heavy_metro_core": {
+      "lines": ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L10"],
+      "peak_min": 3,
+      "peak_hours": "07:00–09:30 and 17:00–20:00 weekdays",
+      "offpeak_min": 5,
+      "offpeak_hours": "09:30–17:00 and 20:00–22:00 weekdays",
+      "night_min": 7,
+      "night_hours": "22:00–02:00",
+      "weekend_min": 5,
+      "weekend_note": "Weekend service broadly similar to weekday off-peak"
+    },
+    "heavy_metro_low_demand": {
+      "lines": ["L8", "L9", "L11", "L12", "LR"],
+      "peak_min": 5,
+      "peak_hours": "07:00–09:30 and 17:00–20:00 weekdays",
+      "offpeak_min": 8,
+      "offpeak_hours": "09:30–17:00 and 20:00–22:00",
+      "night_min": 12,
+      "night_hours": "22:00–02:00",
+      "weekend_min": 8
+    },
+    "ML1": {
+      "lines": ["ML1"],
+      "peak_min": 5,
+      "peak_hours": "07:00–10:00 and 17:30–20:00 weekdays",
+      "offpeak_min": 9,
+      "saturday_min": 9,
+      "sunday_min": 12,
+      "sunday_hours": "09:00–22:00",
+      "night_min": 20
+    },
+    "ML2_ML3": {
+      "lines": ["ML2", "ML3"],
+      "peak_min": 6,
+      "peak_hours": "07:00–10:00 and 17:30–20:00 weekdays",
+      "offpeak_min": 13,
+      "evening_peak_min": 7.5,
+      "late_min": 30,
+      "late_hours": "after 22:30",
+      "saturday_min": 20,
+      "saturday_late_min": 30,
+      "saturday_late_hours": "after 22:00",
+      "sunday_min": 30
+    }
+  },
+
+  "first_last_trains": {
+    "_notes": "First and last train departure times from terminals. Exact times vary by direction and station. These are approximate network-wide values.",
+    "first_train_from_terminal": "06:05",
+    "last_train_from_terminal": "01:30",
+    "frequency_first_hour": "Every 7–10 min (06:05–07:00, low initial demand)",
+    "frequency_last_hour": "Every 7–12 min (after 22:00)",
+    "L8_airport_note": "L8 first train from Nuevos Ministerios at 06:05, from T4 at 06:05. Operates full day. No overnight service."
+  },
+
+  "depot_departure_stations": {
+    "_description": "Stations adjacent to or containing depots where trains begin/end service. Trains typically make their first revenue run from the nearest terminal or the depot station.",
+    "L1":  { "depots": ["Cuatro Caminos", "Valdecarros"], "first_service_from": ["Pinar de Chamartín", "Valdecarros"] },
+    "L2":  { "depots": ["Ventas"], "first_service_from": ["Cuatro Caminos", "Las Rosas"] },
+    "L3":  { "depots": ["Moncloa"], "first_service_from": ["Moncloa", "El Casar"] },
+    "L4":  { "depots": ["Mar de Cristal"], "first_service_from": ["Argüelles", "Pinar de Chamartín"] },
+    "L5":  { "depots": ["Canillejas", "Aluche"], "first_service_from": ["Casa de Campo", "Alameda de Osuna"] },
+    "L6":  { "depots": ["Ciudad Universitaria", "Laguna"], "first_service_from": ["Ciudad Universitaria", "Laguna"] },
+    "L7":  { "depots": ["Sacedal"], "first_service_from": ["Pitis", "Hospital del Henares"] },
+    "L8":  { "depots": ["Nuevos Ministerios"], "first_service_from": ["Nuevos Ministerios", "Aeropuerto T4"] },
+    "L9":  { "depots": ["Puerta de Arganda"], "first_service_from": ["Paco de Lucía", "Arganda del Rey"] },
+    "L10": { "depots": ["Cuatro Vientos", "Villaverde Alto"], "first_service_from": ["Hospital Infanta Sofía", "Puerta del Sur"] },
+    "L11": { "depots": ["Cuatro Vientos"], "first_service_from": ["Plaza Elíptica", "La Fortuna"] },
+    "L12": { "depots": ["Loranca", "El Bercial"], "first_service_from": ["Puerta del Sur", "Loranca"] },
+    "LR":  { "depots": [], "first_service_from": ["Ópera", "Príncipe Pío"] },
+    "ML1": { "depots": ["Sanchinarro"], "first_service_from": ["Pinar de Chamartín", "Las Tablas"] },
+    "ML2": { "depots": ["Pozuelo de Alarcón"], "first_service_from": ["Colonia Jardín", "Estación de Aravaca"] },
+    "ML3": { "depots": ["Pozuelo de Alarcón"], "first_service_from": ["Colonia Jardín", "Puerta de Boadilla"] }
+  }
+}

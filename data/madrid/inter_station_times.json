@@ -1,0 +1,1279 @@
+{
+  "_description": "Real inter-station travel times (seconds) derived from CRTM GTFS stop_times.txt. Direction 0 only, representative weekday trip.",
+  "_source": "CRTM GTFS feed 20250527",
+  "_updated": "2026-04-12",
+  "lines": {
+    "1": {
+      "num_segments": 32,
+      "avg_travel_time_s": 107,
+      "segments": [
+        {
+          "from": "PINAR DE CHAMARTIN",
+          "to": "BAMBU",
+          "travel_time_s": 190
+        },
+        {
+          "from": "BAMBU",
+          "to": "CHAMARTIN",
+          "travel_time_s": 127
+        },
+        {
+          "from": "CHAMARTIN",
+          "to": "PLAZA DE CASTILLA",
+          "travel_time_s": 182
+        },
+        {
+          "from": "PLAZA DE CASTILLA",
+          "to": "VALDEACEDERAS",
+          "travel_time_s": 81
+        },
+        {
+          "from": "VALDEACEDERAS",
+          "to": "TETUAN",
+          "travel_time_s": 87
+        },
+        {
+          "from": "TETUAN",
+          "to": "ESTRECHO",
+          "travel_time_s": 120
+        },
+        {
+          "from": "ESTRECHO",
+          "to": "ALVARADO",
+          "travel_time_s": 85
+        },
+        {
+          "from": "ALVARADO",
+          "to": "CUATRO CAMINOS",
+          "travel_time_s": 68
+        },
+        {
+          "from": "CUATRO CAMINOS",
+          "to": "RIOS ROSAS",
+          "travel_time_s": 81
+        },
+        {
+          "from": "RIOS ROSAS",
+          "to": "IGLESIA",
+          "travel_time_s": 117
+        },
+        {
+          "from": "IGLESIA",
+          "to": "BILBAO",
+          "travel_time_s": 111
+        },
+        {
+          "from": "BILBAO",
+          "to": "TRIBUNAL",
+          "travel_time_s": 75
+        },
+        {
+          "from": "TRIBUNAL",
+          "to": "GRAN VIA",
+          "travel_time_s": 109
+        },
+        {
+          "from": "GRAN VIA",
+          "to": "SOL",
+          "travel_time_s": 51
+        },
+        {
+          "from": "SOL",
+          "to": "TIRSO DE MOLINA",
+          "travel_time_s": 106
+        },
+        {
+          "from": "TIRSO DE MOLINA",
+          "to": "ANTON MARTIN",
+          "travel_time_s": 77
+        },
+        {
+          "from": "ANTON MARTIN",
+          "to": "ESTACION DEL ARTE",
+          "travel_time_s": 107
+        },
+        {
+          "from": "ESTACION DEL ARTE",
+          "to": "ATOCHA",
+          "travel_time_s": 48
+        },
+        {
+          "from": "ATOCHA",
+          "to": "MENENDEZ PELAYO",
+          "travel_time_s": 111
+        },
+        {
+          "from": "MENENDEZ PELAYO",
+          "to": "PACIFICO",
+          "travel_time_s": 85
+        },
+        {
+          "from": "PACIFICO",
+          "to": "PUENTE DE VALLECAS",
+          "travel_time_s": 111
+        },
+        {
+          "from": "PUENTE DE VALLECAS",
+          "to": "NUEVA NUMANCIA",
+          "travel_time_s": 74
+        },
+        {
+          "from": "NUEVA NUMANCIA",
+          "to": "PORTAZGO",
+          "travel_time_s": 91
+        },
+        {
+          "from": "PORTAZGO",
+          "to": "BUENOS AIRES",
+          "travel_time_s": 88
+        },
+        {
+          "from": "BUENOS AIRES",
+          "to": "ALTO DEL ARENAL",
+          "travel_time_s": 103
+        },
+        {
+          "from": "ALTO DEL ARENAL",
+          "to": "MIGUEL HERNANDEZ",
+          "travel_time_s": 100
+        },
+        {
+          "from": "MIGUEL HERNANDEZ",
+          "to": "SIERRA DE GUADALUPE",
+          "travel_time_s": 209
+        },
+        {
+          "from": "SIERRA DE GUADALUPE",
+          "to": "VILLA DE VALLECAS",
+          "travel_time_s": 79
+        },
+        {
+          "from": "VILLA DE VALLECAS",
+          "to": "CONGOSTO",
+          "travel_time_s": 126
+        },
+        {
+          "from": "CONGOSTO",
+          "to": "LA GAVIA",
+          "travel_time_s": 107
+        },
+        {
+          "from": "LA GAVIA",
+          "to": "LAS SUERTES",
+          "travel_time_s": 214
+        },
+        {
+          "from": "LAS SUERTES",
+          "to": "VALDECARROS",
+          "travel_time_s": 102
+        }
+      ]
+    },
+    "2": {
+      "num_segments": 19,
+      "avg_travel_time_s": 105,
+      "segments": [
+        {
+          "from": "LAS ROSAS",
+          "to": "AVENIDA DE GUADALAJARA",
+          "travel_time_s": 129
+        },
+        {
+          "from": "AVENIDA DE GUADALAJARA",
+          "to": "ALSACIA",
+          "travel_time_s": 162
+        },
+        {
+          "from": "ALSACIA",
+          "to": "LA ALMUDENA",
+          "travel_time_s": 212
+        },
+        {
+          "from": "LA ALMUDENA",
+          "to": "LA ELIPA",
+          "travel_time_s": 164
+        },
+        {
+          "from": "LA ELIPA",
+          "to": "VENTAS",
+          "travel_time_s": 211
+        },
+        {
+          "from": "VENTAS",
+          "to": "MANUEL BECERRA",
+          "travel_time_s": 92
+        },
+        {
+          "from": "MANUEL BECERRA",
+          "to": "GOYA",
+          "travel_time_s": 94
+        },
+        {
+          "from": "GOYA",
+          "to": "PRINCIPE DE VERGARA",
+          "travel_time_s": 62
+        },
+        {
+          "from": "PRINCIPE DE VERGARA",
+          "to": "RETIRO",
+          "travel_time_s": 80
+        },
+        {
+          "from": "RETIRO",
+          "to": "BANCO DE ESPAÑA",
+          "travel_time_s": 111
+        },
+        {
+          "from": "BANCO DE ESPAÑA",
+          "to": "SEVILLA",
+          "travel_time_s": 68
+        },
+        {
+          "from": "SEVILLA",
+          "to": "SOL",
+          "travel_time_s": 51
+        },
+        {
+          "from": "SOL",
+          "to": "OPERA",
+          "travel_time_s": 73
+        },
+        {
+          "from": "OPERA",
+          "to": "SANTO DOMINGO",
+          "travel_time_s": 64
+        },
+        {
+          "from": "SANTO DOMINGO",
+          "to": "NOVICIADO",
+          "travel_time_s": 61
+        },
+        {
+          "from": "NOVICIADO",
+          "to": "SAN BERNARDO",
+          "travel_time_s": 93
+        },
+        {
+          "from": "SAN BERNARDO",
+          "to": "QUEVEDO",
+          "travel_time_s": 42
+        },
+        {
+          "from": "QUEVEDO",
+          "to": "CANAL",
+          "travel_time_s": 105
+        },
+        {
+          "from": "CANAL",
+          "to": "CUATRO CAMINOS",
+          "travel_time_s": 113
+        }
+      ]
+    },
+    "4": {
+      "num_segments": 22,
+      "avg_travel_time_s": 104,
+      "segments": [
+        {
+          "from": "ARGÜELLES",
+          "to": "SAN BERNARDO",
+          "travel_time_s": 130
+        },
+        {
+          "from": "SAN BERNARDO",
+          "to": "BILBAO",
+          "travel_time_s": 63
+        },
+        {
+          "from": "BILBAO",
+          "to": "ALONSO MARTINEZ",
+          "travel_time_s": 69
+        },
+        {
+          "from": "ALONSO MARTINEZ",
+          "to": "COLON",
+          "travel_time_s": 61
+        },
+        {
+          "from": "COLON",
+          "to": "SERRANO",
+          "travel_time_s": 80
+        },
+        {
+          "from": "SERRANO",
+          "to": "VELAZQUEZ",
+          "travel_time_s": 58
+        },
+        {
+          "from": "VELAZQUEZ",
+          "to": "GOYA",
+          "travel_time_s": 78
+        },
+        {
+          "from": "GOYA",
+          "to": "LISTA",
+          "travel_time_s": 91
+        },
+        {
+          "from": "LISTA",
+          "to": "DIEGO DE LEON",
+          "travel_time_s": 90
+        },
+        {
+          "from": "DIEGO DE LEON",
+          "to": "AVENIDA DE AMERICA",
+          "travel_time_s": 83
+        },
+        {
+          "from": "AVENIDA DE AMERICA",
+          "to": "PROSPERIDAD",
+          "travel_time_s": 126
+        },
+        {
+          "from": "PROSPERIDAD",
+          "to": "ALFONSO XIII",
+          "travel_time_s": 137
+        },
+        {
+          "from": "ALFONSO XIII",
+          "to": "AVENIDA DE LA PAZ",
+          "travel_time_s": 101
+        },
+        {
+          "from": "AVENIDA DE LA PAZ",
+          "to": "ARTURO SORIA",
+          "travel_time_s": 122
+        },
+        {
+          "from": "ARTURO SORIA",
+          "to": "ESPERANZA",
+          "travel_time_s": 134
+        },
+        {
+          "from": "ESPERANZA",
+          "to": "CANILLAS",
+          "travel_time_s": 206
+        },
+        {
+          "from": "CANILLAS",
+          "to": "MAR DE CRISTAL",
+          "travel_time_s": 101
+        },
+        {
+          "from": "MAR DE CRISTAL",
+          "to": "SAN LORENZO",
+          "travel_time_s": 78
+        },
+        {
+          "from": "SAN LORENZO",
+          "to": "PARQUE DE SANTA MARIA",
+          "travel_time_s": 110
+        },
+        {
+          "from": "PARQUE DE SANTA MARIA",
+          "to": "HORTALEZA",
+          "travel_time_s": 111
+        },
+        {
+          "from": "HORTALEZA",
+          "to": "MANOTERAS",
+          "travel_time_s": 171
+        },
+        {
+          "from": "MANOTERAS",
+          "to": "PINAR DE CHAMARTIN",
+          "travel_time_s": 97
+        }
+      ]
+    },
+    "5": {
+      "num_segments": 31,
+      "avg_travel_time_s": 112,
+      "segments": [
+        {
+          "from": "ALAMEDA DE OSUNA",
+          "to": "EL CAPRICHO",
+          "travel_time_s": 114
+        },
+        {
+          "from": "EL CAPRICHO",
+          "to": "CANILLEJAS",
+          "travel_time_s": 218
+        },
+        {
+          "from": "CANILLEJAS",
+          "to": "TORRE ARIAS",
+          "travel_time_s": 153
+        },
+        {
+          "from": "TORRE ARIAS",
+          "to": "SUANZES",
+          "travel_time_s": 119
+        },
+        {
+          "from": "SUANZES",
+          "to": "CIUDAD LINEAL",
+          "travel_time_s": 147
+        },
+        {
+          "from": "CIUDAD LINEAL",
+          "to": "PUEBLO NUEVO",
+          "travel_time_s": 84
+        },
+        {
+          "from": "PUEBLO NUEVO",
+          "to": "QUINTANA",
+          "travel_time_s": 82
+        },
+        {
+          "from": "QUINTANA",
+          "to": "EL CARMEN",
+          "travel_time_s": 109
+        },
+        {
+          "from": "EL CARMEN",
+          "to": "VENTAS",
+          "travel_time_s": 106
+        },
+        {
+          "from": "VENTAS",
+          "to": "DIEGO DE LEON",
+          "travel_time_s": 136
+        },
+        {
+          "from": "DIEGO DE LEON",
+          "to": "NUÑEZ DE BALBOA",
+          "travel_time_s": 103
+        },
+        {
+          "from": "NUÑEZ DE BALBOA",
+          "to": "RUBEN DARIO",
+          "travel_time_s": 102
+        },
+        {
+          "from": "RUBEN DARIO",
+          "to": "ALONSO MARTINEZ",
+          "travel_time_s": 109
+        },
+        {
+          "from": "ALONSO MARTINEZ",
+          "to": "CHUECA",
+          "travel_time_s": 107
+        },
+        {
+          "from": "CHUECA",
+          "to": "GRAN VIA",
+          "travel_time_s": 77
+        },
+        {
+          "from": "GRAN VIA",
+          "to": "CALLAO",
+          "travel_time_s": 52
+        },
+        {
+          "from": "CALLAO",
+          "to": "OPERA",
+          "travel_time_s": 76
+        },
+        {
+          "from": "OPERA",
+          "to": "LA LATINA",
+          "travel_time_s": 118
+        },
+        {
+          "from": "LA LATINA",
+          "to": "PUERTA DE TOLEDO",
+          "travel_time_s": 90
+        },
+        {
+          "from": "PUERTA DE TOLEDO",
+          "to": "ACACIAS",
+          "travel_time_s": 138
+        },
+        {
+          "from": "ACACIAS",
+          "to": "PIRAMIDES",
+          "travel_time_s": 83
+        },
+        {
+          "from": "PIRAMIDES",
+          "to": "MARQUES DE VADILLO",
+          "travel_time_s": 117
+        },
+        {
+          "from": "MARQUES DE VADILLO",
+          "to": "URGEL",
+          "travel_time_s": 118
+        },
+        {
+          "from": "URGEL",
+          "to": "OPORTO",
+          "travel_time_s": 102
+        },
+        {
+          "from": "OPORTO",
+          "to": "VISTA ALEGRE",
+          "travel_time_s": 113
+        },
+        {
+          "from": "VISTA ALEGRE",
+          "to": "CARABANCHEL",
+          "travel_time_s": 96
+        },
+        {
+          "from": "CARABANCHEL",
+          "to": "EUGENIA DE MONTIJO",
+          "travel_time_s": 90
+        },
+        {
+          "from": "EUGENIA DE MONTIJO",
+          "to": "ALUCHE",
+          "travel_time_s": 143
+        },
+        {
+          "from": "ALUCHE",
+          "to": "EMPALME",
+          "travel_time_s": 104
+        },
+        {
+          "from": "EMPALME",
+          "to": "CAMPAMENTO",
+          "travel_time_s": 69
+        },
+        {
+          "from": "CAMPAMENTO",
+          "to": "CASA DE CAMPO",
+          "travel_time_s": 184
+        }
+      ]
+    },
+    "8": {
+      "num_segments": 7,
+      "avg_travel_time_s": 184,
+      "segments": [
+        {
+          "from": "NUEVOS MINISTERIOS",
+          "to": "COLOMBIA",
+          "travel_time_s": 157
+        },
+        {
+          "from": "COLOMBIA",
+          "to": "PINAR DEL REY",
+          "travel_time_s": 242
+        },
+        {
+          "from": "PINAR DEL REY",
+          "to": "MAR DE CRISTAL",
+          "travel_time_s": 73
+        },
+        {
+          "from": "MAR DE CRISTAL",
+          "to": "FERIA DE MADRID",
+          "travel_time_s": 184
+        },
+        {
+          "from": "FERIA DE MADRID",
+          "to": "AEROPUERTO T1-T2-T3",
+          "travel_time_s": 339
+        },
+        {
+          "from": "AEROPUERTO T1-T2-T3",
+          "to": "BARAJAS",
+          "travel_time_s": 118
+        },
+        {
+          "from": "BARAJAS",
+          "to": "AEROPUERTO T-4",
+          "travel_time_s": 175
+        }
+      ]
+    },
+    "11": {
+      "num_segments": 6,
+      "avg_travel_time_s": 155,
+      "segments": [
+        {
+          "from": "PLAZA ELIPTICA",
+          "to": "ABRANTES",
+          "travel_time_s": 124
+        },
+        {
+          "from": "ABRANTES",
+          "to": "PAN BENDITO",
+          "travel_time_s": 106
+        },
+        {
+          "from": "PAN BENDITO",
+          "to": "SAN FRANCISCO",
+          "travel_time_s": 88
+        },
+        {
+          "from": "SAN FRANCISCO",
+          "to": "CARABANCHEL ALTO",
+          "travel_time_s": 157
+        },
+        {
+          "from": "CARABANCHEL ALTO",
+          "to": "LA PESETA",
+          "travel_time_s": 126
+        },
+        {
+          "from": "LA PESETA",
+          "to": "LA FORTUNA",
+          "travel_time_s": 331
+        }
+      ]
+    },
+    "6": {
+      "num_segments": 28,
+      "avg_travel_time_s": 118,
+      "segments": [
+        {
+          "from": "LAGUNA",
+          "to": "CARPETANA",
+          "travel_time_s": 97
+        },
+        {
+          "from": "CARPETANA",
+          "to": "OPORTO",
+          "travel_time_s": 126
+        },
+        {
+          "from": "OPORTO",
+          "to": "OPAÑEL",
+          "travel_time_s": 106
+        },
+        {
+          "from": "OPAÑEL",
+          "to": "PLAZA ELIPTICA",
+          "travel_time_s": 98
+        },
+        {
+          "from": "PLAZA ELIPTICA",
+          "to": "USERA",
+          "travel_time_s": 135
+        },
+        {
+          "from": "USERA",
+          "to": "LEGAZPI",
+          "travel_time_s": 138
+        },
+        {
+          "from": "LEGAZPI",
+          "to": "ARGANZUELA-PLANETARIO",
+          "travel_time_s": 93
+        },
+        {
+          "from": "ARGANZUELA-PLANETARIO",
+          "to": "MENDEZ ALVARO",
+          "travel_time_s": 111
+        },
+        {
+          "from": "MENDEZ ALVARO",
+          "to": "PACIFICO",
+          "travel_time_s": 121
+        },
+        {
+          "from": "PACIFICO",
+          "to": "CONDE DE CASAL",
+          "travel_time_s": 104
+        },
+        {
+          "from": "CONDE DE CASAL",
+          "to": "SAINZ DE BARANDA",
+          "travel_time_s": 115
+        },
+        {
+          "from": "SAINZ DE BARANDA",
+          "to": "ODONNELL",
+          "travel_time_s": 108
+        },
+        {
+          "from": "ODONNELL",
+          "to": "MANUEL BECERRA",
+          "travel_time_s": 86
+        },
+        {
+          "from": "MANUEL BECERRA",
+          "to": "DIEGO DE LEON",
+          "travel_time_s": 105
+        },
+        {
+          "from": "DIEGO DE LEON",
+          "to": "AVENIDA DE AMERICA",
+          "travel_time_s": 98
+        },
+        {
+          "from": "AVENIDA DE AMERICA",
+          "to": "REPUBLICA ARGENTINA",
+          "travel_time_s": 123
+        },
+        {
+          "from": "REPUBLICA ARGENTINA",
+          "to": "NUEVOS MINISTERIOS",
+          "travel_time_s": 133
+        },
+        {
+          "from": "NUEVOS MINISTERIOS",
+          "to": "CUATRO CAMINOS",
+          "travel_time_s": 106
+        },
+        {
+          "from": "CUATRO CAMINOS",
+          "to": "GUZMAN EL BUENO",
+          "travel_time_s": 105
+        },
+        {
+          "from": "GUZMAN EL BUENO",
+          "to": "VICENTE ALEIXANDRE",
+          "travel_time_s": 90
+        },
+        {
+          "from": "VICENTE ALEIXANDRE",
+          "to": "CIUDAD UNIVERSITARIA",
+          "travel_time_s": 96
+        },
+        {
+          "from": "CIUDAD UNIVERSITARIA",
+          "to": "MONCLOA",
+          "travel_time_s": 186
+        },
+        {
+          "from": "MONCLOA",
+          "to": "ARGÜELLES",
+          "travel_time_s": 77
+        },
+        {
+          "from": "ARGÜELLES",
+          "to": "PRINCIPE PIO",
+          "travel_time_s": 190
+        },
+        {
+          "from": "PRINCIPE PIO",
+          "to": "PUERTA DEL ANGEL",
+          "travel_time_s": 161
+        },
+        {
+          "from": "PUERTA DEL ANGEL",
+          "to": "ALTO DE EXTREMADURA",
+          "travel_time_s": 144
+        },
+        {
+          "from": "ALTO DE EXTREMADURA",
+          "to": "LUCERO",
+          "travel_time_s": 131
+        },
+        {
+          "from": "LUCERO",
+          "to": "LAGUNA",
+          "travel_time_s": 110
+        }
+      ]
+    },
+    "7": {
+      "num_segments": 23,
+      "avg_travel_time_s": 108,
+      "segments": [
+        {
+          "from": "ESTADIO METROPOLITANO",
+          "to": "LAS MUSAS",
+          "travel_time_s": 123
+        },
+        {
+          "from": "LAS MUSAS",
+          "to": "SAN BLAS",
+          "travel_time_s": 113
+        },
+        {
+          "from": "SAN BLAS",
+          "to": "SIMANCAS",
+          "travel_time_s": 110
+        },
+        {
+          "from": "SIMANCAS",
+          "to": "GARCIA NOBLEJAS",
+          "travel_time_s": 105
+        },
+        {
+          "from": "GARCIA NOBLEJAS",
+          "to": "ASCAO",
+          "travel_time_s": 102
+        },
+        {
+          "from": "ASCAO",
+          "to": "PUEBLO NUEVO",
+          "travel_time_s": 93
+        },
+        {
+          "from": "PUEBLO NUEVO",
+          "to": "BARRIO DE LA CONCEPCION",
+          "travel_time_s": 126
+        },
+        {
+          "from": "BARRIO DE LA CONCEPCION",
+          "to": "PARQUE DE LAS AVENIDAS",
+          "travel_time_s": 120
+        },
+        {
+          "from": "PARQUE DE LAS AVENIDAS",
+          "to": "CARTAGENA",
+          "travel_time_s": 93
+        },
+        {
+          "from": "CARTAGENA",
+          "to": "AVENIDA DE AMERICA",
+          "travel_time_s": 94
+        },
+        {
+          "from": "AVENIDA DE AMERICA",
+          "to": "GREGORIO MARAÑON",
+          "travel_time_s": 141
+        },
+        {
+          "from": "GREGORIO MARAÑON",
+          "to": "ALONSO CANO",
+          "travel_time_s": 81
+        },
+        {
+          "from": "ALONSO CANO",
+          "to": "CANAL",
+          "travel_time_s": 62
+        },
+        {
+          "from": "CANAL",
+          "to": "ISLAS FILIPINAS",
+          "travel_time_s": 98
+        },
+        {
+          "from": "ISLAS FILIPINAS",
+          "to": "GUZMAN EL BUENO",
+          "travel_time_s": 190
+        },
+        {
+          "from": "GUZMAN EL BUENO",
+          "to": "FRANCOS RODRIGUEZ",
+          "travel_time_s": 147
+        },
+        {
+          "from": "FRANCOS RODRIGUEZ",
+          "to": "VALDEZARZA",
+          "travel_time_s": 155
+        },
+        {
+          "from": "VALDEZARZA",
+          "to": "ANTONIO MACHADO",
+          "travel_time_s": 115
+        },
+        {
+          "from": "ANTONIO MACHADO",
+          "to": "PEÑAGRANDE",
+          "travel_time_s": 85
+        },
+        {
+          "from": "PEÑAGRANDE",
+          "to": "AVENIDA DE LA ILUSTRACION",
+          "travel_time_s": 71
+        },
+        {
+          "from": "AVENIDA DE LA ILUSTRACION",
+          "to": "LACOMA",
+          "travel_time_s": 88
+        },
+        {
+          "from": "LACOMA",
+          "to": "ARROYOFRESNO",
+          "travel_time_s": 91
+        },
+        {
+          "from": "ARROYOFRESNO",
+          "to": "PITIS",
+          "travel_time_s": 73
+        }
+      ]
+    },
+    "9": {
+      "num_segments": 23,
+      "avg_travel_time_s": 120,
+      "segments": [
+        {
+          "from": "PACO DE LUCIA",
+          "to": "MIRASIERRA",
+          "travel_time_s": 199
+        },
+        {
+          "from": "MIRASIERRA",
+          "to": "HERRERA ORIA",
+          "travel_time_s": 160
+        },
+        {
+          "from": "HERRERA ORIA",
+          "to": "BARRIO DEL PILAR",
+          "travel_time_s": 129
+        },
+        {
+          "from": "BARRIO DEL PILAR",
+          "to": "VENTILLA",
+          "travel_time_s": 139
+        },
+        {
+          "from": "VENTILLA",
+          "to": "PLAZA DE CASTILLA",
+          "travel_time_s": 117
+        },
+        {
+          "from": "PLAZA DE CASTILLA",
+          "to": "DUQUE DE PASTRANA",
+          "travel_time_s": 83
+        },
+        {
+          "from": "DUQUE DE PASTRANA",
+          "to": "PIO XII",
+          "travel_time_s": 101
+        },
+        {
+          "from": "PIO XII",
+          "to": "COLOMBIA",
+          "travel_time_s": 95
+        },
+        {
+          "from": "COLOMBIA",
+          "to": "CONCHA ESPINA",
+          "travel_time_s": 97
+        },
+        {
+          "from": "CONCHA ESPINA",
+          "to": "CRUZ DEL RAYO",
+          "travel_time_s": 96
+        },
+        {
+          "from": "CRUZ DEL RAYO",
+          "to": "AVENIDA DE AMERICA",
+          "travel_time_s": 97
+        },
+        {
+          "from": "AVENIDA DE AMERICA",
+          "to": "NUÑEZ DE BALBOA",
+          "travel_time_s": 98
+        },
+        {
+          "from": "NUÑEZ DE BALBOA",
+          "to": "PRINCIPE DE VERGARA",
+          "travel_time_s": 109
+        },
+        {
+          "from": "PRINCIPE DE VERGARA",
+          "to": "IBIZA",
+          "travel_time_s": 96
+        },
+        {
+          "from": "IBIZA",
+          "to": "SAINZ DE BARANDA",
+          "travel_time_s": 129
+        },
+        {
+          "from": "SAINZ DE BARANDA",
+          "to": "ESTRELLA",
+          "travel_time_s": 113
+        },
+        {
+          "from": "ESTRELLA",
+          "to": "VINATEROS",
+          "travel_time_s": 121
+        },
+        {
+          "from": "VINATEROS",
+          "to": "ARTILLEROS",
+          "travel_time_s": 116
+        },
+        {
+          "from": "ARTILLEROS",
+          "to": "PAVONES",
+          "travel_time_s": 126
+        },
+        {
+          "from": "PAVONES",
+          "to": "VALDEBERNARDO",
+          "travel_time_s": 189
+        },
+        {
+          "from": "VALDEBERNARDO",
+          "to": "VICALVARO",
+          "travel_time_s": 187
+        },
+        {
+          "from": "VICALVARO",
+          "to": "SAN CIPRIANO",
+          "travel_time_s": 68
+        },
+        {
+          "from": "SAN CIPRIANO",
+          "to": "PUERTA DE ARGANDA",
+          "travel_time_s": 88
+        }
+      ]
+    },
+    "10": {
+      "num_segments": 20,
+      "avg_travel_time_s": 136,
+      "segments": [
+        {
+          "from": "TRES OLIVOS",
+          "to": "FUENCARRAL",
+          "travel_time_s": 80
+        },
+        {
+          "from": "FUENCARRAL",
+          "to": "BEGOÑA",
+          "travel_time_s": 166
+        },
+        {
+          "from": "BEGOÑA",
+          "to": "CHAMARTIN",
+          "travel_time_s": 120
+        },
+        {
+          "from": "CHAMARTIN",
+          "to": "PLAZA DE CASTILLA",
+          "travel_time_s": 97
+        },
+        {
+          "from": "PLAZA DE CASTILLA",
+          "to": "CUZCO",
+          "travel_time_s": 104
+        },
+        {
+          "from": "CUZCO",
+          "to": "SANTIAGO BERNABEU",
+          "travel_time_s": 92
+        },
+        {
+          "from": "SANTIAGO BERNABEU",
+          "to": "NUEVOS MINISTERIOS",
+          "travel_time_s": 92
+        },
+        {
+          "from": "NUEVOS MINISTERIOS",
+          "to": "GREGORIO MARAÑON",
+          "travel_time_s": 100
+        },
+        {
+          "from": "GREGORIO MARAÑON",
+          "to": "ALONSO MARTINEZ",
+          "travel_time_s": 134
+        },
+        {
+          "from": "ALONSO MARTINEZ",
+          "to": "TRIBUNAL",
+          "travel_time_s": 66
+        },
+        {
+          "from": "TRIBUNAL",
+          "to": "PLAZA DE ESPAÑA",
+          "travel_time_s": 79
+        },
+        {
+          "from": "PLAZA DE ESPAÑA",
+          "to": "PRINCIPE PIO",
+          "travel_time_s": 105
+        },
+        {
+          "from": "PRINCIPE PIO",
+          "to": "LAGO",
+          "travel_time_s": 203
+        },
+        {
+          "from": "LAGO",
+          "to": "BATAN",
+          "travel_time_s": 219
+        },
+        {
+          "from": "BATAN",
+          "to": "CASA DE CAMPO",
+          "travel_time_s": 109
+        },
+        {
+          "from": "CASA DE CAMPO",
+          "to": "COLONIA JARDIN",
+          "travel_time_s": 150
+        },
+        {
+          "from": "COLONIA JARDIN",
+          "to": "AVIACION ESPAÑOLA",
+          "travel_time_s": 221
+        },
+        {
+          "from": "AVIACION ESPAÑOLA",
+          "to": "CUATRO VIENTOS",
+          "travel_time_s": 113
+        },
+        {
+          "from": "CUATRO VIENTOS",
+          "to": "JOAQUIN VILUMBRALES",
+          "travel_time_s": 384
+        },
+        {
+          "from": "JOAQUIN VILUMBRALES",
+          "to": "PUERTA DEL SUR",
+          "travel_time_s": 83
+        }
+      ]
+    },
+    "12": {
+      "num_segments": 28,
+      "avg_travel_time_s": 129,
+      "segments": [
+        {
+          "from": "PUERTA DEL SUR",
+          "to": "PARQUE LISBOA",
+          "travel_time_s": 77
+        },
+        {
+          "from": "PARQUE LISBOA",
+          "to": "ALCORCON CENTRAL",
+          "travel_time_s": 108
+        },
+        {
+          "from": "ALCORCON CENTRAL",
+          "to": "PARQUE OESTE",
+          "travel_time_s": 144
+        },
+        {
+          "from": "PARQUE OESTE",
+          "to": "UNIVERSIDAD REY JUAN CARLOS",
+          "travel_time_s": 232
+        },
+        {
+          "from": "UNIVERSIDAD REY JUAN CARLOS",
+          "to": "MOSTOLES CENTRAL",
+          "travel_time_s": 112
+        },
+        {
+          "from": "MOSTOLES CENTRAL",
+          "to": "PRADILLO",
+          "travel_time_s": 66
+        },
+        {
+          "from": "PRADILLO",
+          "to": "HOSPITAL DE MOSTOLES",
+          "travel_time_s": 93
+        },
+        {
+          "from": "HOSPITAL DE MOSTOLES",
+          "to": "MANUELA MALASAÑA",
+          "travel_time_s": 137
+        },
+        {
+          "from": "MANUELA MALASAÑA",
+          "to": "LORANCA",
+          "travel_time_s": 256
+        },
+        {
+          "from": "LORANCA",
+          "to": "HOSPITAL DE FUENLABRADA",
+          "travel_time_s": 203
+        },
+        {
+          "from": "HOSPITAL DE FUENLABRADA",
+          "to": "PARQUE EUROPA",
+          "travel_time_s": 70
+        },
+        {
+          "from": "PARQUE EUROPA",
+          "to": "FUENLABRADA CENTRAL",
+          "travel_time_s": 72
+        },
+        {
+          "from": "FUENLABRADA CENTRAL",
+          "to": "PARQUE DE LOS ESTADOS",
+          "travel_time_s": 115
+        },
+        {
+          "from": "PARQUE DE LOS ESTADOS",
+          "to": "ARROYO CULEBRO",
+          "travel_time_s": 243
+        },
+        {
+          "from": "ARROYO CULEBRO",
+          "to": "CONSERVATORIO",
+          "travel_time_s": 89
+        },
+        {
+          "from": "CONSERVATORIO",
+          "to": "ALONSO DE MENDOZA",
+          "travel_time_s": 108
+        },
+        {
+          "from": "ALONSO DE MENDOZA",
+          "to": "GETAFE CENTRAL",
+          "travel_time_s": 117
+        },
+        {
+          "from": "GETAFE CENTRAL",
+          "to": "JUAN DE LA CIERVA",
+          "travel_time_s": 112
+        },
+        {
+          "from": "JUAN DE LA CIERVA",
+          "to": "EL CASAR",
+          "travel_time_s": 140
+        },
+        {
+          "from": "EL CASAR",
+          "to": "LOS ESPARTALES",
+          "travel_time_s": 79
+        },
+        {
+          "from": "LOS ESPARTALES",
+          "to": "EL BERCIAL",
+          "travel_time_s": 107
+        },
+        {
+          "from": "EL BERCIAL",
+          "to": "EL CARRASCAL",
+          "travel_time_s": 132
+        },
+        {
+          "from": "EL CARRASCAL",
+          "to": "JULIAN BESTEIRO",
+          "travel_time_s": 93
+        },
+        {
+          "from": "JULIAN BESTEIRO",
+          "to": "CASA DEL RELOJ",
+          "travel_time_s": 121
+        },
+        {
+          "from": "CASA DEL RELOJ",
+          "to": "HOSPITAL SEVERO OCHOA",
+          "travel_time_s": 80
+        },
+        {
+          "from": "HOSPITAL SEVERO OCHOA",
+          "to": "LEGANES CENTRAL",
+          "travel_time_s": 100
+        },
+        {
+          "from": "LEGANES CENTRAL",
+          "to": "SAN NICASIO",
+          "travel_time_s": 97
+        },
+        {
+          "from": "SAN NICASIO",
+          "to": "PUERTA DEL SUR",
+          "travel_time_s": 302
+        }
+      ]
+    },
+    "R": {
+      "num_segments": 1,
+      "avg_travel_time_s": 185,
+      "segments": [
+        {
+          "from": "OPERA",
+          "to": "PRINCIPE PIO",
+          "travel_time_s": 185
+        }
+      ]
+    }
+  }
+}

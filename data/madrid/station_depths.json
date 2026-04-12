@@ -1,0 +1,184 @@
+{
+  "_description": "Street-to-platform depth and estimated transit time per station/line for Madrid Metro. Data is scarce in public sources — individual station depths are mostly derived from engineering studies and blog posts. Line averages are inferred from gauge type, construction era, and known deep/shallow stations.",
+  "_updated": "2026-04-12",
+  "_methodology": "Depth in metres refers to the platform rail level below street level. Transit time (seconds) is estimated assuming 1.2 m/s walking speed and 0.5 m/s escalator speed for vertical distance, plus horizontal walking time inside the station.",
+
+  "known_stations": {
+    "Cuatro Caminos": {
+      "lines": {
+        "L1": { "depth_m": 15, "transit_time_s": 75 },
+        "L2": { "depth_m": 20, "transit_time_s": 90 },
+        "L6": { "depth_m": 45, "transit_time_s": 180 }
+      },
+      "notes": "L6 platform is the deepest in the entire Madrid Metro network. The tunnel between Cuatro Caminos and Guzmán el Bueno reaches 49 m — the absolute deepest point in the network."
+    },
+    "Nuevos Ministerios": {
+      "lines": {
+        "L6": { "depth_m": 40, "transit_time_s": 150 },
+        "L8": { "depth_m": 35, "transit_time_s": 150 },
+        "L10": { "depth_m": 38, "transit_time_s": 150 }
+      },
+      "notes": "Major interchange. Multiple deep platforms stacked vertically."
+    },
+    "Moncloa": {
+      "lines": {
+        "L3": { "depth_m": 35, "transit_time_s": 150 },
+        "L6": { "depth_m": 40, "transit_time_s": 165 }
+      },
+      "notes": "Known as one of the deepest interchange stations. Incident with Serie 9000 train in 2007 at this station."
+    },
+    "Sol": {
+      "lines": {
+        "L1": { "depth_m": 10, "transit_time_s": 60 },
+        "L2": { "depth_m": 14, "transit_time_s": 70 },
+        "L3": { "depth_m": 18, "transit_time_s": 90 }
+      },
+      "notes": "Central hub. Relatively shallow for L1; deeper for L3."
+    },
+    "Aluche": {
+      "lines": {
+        "L5": { "depth_m": 0, "transit_time_s": 30 }
+      },
+      "notes": "At-grade surface station — one of the highest-elevation stations in the network. Minimal street-to-platform time."
+    },
+    "Casa de Campo": {
+      "lines": {
+        "L10": { "depth_m": 0, "transit_time_s": 30 }
+      },
+      "notes": "Surface/elevated station."
+    }
+  },
+
+  "line_averages": {
+    "L1": {
+      "avg_depth_m": 8,
+      "avg_transit_time_s": 60,
+      "min_depth_m": 5,
+      "max_depth_m": 18,
+      "notes": "Shallow narrow-gauge line. Oldest line (1919). Cut-and-cover construction in central sections."
+    },
+    "L2": {
+      "avg_depth_m": 10,
+      "avg_transit_time_s": 70,
+      "min_depth_m": 6,
+      "max_depth_m": 20,
+      "notes": "Shallow narrow-gauge. Similar depth profile to L1."
+    },
+    "L3": {
+      "avg_depth_m": 12,
+      "avg_transit_time_s": 80,
+      "min_depth_m": 8,
+      "max_depth_m": 35,
+      "notes": "Mostly shallow, but reaches significant depth at Moncloa."
+    },
+    "L4": {
+      "avg_depth_m": 10,
+      "avg_transit_time_s": 70,
+      "min_depth_m": 6,
+      "max_depth_m": 18,
+      "notes": "Shallow narrow-gauge, comparable to L2."
+    },
+    "L5": {
+      "avg_depth_m": 8,
+      "avg_transit_time_s": 55,
+      "min_depth_m": 0,
+      "max_depth_m": 18,
+      "notes": "Surface section (Eugenia de Montijo – Empalme). Otherwise shallow."
+    },
+    "L6": {
+      "avg_depth_m": 30,
+      "avg_transit_time_s": 150,
+      "min_depth_m": 18,
+      "max_depth_m": 45,
+      "notes": "Deepest line in the network. Circular route required deep tunnelling under the city. Cuatro Caminos at 45 m."
+    },
+    "L7": {
+      "avg_depth_m": 20,
+      "avg_transit_time_s": 100,
+      "min_depth_m": 0,
+      "max_depth_m": 35,
+      "notes": "Wide gauge. Surface sections in outer districts. Deep in central Madrid."
+    },
+    "L8": {
+      "avg_depth_m": 22,
+      "avg_transit_time_s": 110,
+      "min_depth_m": 15,
+      "max_depth_m": 35,
+      "notes": "Modern airport line. Fewer stations, longer inter-station spacing."
+    },
+    "L9": {
+      "avg_depth_m": 25,
+      "avg_transit_time_s": 120,
+      "min_depth_m": 0,
+      "max_depth_m": 40,
+      "notes": "Deepest urban sections in the network after L6. TFM suburban section is shallower."
+    },
+    "L10": {
+      "avg_depth_m": 22,
+      "avg_transit_time_s": 110,
+      "min_depth_m": 0,
+      "max_depth_m": 38,
+      "notes": "Wide gauge. Surface in outer sections (Cuatro Vientos area). Deep in Nuevos Ministerios."
+    },
+    "L11": {
+      "avg_depth_m": 18,
+      "avg_transit_time_s": 90,
+      "min_depth_m": 12,
+      "max_depth_m": 25,
+      "notes": "Short suburban line. Modern 1998 construction. Moderate depth."
+    },
+    "L12": {
+      "avg_depth_m": 20,
+      "avg_transit_time_s": 100,
+      "min_depth_m": 0,
+      "max_depth_m": 32,
+      "notes": "Long suburban circular. Mix of surface and underground stations."
+    },
+    "LR": {
+      "avg_depth_m": 8,
+      "avg_transit_time_s": 55,
+      "min_depth_m": 6,
+      "max_depth_m": 10,
+      "notes": "Very short line. Shallow historic narrow-gauge."
+    },
+    "ML1": {
+      "avg_depth_m": 5,
+      "avg_transit_time_s": 40,
+      "notes": "Mostly surface. 4 surface + 5 underground stations, underground ones are shallow."
+    },
+    "ML2": {
+      "avg_depth_m": 4,
+      "avg_transit_time_s": 35,
+      "notes": "Mostly surface tram. 10 surface + 3 underground stations."
+    },
+    "ML3": {
+      "avg_depth_m": 4,
+      "avg_transit_time_s": 35,
+      "notes": "Mostly surface tram."
+    }
+  },
+
+  "simulation_recommendation": {
+    "description": "Suggested values for modeling Person transit time from street to platform in the simulation.",
+    "default_transit_time_s": 120,
+    "per_line_transit_time_s": {
+      "L1":  60,
+      "L2":  70,
+      "L3":  80,
+      "L4":  70,
+      "L5":  55,
+      "L6": 150,
+      "L7": 100,
+      "L8": 110,
+      "L9": 120,
+      "L10": 110,
+      "L11":  90,
+      "L12": 100,
+      "LR":   55,
+      "ML1":  40,
+      "ML2":  35,
+      "ML3":  35
+    },
+    "notes": "These are inferred averages. Applying a ±30% random variance per station gives a realistic spread. For simplicity in simulation, using a single network-wide value of 120 s (2 min) is reasonable."
+  }
+}

@@ -56,9 +56,8 @@ describe('TrainComponent', () => {
     expect(mockSimulationStateService.initLines).toHaveBeenCalled();
   });
 
-  it('should expose canvas dimensions', () => {
-    expect(component.width).toBeGreaterThan(0);
-    expect(component.height).toBeGreaterThan(0);
+  it('should initialize with a valid fit scale', () => {
+    expect(component.currentScale).toBeGreaterThan(0);
   });
 
   it('displayClock should return a time string', () => {

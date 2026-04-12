@@ -34,8 +34,6 @@
   top: 0;
   left: 0;
   display: block;
-  /* Scale the 3400×2000 canvas to fit inside the viewport */
-  transform-origin: top left;
 }
 
 /* ── Floating stats panel ─────────────────────────────────── */

@@ -3,6 +3,8 @@ export interface MoveTrain {
   train: string;
   x: number;
   y: number;
+  people?: number;
+  capacity?: number;
 }
 
 export interface PeopleInLinePlatforms {
@@ -37,6 +39,8 @@ export interface NewTrain {
   train: string;
   x: number;
   y: number;
+  people?: number;
+  capacity?: number;
 }
 
 export interface TimeMultiplier {

@@ -33,6 +33,8 @@ export class SimulationStateService {
         if (train) {
           train.x = msg.x;
           train.y = msg.y;
+          if (msg.people   !== undefined) train.people   = msg.people;
+          if (msg.capacity !== undefined) train.capacity = msg.capacity;
           this.dirty = true;
         }
         break;
@@ -42,8 +44,10 @@ export class SimulationStateService {
         if (existing) {
           existing.x = msg.x;
           existing.y = msg.y;
+          if (msg.people   !== undefined) existing.people   = msg.people;
+          if (msg.capacity !== undefined) existing.capacity = msg.capacity;
         } else {
-          this.trainsMap.set(msg.train, new Train(msg.train, msg.x, msg.y));
+          this.trainsMap.set(msg.train, new Train(msg.train, msg.x, msg.y, msg.people ?? 0, msg.capacity ?? 600));
         }
         this.dirty = true;
         break;

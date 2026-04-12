@@ -34,12 +34,12 @@ object WebSocket {
   }
 
   /** Send a train position event and update the snapshot. */
-  def sendTrain(trainId: String, x: Double, y: Double, isNew: Boolean): Unit = {
+  def sendTrain(trainId: String, x: Double, y: Double, people: Int, capacity: Int, isNew: Boolean): Unit = {
     val liveType = if (isNew) "newTrain" else "moveTrain"
-    val liveJson = s"""{"message": "$liveType", "train": "$trainId", "x": $x, "y": $y}"""
+    val liveJson = s"""{"message": "$liveType", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity}"""
     // Snapshot always as newTrain so reconnecting clients (re)create the train
     snapshot(s"train:$trainId") =
-      s"""{"message": "newTrain", "train": "$trainId", "x": $x, "y": $y}"""
+      s"""{"message": "newTrain", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity}"""
     broadcast(liveJson)
   }
 

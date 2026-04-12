@@ -65,11 +65,12 @@ describe('TrainComponent', () => {
     expect(clock).toMatch(/^\d{2}:\d{2}:\d{2}$/);
   });
 
-  it('linePeople should return sorted entries', () => {
-    mockSimulationStateService.platformsPeople.set('1', 10);
+  it('linePeople should return entries sorted by line name', () => {
     mockSimulationStateService.platformsPeople.set('2', 30);
+    mockSimulationStateService.platformsPeople.set('1', 10);
     const result = component.linePeople();
-    expect(result[0][1]).toBeGreaterThanOrEqual(result[result.length - 1][1]);
+    expect(result[0][0]).toBe('1');
+    expect(result[1][0]).toBe('2');
   });
 
   it('allPeople should sum map values', () => {

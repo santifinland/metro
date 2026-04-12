@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -66,6 +66,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly wsService: WebSocketService,
     private readonly dialog: MatDialog,
+    private readonly ngZone: NgZone,
+    private readonly cd: ChangeDetectorRef,
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
     readonly cfg: SimulationConfigService,
@@ -90,9 +92,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(msg => this.state.process(msg));
+      .subscribe(msg => {
+        this.state.process(msg);
+        this.cd.detectChanges();
+      });
 
-    this.startRenderLoop();
+    this.ngZone.runOutsideAngular(() => this.startRenderLoop());
   }
 
   ngOnDestroy(): void {
@@ -255,8 +260,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       }
 
       if (timestamp - this.lastClockAdvance >= REDRAW_PERIOD_MS) {
-        this.advanceClock();
         this.lastClockAdvance = timestamp;
+        this.ngZone.run(() => this.advanceClock());
       }
 
       this.rafId = requestAnimationFrame(loop);
@@ -426,7 +431,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   linePeople(): [string, number][] {
     return Array.from(this.state.platformsPeople.entries())
-      .sort((a, b) => b[1] - a[1]);
+      .sort((a, b) => a[0].localeCompare(b[0], 'es', { numeric: true }));
   }
 
   allPeople(recipient: Map<string, number>): number {

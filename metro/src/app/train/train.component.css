@@ -40,7 +40,6 @@
 .panel {
   position: absolute;
   top: 12px;
-  right: 12px;
   width: 220px;
   background: rgba(13, 17, 23, 0.92);
   border: 1px solid #30363d;
@@ -50,6 +49,9 @@
   transition: width 0.2s ease;
   overflow: hidden;
 }
+
+.panel-left  { left:  12px; }
+.panel-right { right: 12px; }
 
 .panel--collapsed {
   width: 36px;
@@ -191,6 +193,32 @@
   min-width: 28px;
   text-align: right;
   flex-shrink: 0;
+}
+
+/* ── Edit config button ──────────────────────────────────── */
+.edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 5px 8px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #8b949e;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  width: 100%;
+}
+
+.edit-btn:hover {
+  color: #e6edf3;
+  border-color: #58a6ff;
+}
+
+.edit-btn .material-icons {
+  font-size: 13px;
 }
 
 /* ── Zoom indicator (dev only) ───────────────────────────── */

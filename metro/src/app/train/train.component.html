@@ -94,6 +94,11 @@
     }
   </aside>
 
+  <!-- Zoom indicator (dev only) -->
+  @if (isDev) {
+    <div class="zoom-indicator">×{{ (currentScale / fitScale).toFixed(2) }}</div>
+  }
+
   <!-- Zoom controls -->
   <div class="zoom-bar">
     <button class="zoom-btn" (click)="zoomIn()"    title="Zoom in">

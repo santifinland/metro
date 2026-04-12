@@ -35,12 +35,12 @@ describe('SimulationStateService', () => {
     expect(service.dirty).toBeTrue();
   });
 
-  it('process moveTrain should update position and set dirty', () => {
+  it('process moveTrain should update target position and set dirty', () => {
     service.process({ message: 'newTrain', train: 'T1', x: 0, y: 0 });
     service.dirty = false;
     service.process({ message: 'moveTrain', train: 'T1', x: 50, y: 75 });
-    expect(service.trains[0].x).toBe(50);
-    expect(service.trains[0].y).toBe(75);
+    expect(service.trains[0].targetX).toBe(50);
+    expect(service.trains[0].targetY).toBe(75);
     expect(service.dirty).toBeTrue();
   });
 

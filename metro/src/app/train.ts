@@ -3,6 +3,12 @@ export class Train {
   id: string;
   x: number;
   y: number;
+  fromX: number;
+  fromY: number;
+  targetX: number;
+  targetY: number;
+  departedAt: number;
+  travelMs: number;
   people: number;
   capacity: number;
 
@@ -10,6 +16,12 @@ export class Train {
     this.id = id;
     this.x = x;
     this.y = y;
+    this.fromX = x;
+    this.fromY = y;
+    this.targetX = x;
+    this.targetY = y;
+    this.departedAt = 0;
+    this.travelMs = 0;
     this.people = people;
     this.capacity = capacity;
   }

@@ -259,11 +259,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         this.needsStaticRedraw = false;
       }
 
-      if (this.state.dirty || this.needsTrainRedraw) {
-        this.drawTrains();
-        this.state.dirty      = false;
-        this.needsTrainRedraw = false;
-      }
+      this.drawTrains(timestamp);
+      this.state.dirty      = false;
+      this.needsTrainRedraw = false;
 
       // Trigger Angular CD at ~5 fps so the template (clock, people) stays current
       if (timestamp - this.lastCdTick >= 200) {
@@ -378,7 +376,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private drawTrains(): void {
+  private drawTrains(now: number): void {
     const ctx   = this.ctxTrains;
     const scale = this.currentScale;
     this.clearCtx(ctx);
@@ -392,6 +390,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     ctx.lineWidth = lw;
 
     for (const train of this.state.trains) {
+      // Interpolate position between last known position and target
+      if (train.travelMs > 0) {
+        const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
+        const ease = t * t * (3 - 2 * t); // smoothstep
+        train.x = train.fromX + (train.targetX - train.fromX) * ease;
+        train.y = train.fromY + (train.targetY - train.fromY) * ease;
+      }
+
       const x   = train.x - w / 2;
       const y   = train.y - h / 2;
       const occ = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;

@@ -31,8 +31,12 @@ export class SimulationStateService {
       case 'moveTrain': {
         const train = this.trainsMap.get(msg.train);
         if (train) {
-          train.x = msg.x;
-          train.y = msg.y;
+          train.fromX = train.x;
+          train.fromY = train.y;
+          train.targetX = msg.x;
+          train.targetY = msg.y;
+          train.departedAt = performance.now();
+          train.travelMs = 135_000 / this.timeMultiplier;
           if (msg.people   !== undefined) train.people   = msg.people;
           if (msg.capacity !== undefined) train.capacity = msg.capacity;
           this.dirty = true;
@@ -42,8 +46,12 @@ export class SimulationStateService {
       case 'newTrain': {
         const existing = this.trainsMap.get(msg.train);
         if (existing) {
-          existing.x = msg.x;
-          existing.y = msg.y;
+          existing.fromX = existing.x;
+          existing.fromY = existing.y;
+          existing.targetX = msg.x;
+          existing.targetY = msg.y;
+          existing.departedAt = performance.now();
+          existing.travelMs = 135_000 / this.timeMultiplier;
           if (msg.people   !== undefined) existing.people   = msg.people;
           if (msg.capacity !== undefined) existing.capacity = msg.capacity;
         } else {

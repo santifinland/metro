@@ -7,14 +7,14 @@
     <canvas #canvas_trains   class="canvas-layer"></canvas>
   </div>
 
-  <!-- Stats panel (floating) -->
-  <aside class="panel" [class.panel--collapsed]="panelCollapsed">
-    <button class="panel-toggle" (click)="panelCollapsed = !panelCollapsed"
-            [title]="panelCollapsed ? 'Expand' : 'Collapse'">
-      <span class="material-icons">{{ panelCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
+  <!-- Left panel: configurable parameters -->
+  <aside class="panel panel-left" [class.panel--collapsed]="leftCollapsed">
+    <button class="panel-toggle" (click)="leftCollapsed = !leftCollapsed"
+            [title]="leftCollapsed ? 'Expand' : 'Collapse'">
+      <span class="material-icons">{{ leftCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
     </button>
 
-    @if (!panelCollapsed) {
+    @if (!leftCollapsed) {
       <div class="panel-body">
 
         <div class="panel-section">
@@ -24,6 +24,44 @@
         </div>
 
         <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">TRAIN CONFIG</span>
+          <div class="stat-row">
+            <span class="stat-name">Wagon cap.</span>
+            <span class="stat-val">{{ cfg.config.wagonCapacity }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Wagons/train</span>
+            <span class="stat-val">{{ cfg.config.wagonsPerTrain }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Trains/15 min</span>
+            <span class="stat-val">{{ cfg.config.trainsPerQuarterHour }}</span>
+          </div>
+          <div class="stat-row capacity">
+            <span class="stat-name">Capacity</span>
+            <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
+          </div>
+          <button class="edit-btn" (click)="openConfig()">
+            <span class="material-icons">edit</span>
+            Edit config
+          </button>
+        </div>
+
+      </div>
+    }
+  </aside>
+
+  <!-- Right panel: simulation results -->
+  <aside class="panel panel-right" [class.panel--collapsed]="rightCollapsed">
+    <button class="panel-toggle" (click)="rightCollapsed = !rightCollapsed"
+            [title]="rightCollapsed ? 'Expand' : 'Collapse'">
+      <span class="material-icons">{{ rightCollapsed ? 'chevron_left' : 'chevron_right' }}</span>
+    </button>
+
+    @if (!rightCollapsed) {
+      <div class="panel-body">
 
         <div class="panel-section">
           <span class="panel-label">PEOPLE</span>
@@ -46,28 +84,6 @@
           <div class="stat-row">
             <span class="stat-name">Stations</span>
             <span class="stat-val">{{ allPeople(state.stationsPeople) }}</span>
-          </div>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">TRAIN CONFIG</span>
-          <div class="stat-row">
-            <span class="stat-name">Wagon cap.</span>
-            <span class="stat-val">{{ cfg.config.wagonCapacity }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Wagons/train</span>
-            <span class="stat-val">{{ cfg.config.wagonsPerTrain }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Trains/15 min</span>
-            <span class="stat-val">{{ cfg.config.trainsPerQuarterHour }}</span>
-          </div>
-          <div class="stat-row capacity">
-            <span class="stat-name">Capacity</span>
-            <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
           </div>
         </div>
 

@@ -3,10 +3,13 @@ import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { MatDialog } from '@angular/material/dialog';
+
 import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
+import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { REDRAW_PERIOD_MS, LINE_COLORS } from '../constants';
 
 @Component({
@@ -27,7 +30,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private ctxPaths!: CanvasRenderingContext2D;
   private ctxTrains!: CanvasRenderingContext2D;
 
-  panelCollapsed = false;
+  leftCollapsed  = false;
+  rightCollapsed = false;
 
   // Zoom state — exposed to template for the dev indicator
   currentScale = 1;
@@ -61,6 +65,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly wsService: WebSocketService,
+    private readonly dialog: MatDialog,
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
     readonly cfg: SimulationConfigService,
@@ -367,12 +372,37 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    ctx.fillStyle = 'red';
-    const w = 12 / scale;
-    const h =  5 / scale;
+    const w  = 18 / scale;   // train length  (screen px / scale = world units)
+    const h  =  7 / scale;   // train height
+    const r  =  h / 2;       // full half-height → pill shape
+    const lw =  1 / scale;
+
+    ctx.fillStyle   = '#e6edf3';
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.lineWidth   = lw;
+
     for (const train of this.state.trains) {
-      ctx.fillRect(train.x, train.y, w, h);
+      const x = train.x - w / 2;
+      const y = train.y - h / 2;
+      this.pillRect(ctx, x, y, w, h, r);
+      ctx.fill();
+      ctx.stroke();
     }
+  }
+
+  // Cross-browser rounded rectangle (pill when r = h/2)
+  private pillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y,     x + w, y + r,     r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x,     y + h, x,     y + h - r, r);
+    ctx.lineTo(x,     y + r);
+    ctx.arcTo(x,     y,     x + r, y,         r);
+    ctx.closePath();
   }
 
   // ── Clock ────────────────────────────────────────────────────
@@ -386,6 +416,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       timeZone: 'Etc/UTC', hour12: false,
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
+  }
+
+  openConfig(): void {
+    this.dialog.open(ConfigDialogComponent, { width: '420px' });
   }
 
   // ── Stats helpers ────────────────────────────────────────────

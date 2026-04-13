@@ -23,6 +23,9 @@ object UI {
         case UISimTimeTick =>
           val simMs = SimClock.simTimeMs
           WebSocket.sendStat("simTime", s"""{"message": "simTime", "ms": $simMs}""")
+          val load = SimClock.tickLoad
+          WebSocket.sendStat("simLoad",
+            s"""{"message": "simLoad", "load": $load, "eventsPerTick": ${SimClock.eventsPerTick}, "queueSize": ${SimClock.queueSize}}""")
           Behaviors.same
 
         case UITrainsTick =>

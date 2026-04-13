@@ -309,6 +309,32 @@
   font-size: 13px;
 }
 
+/* ── CPU load indicator ──────────────────────────────────── */
+.load-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.load-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.4s;
+}
+
+.load-ok   { background: #3fb950; }
+.load-warn { background: #d29922; }
+.load-over { background: #f85149; }
+
+.load-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e6edf3;
+}
+
 /* ── Zoom indicator (dev only) ───────────────────────────── */
 .zoom-indicator {
   position: absolute;

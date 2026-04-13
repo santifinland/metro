@@ -33,7 +33,7 @@ object SimClock {
 
   // ── Load metrics (updated every tick) ───────────────────────────────────
   // Exponential moving average of tick duration in ms (α = 0.05). Nominal = 1.0.
-  @volatile private var _tickDurationEma: Double = 1.0
+  @volatile private var _tickDurationEma: Double = 0.0
   // Events processed in the last tick
   @volatile private var _eventsPerTick:   Int    = 0
 
@@ -101,7 +101,7 @@ object SimClock {
         _eventsPerTick = fired
 
         // Update EMA of tick duration
-        val tickDuration = (System.currentTimeMillis() - tickStart).max(1L).toDouble
+        val tickDuration = (System.currentTimeMillis() - tickStart).toDouble
         _tickDurationEma = Alpha * tickDuration + (1 - Alpha) * _tickDurationEma
 
         Thread.sleep(1)

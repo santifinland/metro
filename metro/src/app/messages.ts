@@ -69,6 +69,13 @@ export interface ResetAck {
   message: 'reset';
 }
 
+export interface SimLoad {
+  message: 'simLoad';
+  load: number;
+  eventsPerTick: number;
+  queueSize: number;
+}
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
@@ -81,4 +88,5 @@ export type SimulationMessage =
   | PlatformOvercrowded
   | StationOvercrowded
   | SimTime
-  | ResetAck;
+  | ResetAck
+  | SimLoad;

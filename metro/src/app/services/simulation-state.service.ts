@@ -15,6 +15,9 @@ export class SimulationStateService {
   metroPeople = 0;
   trainsPeople = 0;
   timeMultiplier = 1;
+  simLoad = 0;
+  eventsPerTick = 0;
+  queueSize = 0;
 
   readonly platformsPeople = new Map<string, number>();
   readonly stationsPeople = new Map<string, number>();
@@ -93,6 +96,11 @@ export class SimulationStateService {
         break;
       case 'stationOvercrowded':
         console.warn(`Station overcrowded: ${msg.platform} with ${msg.people}`);
+        break;
+      case 'simLoad':
+        this.simLoad = msg.load;
+        this.eventsPerTick = msg.eventsPerTick;
+        this.queueSize = msg.queueSize;
         break;
     }
   }

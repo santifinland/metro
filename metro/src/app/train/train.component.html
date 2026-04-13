@@ -79,6 +79,26 @@
           </button>
         </div>
 
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">CPU LOAD</span>
+          <div class="load-indicator">
+            <div class="load-dot" [class.load-ok]="state.simLoad <= 0.7"
+                                  [class.load-warn]="state.simLoad > 0.7 && state.simLoad <= 1.0"
+                                  [class.load-over]="state.simLoad > 1.0"></div>
+            <span class="load-val">{{ (state.simLoad * 100).toFixed(0) }}%</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Events/tick</span>
+            <span class="stat-val">{{ state.eventsPerTick }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">Queue</span>
+            <span class="stat-val">{{ state.queueSize }}</span>
+          </div>
+        </div>
+
       </div>
     }
   </aside>

@@ -60,6 +60,15 @@ export interface StationOvercrowded {
   people: number;
 }
 
+export interface SimTime {
+  message: 'simTime';
+  ms: number;
+}
+
+export interface ResetAck {
+  message: 'reset';
+}
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
@@ -70,4 +79,6 @@ export type SimulationMessage =
   | NewTrain
   | TimeMultiplier
   | PlatformOvercrowded
-  | StationOvercrowded;
+  | StationOvercrowded
+  | SimTime
+  | ResetAck;

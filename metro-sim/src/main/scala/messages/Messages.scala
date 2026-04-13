@@ -64,6 +64,7 @@ object Messages {
   case class PeopleInMetro(people: Int) extends UIMessage
   case class PeopleInSimulation(people: Int) extends UIMessage
   case object UITrainsTick extends UIMessage
+  case object UISimTimeTick extends UIMessage
 
   // ─── Simulator messages (sent TO the Simulator actor) ────────────────────
   sealed trait SimulatorMessage

@@ -70,6 +70,11 @@ object Main {
     // Start WebSocket HTTP server using classic adapter
     implicit val classicSystem: org.apache.pekko.actor.ActorSystem = system.toClassic
     import classicSystem.dispatcher
+    // Register command handler for messages from the browser
+    WebSocket.setCommandHandler { text =>
+      if (text.contains("\"reset\"")) WebSocket.resetSnapshot()
+    }
+
     val route: Route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
     Http().newServerAt("0.0.0.0", 8081).bind(route).onComplete {
       case Success(binding) =>
@@ -97,7 +102,7 @@ object Guardian {
     Behaviors.setup[Command] { context =>
 
       // UI actor
-      val ui = context.spawn(UI(), "ui")
+      val ui = context.spawn(UI(timeMultiplier), "ui")
 
       // Line actors
       val lineActors: Map[String, ActorRef[LineMessage]] = sortedLinePaths.keys.map { l =>

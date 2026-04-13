@@ -42,6 +42,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private readonly dpr = window.devicePixelRatio || 1;
 
   private time = 6 * 3600 * 1000;
+  private clockSynced = false;
   private lastRafTimestamp = 0;
   private lastCdTick = 0;
   private rafId = 0;
@@ -98,6 +99,21 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(msg => {
+        if (msg.message === 'simTime') {
+          // On first receipt (snapshot), sync clock to backend sim time.
+          // On subsequent ticks, only resync if drift > 5 sim-seconds to avoid jitter.
+          const drift = Math.abs(this.time - msg.ms);
+          if (!this.clockSynced || drift > 5_000) {
+            this.time = msg.ms;
+            this.clockSynced = true;
+          }
+        }
+        if (msg.message === 'reset') {
+          const [h, m] = this.resetTime.split(':').map(Number);
+          this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
+          this.clockSynced = false;
+          this.state.reset();
+        }
         this.state.process(msg);
         this.cd.detectChanges();
       });

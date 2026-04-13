@@ -11,21 +11,17 @@ import utils.WebSocket
 
 object UI {
 
-  def apply(timeMultiplier: Double): Behavior[UIMessage] =
+  def apply(): Behavior[UIMessage] =
     Behaviors.withTimers { timers =>
       timers.startTimerWithFixedDelay("trains-tick", UITrainsTick, 3.seconds, 1.second)
       timers.startTimerWithFixedDelay("simtime-tick", UISimTimeTick, 0.seconds, 1.second)
-
-      val simStartMs  = 6L * 3600L * 1000L          // simulation starts at 06:00
-      val realStartMs = System.currentTimeMillis()
 
       val trains: scala.collection.mutable.Map[String, Int] = scala.collection.mutable.Map.empty
 
       Behaviors.receiveMessage {
 
         case UISimTimeTick =>
-          val elapsed = System.currentTimeMillis() - realStartMs
-          val simMs   = simStartMs + (elapsed.toDouble / timeMultiplier).toLong
+          val simMs = SimClock.simTimeMs
           WebSocket.sendStat("simTime", s"""{"message": "simTime", "ms": $simMs}""")
           Behaviors.same
 

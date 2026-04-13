@@ -67,16 +67,17 @@
 
         <div class="panel-section">
           <span class="panel-label">SIMULATION</span>
-          <div class="cfg-row">
-            <label class="cfg-label">Start time</label>
+          <div class="sim-controls">
+            <button class="play-btn" (click)="playPause()" [title]="state.paused ? 'Resume' : 'Pause'">
+              <span class="material-icons">{{ state.paused ? 'play_arrow' : 'pause' }}</span>
+            </button>
             <input class="time-input" type="time"
                    [value]="resetTime"
                    (change)="resetTime = $any($event.target).value">
+            <button class="reset-btn icon-only" (click)="resetSimulation()" title="Reset">
+              <span class="material-icons">restart_alt</span>
+            </button>
           </div>
-          <button class="reset-btn" (click)="resetSimulation()">
-            <span class="material-icons">restart_alt</span>
-            Reset
-          </button>
         </div>
 
         <div class="panel-divider"></div>

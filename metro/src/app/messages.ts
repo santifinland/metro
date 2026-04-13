@@ -76,6 +76,11 @@ export interface SimLoad {
   queueSize: number;
 }
 
+export interface SimPaused {
+  message: 'simPaused';
+  paused: boolean;
+}
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
@@ -89,4 +94,5 @@ export type SimulationMessage =
   | StationOvercrowded
   | SimTime
   | ResetAck
-  | SimLoad;
+  | SimLoad
+  | SimPaused;

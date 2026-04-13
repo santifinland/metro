@@ -26,6 +26,16 @@ export class SimulationStateService {
     }
   }
 
+  reset(): void {
+    this.trainsMap.clear();
+    this.simulationPeople = 0;
+    this.metroPeople = 0;
+    this.trainsPeople = 0;
+    for (const key of this.platformsPeople.keys()) this.platformsPeople.set(key, 0);
+    for (const key of this.stationsPeople.keys()) this.stationsPeople.set(key, 0);
+    this.dirty = true;
+  }
+
   process(msg: SimulationMessage): void {
     switch (msg.message) {
       case 'moveTrain': {

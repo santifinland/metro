@@ -27,25 +27,55 @@
 
         <div class="panel-section">
           <span class="panel-label">TRAIN CONFIG</span>
-          <div class="stat-row">
-            <span class="stat-name">Wagon cap.</span>
-            <span class="stat-val">{{ cfg.config.wagonCapacity }}</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Wagon cap.</label>
+            <div class="stepper">
+              <button class="stepper-btn" (click)="stepConfig('wagonCapacity', -5)">−</button>
+              <span class="stepper-val">{{ cfg.config.wagonCapacity }}</span>
+              <button class="stepper-btn" (click)="stepConfig('wagonCapacity', 5)">+</button>
+            </div>
           </div>
-          <div class="stat-row">
-            <span class="stat-name">Wagons/train</span>
-            <span class="stat-val">{{ cfg.config.wagonsPerTrain }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Trains/15 min</span>
-            <span class="stat-val">{{ cfg.config.trainsPerQuarterHour }}</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Wagons/train</label>
+            <div class="stepper">
+              <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', -1)">−</button>
+              <span class="stepper-val">{{ cfg.config.wagonsPerTrain }}</span>
+              <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', 1)">+</button>
+            </div>
           </div>
           <div class="stat-row capacity">
             <span class="stat-name">Capacity</span>
             <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
           </div>
-          <button class="edit-btn" (click)="openConfig()">
-            <span class="material-icons">edit</span>
-            Edit config
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">SPEED</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Sim speed</label>
+            <div class="stepper">
+              <button class="stepper-btn" (click)="speedDown()">−</button>
+              <span class="stepper-val">×{{ localSpeed }}</span>
+              <button class="stepper-btn" (click)="speedUp()">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">SIMULATION</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Start time</label>
+            <input class="time-input" type="time"
+                   [value]="resetTime"
+                   (change)="resetTime = $any($event.target).value">
+          </div>
+          <button class="reset-btn" (click)="resetSimulation()">
+            <span class="material-icons">restart_alt</span>
+            Reset
           </button>
         </div>
 
@@ -101,7 +131,7 @@
                      [style.background]="lineColors(line[0])">
                 </div>
               </div>
-              <span class="line-count">{{ line[1] }}</span>
+              <span class="line-count">{{ formatCount(line[1]) }}</span>
             </div>
           }
         </div>

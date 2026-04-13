@@ -44,6 +44,10 @@ object Station {
           case ExitStation(personId) =>
             people.remove(personId)
             Behaviors.same
+
+          case ResetStation =>
+            people.clear()
+            Behaviors.same
         }
       }
     }

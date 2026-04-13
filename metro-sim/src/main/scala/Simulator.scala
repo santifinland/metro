@@ -97,6 +97,14 @@ object Simulator {
             scribe.debug(s"Person ${person.path.name} arrived to destination")
             people.remove(person.path.name)
             Behaviors.same
+
+          case ResetSimulator =>
+            scribe.info("Simulator resetting: stopping all persons")
+            people.values.foreach(context.stop)
+            people.clear()
+            simulationPeople = 0
+            SimClock.scheduleIn(TimeStepMs) { () => selfRef ! SimulateStep }
+            Behaviors.same
         }
       }
     }

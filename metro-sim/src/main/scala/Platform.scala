@@ -69,6 +69,10 @@ object Platform {
         people(person.path.name) = (person, false)
         Behaviors.same
 
+      case ResetPlatform =>
+        people.clear()
+        empty(self, line, name, next, people)
+
       case _ =>
         scribe.warn(s"Empty platform $name received unexpected message")
         Behaviors.same
@@ -123,6 +127,10 @@ object Platform {
       case EnteredPlatformFromTrain(person) =>
         people(person.path.name) = (person, false)
         Behaviors.same
+
+      case ResetPlatform =>
+        people.clear()
+        empty(self, line, name, next, people)
 
       case _ =>
         scribe.error(s"Full platform $name received unexpected message")

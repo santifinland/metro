@@ -82,6 +82,7 @@ object Main {
       if (text.contains("\"reset\"")) {
         SimClock.reset()
         WebSocket.resetSnapshot()
+        CommandBus.fireReset()
         broadcastPaused()
       } else if (text.contains("\"setSpeed\"")) {
         val factor = text.split("\"factor\"\\s*:\\s*").drop(1).headOption
@@ -177,17 +178,19 @@ object Guardian {
             }
         }
 
-      // Build trains
+      // Build trains — keep refs so we can reset them later
       val random = new Random
       val percentageOfStationsWithTrains = 80
-      platformActors.foreach { case (lineKey, linePlatforms) =>
+      val trainActors = scala.collection.mutable.Buffer[ActorRef[TrainMessage]]()
+      platformActors.foreach { case (_, linePlatforms) =>
         val platforms = linePlatforms.values.toSeq
         val trainCount = (percentageOfStationsWithTrains * platforms.length / 100) + 1
         for (_ <- 1 to trainCount) {
           val start = platforms(random.nextInt(platforms.size))
-          val uuid = java.util.UUID.randomUUID.toString
+          val uuid  = java.util.UUID.randomUUID.toString
           val train = context.spawn(Train(ui, allPaths), uuid)
           train ! Move(start)
+          trainActors += train
         }
       }
 
@@ -195,10 +198,22 @@ object Guardian {
       val allStationAndPlatformActors: List[ActorRef[_]] =
         stationActors.values.toList ++ allPlatformActors.values.toList
 
-      context.spawn(
+      val simulatorRef = context.spawn(
         Simulator(ui, allStationAndPlatformActors, metroGraph, stationIdsEntrance),
         "simulator"
       )
+
+      // Register CommandBus reset handler — called from WebSocket thread on reset command
+      val allPlatformSeq = allPlatformActors.values.toSeq
+      CommandBus.onReset { () =>
+        stationActors.values.foreach(_ ! ResetStation)
+        allPlatformActors.values.foreach(_ ! ResetPlatform)
+        trainActors.foreach { train =>
+          val p = allPlatformSeq(random.nextInt(allPlatformSeq.size))
+          train ! ResetTrain(p)
+        }
+        simulatorRef ! ResetSimulator
+      }
 
       Behaviors.empty[Command]
     }

@@ -15,6 +15,7 @@ export class SimulationStateService {
   metroPeople = 0;
   trainsPeople = 0;
   timeMultiplier = 1;
+  paused = false;
   simLoad = 0;
   eventsPerTick = 0;
   queueSize = 0;
@@ -49,7 +50,7 @@ export class SimulationStateService {
           train.targetX = msg.x;
           train.targetY = msg.y;
           train.departedAt = performance.now();
-          train.travelMs = 135_000 / this.timeMultiplier;
+          train.travelMs = 135_000 * this.timeMultiplier;
           if (msg.people   !== undefined) train.people   = msg.people;
           if (msg.capacity !== undefined) train.capacity = msg.capacity;
           this.dirty = true;
@@ -101,6 +102,9 @@ export class SimulationStateService {
         this.simLoad = msg.load;
         this.eventsPerTick = msg.eventsPerTick;
         this.queueSize = msg.queueSize;
+        break;
+      case 'simPaused':
+        this.paused = msg.paused;
         break;
     }
   }

@@ -30,6 +30,11 @@ object SimClock {
   @volatile private var _simTimeMs:       Long    = 6L * 3600L * 1000L  // starts at 06:00
   @volatile private var _speedFactor:     Double  = 10.0               // default: 10× real time
   @volatile private var _running:         Boolean = false
+  @volatile private var _paused:          Boolean = false
+
+  def isPaused: Boolean = _paused
+  def pause():  Unit    = { _paused = true }
+  def resume(): Unit    = { _paused = false }
 
   // ── Load metrics (updated every tick) ───────────────────────────────────
   // Exponential moving average of tick duration in ms (α = 0.05). Nominal = 1.0.
@@ -62,10 +67,11 @@ object SimClock {
     _speedFactor = factor.max(0.1).min(10_000.0)
   }
 
-  /** Reset simulation clock to 06:00 and clear pending events. */
+  /** Reset simulation clock to 06:00, clear pending events, and pause. */
   def reset(): Unit = {
     queue.clear()
     _simTimeMs = 6L * 3600L * 1000L
+    _paused = true
   }
 
   // ── Event loop ───────────────────────────────────────────────────────────
@@ -76,31 +82,33 @@ object SimClock {
     val thread = new Thread(() => {
       var lastRealMs = System.currentTimeMillis()
       while (_running) {
-        val tickStart  = System.currentTimeMillis()
-        val realDelta  = (tickStart - lastRealMs).max(0L)
-        lastRealMs     = tickStart
+        val tickStart = System.currentTimeMillis()
+        val realDelta = (tickStart - lastRealMs).max(0L)
+        lastRealMs    = tickStart  // always advance to avoid time-jump on resume
 
-        val targetSimMs = _simTimeMs + (realDelta * _speedFactor).toLong
         var fired = 0
+        if (!_paused) {
+          val targetSimMs = _simTimeMs + (realDelta * _speedFactor).toLong
 
-        // Fire all events due by targetSimMs
-        var continue = true
-        while (continue) {
-          val next = queue.peek()
-          if (next != null && next.atSimMs <= targetSimMs) {
-            queue.poll()
-            _simTimeMs = next.atSimMs
-            fired += 1
-            try { next.run() }
-            catch { case ex: Throwable => scribe.error(s"SimClock event error: $ex") }
-          } else {
-            continue = false
+          // Fire all events due by targetSimMs
+          var continue = true
+          while (continue) {
+            val next = queue.peek()
+            if (next != null && next.atSimMs <= targetSimMs) {
+              queue.poll()
+              _simTimeMs = next.atSimMs
+              fired += 1
+              try { next.run() }
+              catch { case ex: Throwable => scribe.error(s"SimClock event error: $ex") }
+            } else {
+              continue = false
+            }
           }
+          _simTimeMs = targetSimMs
         }
-        _simTimeMs    = targetSimMs
         _eventsPerTick = fired
 
-        // Update EMA of tick duration
+        // Update EMA of tick duration (only counts processing, not sleep)
         val tickDuration = (System.currentTimeMillis() - tickStart).toDouble
         _tickDurationEma = Alpha * tickDuration + (1 - Alpha) * _tickDurationEma
 

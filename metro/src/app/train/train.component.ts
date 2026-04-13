@@ -96,6 +96,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.needsStaticRedraw = true;
     this.needsTrainRedraw  = true;
 
+    // Align backend speed with the frontend stepper on connect (×1 = real time)
+    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(msg => {
@@ -269,9 +272,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       if (this.destroyed) return;
 
       // Advance simulation clock every frame (smooth)
+      // localSpeed IS the speedFactor sent to the backend, so 1 real-ms → localSpeed sim-ms.
       const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
       this.lastRafTimestamp = timestamp;
-      this.time += dt * this.localSpeed / this.state.timeMultiplier;
+      if (!this.state.paused) {
+        this.time += dt * this.localSpeed;
+      }
 
       if (this.needsStaticRedraw) {
         this.drawPaths();
@@ -479,6 +485,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   speedUp(): void {
     this.speedIdx = Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1);
     this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+  }
+
+  playPause(): void {
+    if (this.state.paused) {
+      this.wsService.send({ message: 'resume' });
+    } else {
+      this.wsService.send({ message: 'pause' });
+    }
   }
 
   resetSimulation(): void {

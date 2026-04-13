@@ -72,11 +72,17 @@ object Main {
     // Start WebSocket HTTP server using classic adapter
     implicit val classicSystem: org.apache.pekko.actor.ActorSystem = system.toClassic
     import classicSystem.dispatcher
+    def broadcastPaused(): Unit = {
+      val p = SimClock.isPaused
+      WebSocket.sendStat("simPaused", s"""{"message": "simPaused", "paused": $p}""")
+    }
+
     // Register command handler for messages from the browser
     WebSocket.setCommandHandler { text =>
       if (text.contains("\"reset\"")) {
         SimClock.reset()
         WebSocket.resetSnapshot()
+        broadcastPaused()
       } else if (text.contains("\"setSpeed\"")) {
         val factor = text.split("\"factor\"\\s*:\\s*").drop(1).headOption
           .flatMap(_.trim.takeWhile(c => c.isDigit || c == '.').toDoubleOption)
@@ -84,6 +90,12 @@ object Main {
         SimClock.setSpeed(factor)
         val tm = 1.0 / SimClock.speedFactor
         WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $tm}""")
+      } else if (text.contains("\"pause\"")) {
+        SimClock.pause()
+        broadcastPaused()
+      } else if (text.contains("\"resume\"")) {
+        SimClock.resume()
+        broadcastPaused()
       }
     }
 

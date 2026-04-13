@@ -190,12 +190,15 @@
 .line-count {
   font-size: 10px;
   color: #8b949e;
-  min-width: 34px;
+  width: 34px;
   text-align: right;
   flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-/* ── Inline config inputs ────────────────────────────────── */
+/* ── Inline config rows ──────────────────────────────────── */
 .cfg-row {
   display: flex;
   justify-content: space-between;
@@ -208,29 +211,74 @@
   font-size: 11px;
   color: #8b949e;
   flex: 1;
+  white-space: nowrap;
 }
 
-.cfg-input {
-  width: 52px;
+/* ── Stepper control ─────────────────────────────────────── */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.stepper-btn {
+  width: 24px;
+  height: 24px;
+  background: #161b22;
+  border: none;
+  color: #8b949e;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+
+.stepper-btn:hover {
+  color: #e6edf3;
+  background: #21262d;
+}
+
+.stepper-val {
+  min-width: 36px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e6edf3;
+  background: #0d1117;
+  padding: 0 4px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #30363d;
+  border-right: 1px solid #30363d;
+}
+
+/* ── Time input ──────────────────────────────────────────── */
+.time-input {
   background: #161b22;
   border: 1px solid #30363d;
   border-radius: 4px;
   color: #e6edf3;
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 5px;
-  text-align: right;
-  appearance: textfield;
-  -moz-appearance: textfield;
+  padding: 3px 5px;
+  width: 80px;
+  text-align: center;
   flex-shrink: 0;
+  color-scheme: dark;
 }
 
-.cfg-input::-webkit-inner-spin-button,
-.cfg-input::-webkit-outer-spin-button {
-  opacity: 0.4;
-}
-
-.cfg-input:focus {
+.time-input:focus {
   outline: none;
   border-color: #58a6ff;
 }
@@ -240,6 +288,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  margin-top: 4px;
   padding: 5px 8px;
   background: #161b22;
   border: 1px solid #30363d;

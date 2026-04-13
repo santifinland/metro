@@ -50,6 +50,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private destroyed = false;
 
+  // Speed presets: local multiplier on top of backend timeMultiplier
+  private static readonly SPEED_PRESETS = [0.25, 0.5, 1, 2, 5, 10, 20];
+  private speedIdx = 2; // default ×1
+  get localSpeed(): number { return TrainComponent.SPEED_PRESETS[this.speedIdx]; }
+
+  // Reset clock target
+  resetTime = '06:05';
+
   // Label visibility pre-computed at fitScale — stable set across all zoom levels
   private labelVisible: boolean[] = [];
 
@@ -247,7 +255,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       // Advance simulation clock every frame (smooth)
       const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
       this.lastRafTimestamp = timestamp;
-      this.time += dt / this.state.timeMultiplier;
+      this.time += dt * this.localSpeed / this.state.timeMultiplier;
 
       if (this.needsStaticRedraw) {
         this.drawPaths();
@@ -443,18 +451,26 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  updateConfig(field: string, event: Event): void {
-    const value = parseInt((event.target as HTMLInputElement).value, 10);
-    if (!isNaN(value)) {
-      this.cfg.save({ ...this.cfg.config, [field]: value });
-    }
+  stepConfig(field: keyof typeof this.cfg.config, delta: number): void {
+    const next = this.cfg.config[field] + delta;
+    this.cfg.save({ ...this.cfg.config, [field]: next });
   }
 
+  speedDown(): void { this.speedIdx = Math.max(0, this.speedIdx - 1); }
+  speedUp():   void { this.speedIdx = Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1); }
+
   resetSimulation(): void {
-    this.time = 6 * 3600 * 1000;
+    const [h, m] = this.resetTime.split(':').map(Number);
+    this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
     this.state.reset();
     this.wsService.send({ message: 'reset' });
     this.cd.detectChanges();
+  }
+
+  formatCount(n: number): string {
+    if (n >= 10_000) return `${Math.round(n / 1000)}k`;
+    if (n >= 1_000)  return `${(n / 1000).toFixed(1)}k`;
+    return String(n);
   }
 
   // ── Stats helpers ────────────────────────────────────────────

@@ -3,13 +3,10 @@ import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { MatDialog } from '@angular/material/dialog';
-
 import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
-import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 import { LINE_COLORS } from '../constants';
 
 @Component({
@@ -66,7 +63,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly wsService: WebSocketService,
-    private readonly dialog: MatDialog,
     private readonly ngZone: NgZone,
     private readonly cd: ChangeDetectorRef,
     readonly metroData: MetroDataService,
@@ -447,8 +443,18 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  openConfig(): void {
-    this.dialog.open(ConfigDialogComponent, { width: '420px' });
+  updateConfig(field: string, event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    if (!isNaN(value)) {
+      this.cfg.save({ ...this.cfg.config, [field]: value });
+    }
+  }
+
+  resetSimulation(): void {
+    this.time = 6 * 3600 * 1000;
+    this.state.reset();
+    this.wsService.send({ message: 'reset' });
+    this.cd.detectChanges();
   }
 
   // ── Stats helpers ────────────────────────────────────────────

@@ -27,25 +27,37 @@
 
         <div class="panel-section">
           <span class="panel-label">TRAIN CONFIG</span>
-          <div class="stat-row">
-            <span class="stat-name">Wagon cap.</span>
-            <span class="stat-val">{{ cfg.config.wagonCapacity }}</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Wagon cap.</label>
+            <input class="cfg-input" type="number" min="1" max="500"
+                   [value]="cfg.config.wagonCapacity"
+                   (change)="updateConfig('wagonCapacity', $event)">
           </div>
-          <div class="stat-row">
-            <span class="stat-name">Wagons/train</span>
-            <span class="stat-val">{{ cfg.config.wagonsPerTrain }}</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Wagons/train</label>
+            <input class="cfg-input" type="number" min="1" max="20"
+                   [value]="cfg.config.wagonsPerTrain"
+                   (change)="updateConfig('wagonsPerTrain', $event)">
           </div>
-          <div class="stat-row">
-            <span class="stat-name">Trains/15 min</span>
-            <span class="stat-val">{{ cfg.config.trainsPerQuarterHour }}</span>
+          <div class="cfg-row">
+            <label class="cfg-label">Trains/15 min</label>
+            <input class="cfg-input" type="number" min="1" max="30"
+                   [value]="cfg.config.trainsPerQuarterHour"
+                   (change)="updateConfig('trainsPerQuarterHour', $event)">
           </div>
           <div class="stat-row capacity">
             <span class="stat-name">Capacity</span>
             <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
           </div>
-          <button class="edit-btn" (click)="openConfig()">
-            <span class="material-icons">edit</span>
-            Edit config
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <span class="panel-label">SIMULATION</span>
+          <button class="reset-btn" (click)="resetSimulation()">
+            <span class="material-icons">restart_alt</span>
+            Reset to 06:05
           </button>
         </div>
 

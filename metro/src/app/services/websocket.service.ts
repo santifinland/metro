@@ -14,8 +14,10 @@ export class WebSocketService {
   readonly connectionStatus$ = new BehaviorSubject<ConnectionStatus>('disconnected');
   readonly messages$: Observable<SimulationMessage>;
 
+  private readonly socket$;
+
   constructor() {
-    const socket$ = webSocket<SimulationMessage>({
+    this.socket$ = webSocket<SimulationMessage>({
       url: environment.wsUrl,
       openObserver: {
         next: () => this.connectionStatus$.next('connected'),
@@ -25,7 +27,7 @@ export class WebSocketService {
       },
     });
 
-    this.messages$ = socket$.pipe(
+    this.messages$ = this.socket$.pipe(
       retry({
         delay: (_error, _count) => {
           this.connectionStatus$.next('reconnecting');
@@ -33,5 +35,9 @@ export class WebSocketService {
         },
       }),
     );
+  }
+
+  send(msg: object): void {
+    this.socket$.next(msg as SimulationMessage);
   }
 }

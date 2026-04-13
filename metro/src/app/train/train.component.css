@@ -167,7 +167,7 @@
   font-size: 10px;
   font-weight: 600;
   color: #e6edf3;
-  width: 16px;
+  width: 26px;
   text-align: right;
   flex-shrink: 0;
 }
@@ -190,17 +190,56 @@
 .line-count {
   font-size: 10px;
   color: #8b949e;
-  min-width: 28px;
+  min-width: 34px;
   text-align: right;
   flex-shrink: 0;
 }
 
-/* ── Edit config button ──────────────────────────────────── */
-.edit-btn {
+/* ── Inline config inputs ────────────────────────────────── */
+.cfg-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  gap: 6px;
+}
+
+.cfg-label {
+  font-size: 11px;
+  color: #8b949e;
+  flex: 1;
+}
+
+.cfg-input {
+  width: 52px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #e6edf3;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 5px;
+  text-align: right;
+  appearance: textfield;
+  -moz-appearance: textfield;
+  flex-shrink: 0;
+}
+
+.cfg-input::-webkit-inner-spin-button,
+.cfg-input::-webkit-outer-spin-button {
+  opacity: 0.4;
+}
+
+.cfg-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+/* ── Reset button ────────────────────────────────────────── */
+.reset-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 6px;
   padding: 5px 8px;
   background: #161b22;
   border: 1px solid #30363d;
@@ -212,12 +251,12 @@
   width: 100%;
 }
 
-.edit-btn:hover {
-  color: #e6edf3;
-  border-color: #58a6ff;
+.reset-btn:hover {
+  color: #f85149;
+  border-color: #f85149;
 }
 
-.edit-btn .material-icons {
+.reset-btn .material-icons {
   font-size: 13px;
 }
 

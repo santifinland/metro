@@ -1,7 +1,5 @@
 // Metro. SDMT
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration, SECONDS}
-
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
@@ -10,16 +8,16 @@ import messages.Messages._
 
 object Person {
 
+  // Retry delays in simulation milliseconds
+  private val RetryMs = 5_000L
+
   def apply(
     simulator: ActorRef[SimulatorMessage],
-    path: Seq[ActorRef[_]],
-    timeMultiplier: Double
+    path: Seq[ActorRef[_]]
   ): Behavior[PersonMessage] =
     Behaviors.setup { context =>
-      val waitAtStation: FiniteDuration  = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
-      val waitForStation: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
-      val waitAtPlatform: FiniteDuration = FiniteDuration((5 * timeMultiplier).toLong, SECONDS)
       val personName = context.self.path.name
+      val selfRef    = context.self
 
       def isStation(ref: ActorRef[_]): Boolean = ref.path.name.startsWith(Metro.StationPrefix)
 
@@ -33,7 +31,7 @@ object Person {
 
       // Start: request entry into first node (always a station)
       scribe.debug(s"Person $personName to ${path.last.path.name} wants to enter ${path.head.path.name}")
-      stationRef(path.head) ! RequestEnterStation(context.self)
+      stationRef(path.head) ! RequestEnterStation(selfRef)
 
       def initial(): Behavior[PersonMessage] =
         Behaviors.receiveMessage {
@@ -43,18 +41,17 @@ object Person {
             if (idx >= path.size) {
               scribe.debug(s"Person $personName arrived final destination")
               station ! ExitStation(personName)
-              simulator ! ArrivedToDestination(context.self)
+              simulator ! ArrivedToDestination(selfRef)
               Behaviors.stopped
             } else {
               val next = path(idx)
-              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
-              else platformRef(next) ! RequestEnterPlatform(context.self)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef)
               inStation(station)
             }
 
           case NotAcceptedEnterStation =>
-            context.system.scheduler.scheduleOnce(waitForStation, () =>
-              stationRef(path.head) ! RequestEnterStation(context.self))(context.executionContext)
+            SimClock.scheduleIn(RetryMs) { () => stationRef(path.head) ! RequestEnterStation(selfRef) }
             Behaviors.same
 
           case _ => Behaviors.same
@@ -70,12 +67,12 @@ object Person {
             if (idx >= path.size) {
               scribe.debug(s"Person $personName arrived final destination")
               newStation ! ExitStation(personName)
-              simulator ! ArrivedToDestination(context.self)
+              simulator ! ArrivedToDestination(selfRef)
               Behaviors.stopped
             } else {
               val next = path(idx)
-              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
-              else platformRef(next) ! RequestEnterPlatform(context.self)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef)
               inStation(newStation)
             }
 
@@ -85,10 +82,10 @@ object Person {
             inPlatform(platform, path(nextNodeIndex(platform)))
 
           case NotAcceptedEnterPlatform =>
-            context.system.scheduler.scheduleOnce(waitAtStation, () => {
+            SimClock.scheduleIn(RetryMs) { () =>
               val idx = nextNodeIndex(currentStation)
-              if (idx < path.size) platformRef(path(idx)) ! RequestEnterPlatform(context.self)
-            })(context.executionContext)
+              if (idx < path.size) platformRef(path(idx)) ! RequestEnterPlatform(selfRef)
+            }
             Behaviors.same
 
           case _ => Behaviors.same
@@ -99,7 +96,7 @@ object Person {
 
           case TrainInPlatform(train) =>
             scribe.debug(s"Train ${train.path.name} available at ${currentPlatform.path.name}")
-            train ! RequestEnterTrain(context.self)
+            train ! RequestEnterTrain(selfRef)
             Behaviors.same
 
           case AcceptedEnterTrain(platform) =>
@@ -109,7 +106,6 @@ object Person {
 
           case NotAcceptedEnterTrain =>
             scribe.debug(s"Person $personName not accepted in train")
-            // retry — the train will re-check capacity
             Behaviors.same
 
           case AcceptedEnterStation(station) =>
@@ -117,12 +113,12 @@ object Person {
             val idx = nextNodeIndex(station)
             if (idx >= path.size) {
               station ! ExitStation(personName)
-              simulator ! ArrivedToDestination(context.self)
+              simulator ! ArrivedToDestination(selfRef)
               Behaviors.stopped
             } else {
               val next = path(idx)
-              if (isStation(next)) stationRef(next) ! RequestEnterStation(context.self)
-              else platformRef(next) ! RequestEnterPlatform(context.self)
+              if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef)
               inStation(station)
             }
 
@@ -136,13 +132,11 @@ object Person {
             scribe.debug(s"Person $personName at platform ${platform.path.name}")
             val idx = nextNodeIndex(platform)
             if (idx < path.size && isStation(path(idx))) {
-              // Next stop is a station — disembark
               scribe.debug(s"Person $personName disembarking at ${platform.path.name}")
-              platform ! EnteredPlatformFromTrain(context.self)
-              stationRef(path(idx)) ! RequestEnterStation(context.self)
+              platform ! EnteredPlatformFromTrain(selfRef)
+              stationRef(path(idx)) ! RequestEnterStation(selfRef)
               inPlatform(platform, path(idx))
             } else {
-              // Stay on train
               Behaviors.same
             }
 

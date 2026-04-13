@@ -472,8 +472,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.cfg.save({ ...this.cfg.config, [field]: next });
   }
 
-  speedDown(): void { this.speedIdx = Math.max(0, this.speedIdx - 1); }
-  speedUp():   void { this.speedIdx = Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1); }
+  speedDown(): void {
+    this.speedIdx = Math.max(0, this.speedIdx - 1);
+    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+  }
+  speedUp(): void {
+    this.speedIdx = Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1);
+    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+  }
 
   resetSimulation(): void {
     const [h, m] = this.resetTime.split(':').map(Number);

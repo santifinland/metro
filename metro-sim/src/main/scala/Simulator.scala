@@ -1,6 +1,6 @@
 // Metro. SDMT
 
-import scala.concurrent.duration.{DurationDouble, DurationInt}
+import scala.concurrent.duration.DurationInt
 import scala.util.Random
 
 import org.apache.pekko.actor.typed.{ActorRef, Behavior}
@@ -21,25 +21,24 @@ object Simulator {
     21 -> 5, 22 -> 3, 23 -> 2
   )
 
-  private val TimeStep = 10
+  // Sim-time step between person-spawning ticks (10 sim-seconds)
+  private val TimeStepMs = 10_000L
 
   def apply(
     ui: ActorRef[UIMessage],
     stationActors: List[ActorRef[_]],
     metroGraph: Graph[MetroNode, WDiEdge],
-    stationIdsEntrance: Map[StationIds, Option[Entrance]],
-    timeMultiplier: Double
+    stationIdsEntrance: Map[StationIds, Option[Entrance]]
   ): Behavior[SimulatorMessage] =
     Behaviors.setup { context =>
       Behaviors.withTimers { timers =>
-        timers.startTimerWithFixedDelay("simulate-tick", SimulateStep,
-          1.second, (TimeStep * timeMultiplier).seconds)
+        // Stats tick: real-time, just for WebSocket reporting
         timers.startTimerWithFixedDelay("stats-tick", SimulatorStatsTick, 3.seconds, 1.second)
 
         val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
           scala.collection.mutable.Map.empty
         var simulationPeople: Int = 0
-        var time: Long = 6 * 3600 * 1000
+        val selfRef = context.self
 
         val random = new Random
 
@@ -47,6 +46,9 @@ object Simulator {
           .nodes
           .filter(x => x.value.name.startsWith(Metro.StationPrefix))
           .toList
+
+        // Kick off the first SimulateStep via SimClock
+        SimClock.scheduleIn(TimeStepMs) { () => selfRef ! SimulateStep }
 
         Behaviors.receiveMessage {
 
@@ -56,17 +58,20 @@ object Simulator {
             Behaviors.same
 
           case SimulateStep =>
-            time += TimeStep * 1000
-            scribe.info(s"Simulator issuing Persons, time multiplier $timeMultiplier")
+            val simTimeMs = SimClock.simTimeMs
+            scribe.info(s"Simulator step at sim-time ${simTimeMs / 1000}s (${people.size} active people)")
+
             for {
               startNode <- stations
               startStationId <- stationIdsEntrance
                 .filter { case (k, _) => startNode.value.name.contains(k.name) }
                 .values.flatten
               dailyEntrance: Double = startStationId.entrance / 30.0
-              hourKey = (24 * (time.toDouble / (86400.0 * 1000))).toInt
+              // Hour derived from sim-clock, not wall clock
+              hourKey = ((simTimeMs.toDouble / 3_600_000.0) % 24).toInt
               hourMultiplier: Double = HourDistribution.getOrElse(hourKey, 0.0)
-              peopleCount: Double = (dailyEntrance / (86400.0 * timeMultiplier) +
+              // People to spawn this tick: proportional to sim-time step
+              peopleCount: Double = (dailyEntrance * TimeStepMs / 86_400_000.0 +
                 startNode.partialPerson) * hourMultiplier
               integerPart: Int = peopleCount.toInt
               floatPart: Double = peopleCount - integerPart
@@ -79,10 +84,13 @@ object Simulator {
                 .map(x => stationActors.filter(y => y.path.name == x.name).head)
                 .toSeq
               uuid = java.util.UUID.randomUUID.toString
-              person = context.spawn(Person(context.self, path, timeMultiplier), uuid)
+              person = context.spawn(Person(selfRef, path), uuid)
               _ = people(person.path.name) = person
               _ = simulationPeople += 1
             } yield ()
+
+            // Schedule the next tick in simulation time (self-rescheduling)
+            SimClock.scheduleIn(TimeStepMs) { () => selfRef ! SimulateStep }
             Behaviors.same
 
           case ArrivedToDestination(person) =>

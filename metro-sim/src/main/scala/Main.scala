@@ -31,8 +31,10 @@ object Main {
       .clearModifiers()
       .withHandler(minimumLevel = Some(Level.Info))
       .replace()
-    val timeMultiplier: Double = 1.0 / metroConf.timeMultiplier
-    scribe.info(s"Metro starting. Time multiplier: $timeMultiplier")
+    val speedFactor: Double = metroConf.timeMultiplier.toDouble
+    scribe.info(s"Metro starting. Sim speed: ${speedFactor}× real time")
+    SimClock.setSpeed(speedFactor)
+    SimClock.start()
 
     // Get daily entrance data
     val entrance: String = scala.io.Source.fromFile("data/entrance.json").mkString
@@ -63,7 +65,7 @@ object Main {
 
     // Launch typed ActorSystem with a Guardian behavior
     val system: ActorSystem[Guardian.Command] = ActorSystem(
-      Guardian(metroConf, metroGraph, sortedLinePaths, paths, stationIdsEntrance, timeMultiplier),
+      Guardian(metroConf, metroGraph, sortedLinePaths, paths, stationIdsEntrance),
       "metro-system"
     )
 
@@ -72,7 +74,17 @@ object Main {
     import classicSystem.dispatcher
     // Register command handler for messages from the browser
     WebSocket.setCommandHandler { text =>
-      if (text.contains("\"reset\"")) WebSocket.resetSnapshot()
+      if (text.contains("\"reset\"")) {
+        SimClock.reset()
+        WebSocket.resetSnapshot()
+      } else if (text.contains("\"setSpeed\"")) {
+        val factor = text.split("\"factor\"\\s*:\\s*").drop(1).headOption
+          .flatMap(_.trim.takeWhile(c => c.isDigit || c == '.').toDoubleOption)
+          .getOrElse(SimClock.speedFactor)
+        SimClock.setSpeed(factor)
+        val tm = 1.0 / SimClock.speedFactor
+        WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $tm}""")
+      }
     }
 
     val route: Route = path("ws") { handleWebSocketMessages(WebSocket.listen()) }
@@ -80,7 +92,8 @@ object Main {
       case Success(binding) =>
         println(s"Listening at ${binding.localAddress.getHostString}:${binding.localAddress.getPort}")
         Thread.sleep(4000)
-        WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $timeMultiplier}""")
+        val tm = 1.0 / SimClock.speedFactor
+        WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $tm}""")
       case Failure(ex) => throw ex
     }
   }
@@ -96,13 +109,12 @@ object Guardian {
     metroGraph: Graph[MetroNode, WDiEdge],
     sortedLinePaths: Map[String, Seq[Path]],
     allPaths: Seq[Path],
-    stationIdsEntrance: Map[StationIds, Option[Entrance]],
-    timeMultiplier: Double
+    stationIdsEntrance: Map[StationIds, Option[Entrance]]
   ): Behavior[Command] =
     Behaviors.setup[Command] { context =>
 
       // UI actor
-      val ui = context.spawn(UI(timeMultiplier), "ui")
+      val ui = context.spawn(UI(), "ui")
 
       // Line actors
       val lineActors: Map[String, ActorRef[LineMessage]] = sortedLinePaths.keys.map { l =>
@@ -162,7 +174,7 @@ object Guardian {
         for (_ <- 1 to trainCount) {
           val start = platforms(random.nextInt(platforms.size))
           val uuid = java.util.UUID.randomUUID.toString
-          val train = context.spawn(Train(ui, allPaths, timeMultiplier), uuid)
+          val train = context.spawn(Train(ui, allPaths), uuid)
           train ! Move(start)
         }
       }
@@ -172,7 +184,7 @@ object Guardian {
         stationActors.values.toList ++ allPlatformActors.values.toList
 
       context.spawn(
-        Simulator(ui, allStationAndPlatformActors, metroGraph, stationIdsEntrance, timeMultiplier),
+        Simulator(ui, allStationAndPlatformActors, metroGraph, stationIdsEntrance),
         "simulator"
       )
 

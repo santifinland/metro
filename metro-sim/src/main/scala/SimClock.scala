@@ -27,12 +27,25 @@ object SimClock {
 
   private val queue = new java.util.concurrent.PriorityBlockingQueue[Event]()
 
-  @volatile private var _simTimeMs: Long   = 6L * 3600L * 1000L  // starts at 06:00
-  @volatile private var _speedFactor: Double = 10.0               // default: 10× real time
-  @volatile private var _running: Boolean  = false
+  @volatile private var _simTimeMs:       Long    = 6L * 3600L * 1000L  // starts at 06:00
+  @volatile private var _speedFactor:     Double  = 10.0               // default: 10× real time
+  @volatile private var _running:         Boolean = false
 
-  def simTimeMs:   Long   = _simTimeMs
-  def speedFactor: Double = _speedFactor
+  // ── Load metrics (updated every tick) ───────────────────────────────────
+  // Exponential moving average of tick duration in ms (α = 0.05). Nominal = 1.0.
+  @volatile private var _tickDurationEma: Double = 1.0
+  // Events processed in the last tick
+  @volatile private var _eventsPerTick:   Int    = 0
+
+  def simTimeMs:    Long   = _simTimeMs
+  def speedFactor:  Double = _speedFactor
+
+  /** Average real-ms per tick. Nominal = 1.0; >1.0 means simulation is falling behind. */
+  def tickLoad:     Double = _tickDurationEma
+  /** Events fired in the last tick. */
+  def eventsPerTick: Int   = _eventsPerTick
+  /** Pending events in the queue. */
+  def queueSize:    Int    = queue.size
 
   // ── Public API ───────────────────────────────────────────────────────────
 
@@ -59,14 +72,16 @@ object SimClock {
 
   def start(): Unit = {
     _running = true
+    val Alpha = 0.05  // EMA smoothing factor
     val thread = new Thread(() => {
       var lastRealMs = System.currentTimeMillis()
       while (_running) {
-        val nowMs      = System.currentTimeMillis()
-        val realDelta  = (nowMs - lastRealMs).max(0L)
-        lastRealMs     = nowMs
+        val tickStart  = System.currentTimeMillis()
+        val realDelta  = (tickStart - lastRealMs).max(0L)
+        lastRealMs     = tickStart
 
         val targetSimMs = _simTimeMs + (realDelta * _speedFactor).toLong
+        var fired = 0
 
         // Fire all events due by targetSimMs
         var continue = true
@@ -75,13 +90,19 @@ object SimClock {
           if (next != null && next.atSimMs <= targetSimMs) {
             queue.poll()
             _simTimeMs = next.atSimMs
+            fired += 1
             try { next.run() }
             catch { case ex: Throwable => scribe.error(s"SimClock event error: $ex") }
           } else {
             continue = false
           }
         }
-        _simTimeMs = targetSimMs
+        _simTimeMs    = targetSimMs
+        _eventsPerTick = fired
+
+        // Update EMA of tick duration
+        val tickDuration = (System.currentTimeMillis() - tickStart).max(1L).toDouble
+        _tickDurationEma = Alpha * tickDuration + (1 - Alpha) * _tickDurationEma
 
         Thread.sleep(1)
       }

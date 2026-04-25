@@ -115,6 +115,15 @@ object Train {
             scribe.debug(s"Person $personId exits train $trainName")
             people.remove(personId)
             Behaviors.same
+
+          case ResetTrain(startPlatform) =>
+            scribe.debug(s"Train $trainName resetting")
+            people.clear()
+            platform     = None
+            nextPlatform = None
+            x = 0; y = 0
+            startPlatform ! ReservePlatform(selfRef)
+            Behaviors.same
         }
       }
     }

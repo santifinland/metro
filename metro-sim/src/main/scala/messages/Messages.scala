@@ -24,6 +24,7 @@ object Messages {
   case class ExitStation(personId: String) extends StationMessage
   case class EnteredStationFromPlatform(person: ActorRef[PersonMessage]) extends StationMessage
   case object StationStatsTick extends StationMessage
+  case object ResetStation extends StationMessage
 
   // ─── Platform messages (sent TO a Platform actor) ─────────────────────────
   sealed trait PlatformMessage
@@ -36,6 +37,7 @@ object Messages {
   case class GetNextPlatform(train: ActorRef[TrainMessage]) extends PlatformMessage
   case class SetNextPlatform(next: ActorRef[PlatformMessage]) extends PlatformMessage
   case object PlatformStatsTick extends PlatformMessage
+  case object ResetPlatform extends PlatformMessage
 
   // ─── Train messages (sent TO a Train actor) ───────────────────────────────
   sealed trait TrainMessage
@@ -47,6 +49,7 @@ object Messages {
   case class RequestEnterTrain(person: ActorRef[PersonMessage]) extends TrainMessage
   case class ExitTrain(personId: String) extends TrainMessage
   case object TrainStatsTick extends TrainMessage
+  case class ResetTrain(startPlatform: ActorRef[PlatformMessage]) extends TrainMessage
 
   // ─── Line messages (sent TO a Line actor) ─────────────────────────────────
   sealed trait LineMessage
@@ -71,4 +74,5 @@ object Messages {
   case object SimulateStep extends SimulatorMessage
   case class ArrivedToDestination(person: ActorRef[PersonMessage]) extends SimulatorMessage
   case object SimulatorStatsTick extends SimulatorMessage
+  case object ResetSimulator extends SimulatorMessage
 }

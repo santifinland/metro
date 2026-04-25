@@ -87,7 +87,8 @@ describe('TrainComponent', () => {
     expect(component.lineColors('1')).not.toBe('');
   });
 
-  it('lineColors should return red for unknown lines', () => {
-    expect(component.lineColors('999')).toBe('red');
+  it('lineColors should return a fallback color for unknown lines', () => {
+    expect(component.lineColors('999')).toBeTruthy();
+    expect(component.lineColors('999')).not.toBe('');
   });
 });

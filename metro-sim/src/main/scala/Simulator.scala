@@ -7,7 +7,7 @@ import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 
 import messages.Messages._
-import parser.{Entrance, StationIds}
+import parser.{DistrictData, Entrance, ODMatrix, StationIds}
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 
@@ -21,33 +21,72 @@ object Simulator {
     21 -> 5, 22 -> 3, 23 -> 2
   )
 
-  // Sim-time step between person-spawning ticks (10 sim-seconds)
   private val TimeStepMs = 10_000L
 
   def apply(
     ui: ActorRef[UIMessage],
     stationActors: List[ActorRef[_]],
     metroGraph: Graph[MetroNode, WDiEdge],
-    stationIdsEntrance: Map[StationIds, Option[Entrance]]
+    stationIdsEntrance: Map[StationIds, Option[Entrance]],
+    odMatrix: ODMatrix,
+    districtData: DistrictData,
   ): Behavior[SimulatorMessage] =
     Behaviors.setup { context =>
       Behaviors.withTimers { timers =>
-        // Stats tick: real-time, just for WebSocket reporting
         timers.startTimerWithFixedDelay("stats-tick", SimulatorStatsTick, 3.seconds, 1.second)
 
         val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
           scala.collection.mutable.Map.empty
         var simulationPeople: Int = 0
         val selfRef = context.self
-
-        val random = new Random
+        val random  = new Random
 
         val stations: List[metroGraph.NodeT] = metroGraph
           .nodes
-          .filter(x => x.value.name.startsWith(Metro.StationPrefix))
+          .filter(_.value.name.startsWith(Metro.StationPrefix))
           .toList
 
-        // Kick off the first SimulateStep via SimClock
+        // empresa code → station node (empresa is the last '_'-delimited segment of the name)
+        val empresaToNode: Map[String, metroGraph.NodeT] = stations.flatMap { node =>
+          val parts = node.value.name.split("_")
+          if (parts.length >= 2) Some(parts.last -> node) else None
+        }.toMap
+
+        // Weighted random sample from normalised weight map
+        def weightedSample(weights: Map[String, Double]): String = {
+          val roll = random.nextDouble()
+          var cum  = 0.0
+          for ((k, w) <- weights) {
+            cum += w
+            if (cum >= roll) return k
+          }
+          weights.keys.last
+        }
+
+        // OD-based destination selection; falls back to uniform random when data is missing
+        def pickDestination(startNode: metroGraph.NodeT, hour: Int): metroGraph.NodeT = {
+          val startParts   = startNode.value.name.split("_")
+          val startEmpresa = if (startParts.length >= 2) startParts.last else ""
+
+          val odResult: Option[metroGraph.NodeT] = for {
+            origDistrict <- districtData.empresaToDistrict.get(startEmpresa)
+            hourMap      <- odMatrix.od.get(hour)
+            destMap      <- hourMap.get(origDistrict)
+            if destMap.nonEmpty
+            destDistrict  = weightedSample(destMap)
+            destEmpresas <- districtData.districtToStations.get(destDistrict)
+            if destEmpresas.nonEmpty
+            empresa       = destEmpresas(random.nextInt(destEmpresas.size))
+            node         <- empresaToNode.get(empresa)
+            if node.value.name != startNode.value.name
+          } yield node
+
+          odResult.getOrElse {
+            val others = stations.filter(_.value.name != startNode.value.name)
+            others(random.nextInt(others.size))
+          }
+        }
+
         SimClock.scheduleIn(TimeStepMs) { () => selfRef ! SimulateStep }
 
         Behaviors.receiveMessage {
@@ -61,35 +100,32 @@ object Simulator {
             val simTimeMs = SimClock.simTimeMs
             scribe.info(s"Simulator step at sim-time ${simTimeMs / 1000}s (${people.size} active people)")
 
+            val hourKey = ((simTimeMs.toDouble / 3_600_000.0) % 24).toInt
+
             for {
               startNode <- stations
               startStationId <- stationIdsEntrance
                 .filter { case (k, _) => startNode.value.name.contains(k.name) }
                 .values.flatten
-              dailyEntrance: Double = startStationId.entrance / 30.0
-              // Hour derived from sim-clock, not wall clock
-              hourKey = ((simTimeMs.toDouble / 3_600_000.0) % 24).toInt
+              dailyEntrance: Double  = startStationId.entrance / 30.0
               hourMultiplier: Double = HourDistribution.getOrElse(hourKey, 0.0)
-              // People to spawn this tick: proportional to sim-time step
-              peopleCount: Double = (dailyEntrance * TimeStepMs / 86_400_000.0 +
+              peopleCount: Double    = (dailyEntrance * TimeStepMs / 86_400_000.0 +
                 startNode.partialPerson) * hourMultiplier
-              integerPart: Int = peopleCount.toInt
-              floatPart: Double = peopleCount - integerPart
+              integerPart: Int    = peopleCount.toInt
+              floatPart:   Double = peopleCount - integerPart
               _ = if (floatPart > 0) startNode.setPartialPerson(floatPart)
               _ <- 1 to integerPart
-              otherStations = stations.filter(x => !x.value.name.equals(startNode.value.name))
-              destinationNode = otherStations(random.nextInt(otherStations.size))
+              destinationNode = pickDestination(startNode, hourKey)
               journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
               path = journey.get.nodes
                 .map(x => stationActors.filter(y => y.path.name == x.name).head)
                 .toSeq
-              uuid = java.util.UUID.randomUUID.toString
+              uuid   = java.util.UUID.randomUUID.toString
               person = context.spawn(Person(selfRef, path), uuid)
               _ = people(person.path.name) = person
               _ = simulationPeople += 1
             } yield ()
 
-            // Schedule the next tick in simulation time (self-rescheduling)
             SimClock.scheduleIn(TimeStepMs) { () => selfRef ! SimulateStep }
             Behaviors.same
 

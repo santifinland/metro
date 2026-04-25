@@ -66,8 +66,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 ::-webkit-scrollbar-thumb:hover { background: var(--line-3); }
 
 app-root {
-  display: grid;
-  grid-template-rows: 44px 1fr;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
   background: var(--bg-1);
 }

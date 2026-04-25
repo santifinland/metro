@@ -1,6 +1,9 @@
 .app-main {
-  position: relative;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+  display: flex;
+  position: relative;
   background:
     linear-gradient(var(--line-1) 1px, transparent 1px) 0 0 / 80px 80px,
     linear-gradient(90deg, var(--line-1) 1px, transparent 1px) 0 0 / 80px 80px,

@@ -114,7 +114,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           this.state.reset();
         }
         this.state.process(msg);
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       });
 
     this.ngZone.runOutsideAngular(() => this.startRenderLoop());
@@ -504,7 +504,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
     this.state.reset();
     this.wsService.send({ message: 'reset' });
-    this.cd.detectChanges();
+    this.cd.markForCheck();
   }
 
   // ── Load gauge ────────────────────────────────────────────────

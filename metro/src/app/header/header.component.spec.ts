@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 
 import { HeaderComponent } from './header.component';
 import { WebSocketService } from '../services/websocket.service';
+import { SimulationStateService } from '../services/simulation-state.service';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -17,7 +18,10 @@ describe('HeaderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
-      providers: [{ provide: WebSocketService, useValue: mockWs }],
+      providers: [
+        { provide: WebSocketService, useValue: mockWs },
+        SimulationStateService,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -30,19 +34,14 @@ describe('HeaderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('statusIcon should return wifi for connected', () => {
-    expect(component.statusIcon('connected')).toBe('wifi');
+  it('should generate a session id string starting with A', () => {
+    expect(component.sessionId).toMatch(/^A\d+$/);
   });
 
-  it('statusIcon should return wifi_find for reconnecting', () => {
-    expect(component.statusIcon('reconnecting')).toBe('wifi_find');
-  });
-
-  it('statusIcon should return wifi_off for disconnected', () => {
-    expect(component.statusIcon('disconnected')).toBe('wifi_off');
-  });
-
-  it('statusColor should return green for connected', () => {
-    expect(component.statusColor('connected')).toBe('#3fb950');
+  it('should expose connection status observable', (done) => {
+    component.status$.subscribe(status => {
+      expect(status).toBe('disconnected');
+      done();
+    });
   });
 });

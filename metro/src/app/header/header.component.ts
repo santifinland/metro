@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 
-import { WebSocketService, ConnectionStatus } from '../services/websocket.service';
+import { WebSocketService } from '../services/websocket.service';
+import { SimulationStateService } from '../services/simulation-state.service';
 import { ConfigDialogComponent } from '../config-dialog/config-dialog.component';
 
 @Component({
@@ -14,21 +15,15 @@ import { ConfigDialogComponent } from '../config-dialog/config-dialog.component'
 })
 export class HeaderComponent {
   readonly status$ = this.ws.connectionStatus$;
+  readonly sessionId = 'A' + Math.floor((Date.now() / 1000) % 9999).toString().padStart(4, '0');
 
   constructor(
     private readonly ws: WebSocketService,
     private readonly dialog: MatDialog,
+    readonly state: SimulationStateService,
   ) {}
 
   openConfig(): void {
-    this.dialog.open(ConfigDialogComponent, { width: '420px' });
-  }
-
-  statusIcon(s: ConnectionStatus): string {
-    return s === 'connected' ? 'wifi' : s === 'reconnecting' ? 'wifi_find' : 'wifi_off';
-  }
-
-  statusColor(s: ConnectionStatus): string {
-    return s === 'connected' ? '#3fb950' : s === 'reconnecting' ? '#d29922' : '#f85149';
+    this.dialog.open(ConfigDialogComponent, { width: '460px' });
   }
 }

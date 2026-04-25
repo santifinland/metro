@@ -30,12 +30,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   leftCollapsed  = false;
   rightCollapsed = false;
 
-  // Zoom state — exposed to template for the dev indicator
   currentScale = 1;
   protected fitScale  = 1;
   readonly isDev = !environment.production;
 
-  // Pan state (screen pixels: where world origin maps to)
   private panX = 0;
   private panY = 0;
 
@@ -51,24 +49,25 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private destroyed = false;
 
-  // Speed presets: local multiplier on top of backend timeMultiplier
-  private static readonly SPEED_PRESETS = [0.25, 0.5, 1, 2, 5, 10, 20];
-  private speedIdx = 2; // default ×1
+  static readonly SPEED_PRESETS = [0.25, 0.5, 1, 2, 5, 10, 20];
+  private speedIdx = 2;
   get localSpeed(): number { return TrainComponent.SPEED_PRESETS[this.speedIdx]; }
+  get speedPresets(): number[] { return TrainComponent.SPEED_PRESETS; }
+  get speedIdx_(): number { return this.speedIdx; }
 
-  // Reset clock target
   resetTime = '06:05';
 
-  // Label visibility pre-computed at fitScale — stable set across all zoom levels
   private labelVisible: boolean[] = [];
 
-  // Fixed screen-pixel sizes (divide by currentScale when drawing in world coords)
+  // Sparkline history
+  peopleHistory: number[] = Array(40).fill(0);
+
   private static readonly PATH_WIDTH_PX      = 6;
   private static readonly DOT_RADIUS_PX      = 5;
   private static readonly DOT_STROKE_PX      = 1.2;
-  private static readonly LABEL_SIZE_PX      = 11;   // low-zoom target (screen px)
-  private static readonly LABEL_SIZE_ZOOM_PX = 13;   // high-zoom target (screen px)
-  private static readonly LABEL_SHOW_ALL_MUL = 2.5;  // show all labels above this zoom multiplier
+  private static readonly LABEL_SIZE_PX      = 11;
+  private static readonly LABEL_SIZE_ZOOM_PX = 13;
+  private static readonly LABEL_SHOW_ALL_MUL = 2.5;
 
   constructor(
     private readonly wsService: WebSocketService,
@@ -96,15 +95,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.needsStaticRedraw = true;
     this.needsTrainRedraw  = true;
 
-    // Align backend speed with the frontend stepper on connect (×1 = real time)
     this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
 
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
       .subscribe(msg => {
         if (msg.message === 'simTime') {
-          // On first receipt (snapshot), sync clock to backend sim time.
-          // On subsequent ticks, only resync if drift > 5 sim-seconds to avoid jitter.
           const drift = Math.abs(this.time - msg.ms);
           if (!this.clockSynced || drift > 5_000) {
             this.time = msg.ms;
@@ -118,7 +114,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           this.state.reset();
         }
         this.state.process(msg);
-        this.cd.detectChanges();
+        this.cd.markForCheck();
       });
 
     this.ngZone.runOutsideAngular(() => this.startRenderLoop());
@@ -163,7 +159,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       }
     }
 
-    const margin = 40; // screen px padding around the network
+    const margin = 40;
     const netW   = maxX - minX;
     const netH   = maxY - minY;
     this.fitScale    = Math.min((vW - margin * 2) / netW, (vH - margin * 2) / netH);
@@ -174,7 +170,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   // ── Transform helpers ────────────────────────────────────────
 
-  // Sets the ctx transform so world coords → physical canvas pixels
   private applyTransform(ctx: CanvasRenderingContext2D): void {
     ctx.setTransform(
       this.currentScale * this.dpr, 0,
@@ -184,7 +179,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  // Clears the entire physical canvas (ignores current transform)
   private clearCtx(ctx: CanvasRenderingContext2D): void {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -195,7 +189,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   private setupEvents(): void {
     const container = this.canvasContainer.nativeElement as HTMLElement;
 
-    // Wheel: zoom toward cursor
     container.addEventListener('wheel', (e: WheelEvent) => {
       e.preventDefault();
       const factor    = e.deltaY < 0 ? 1.12 : 1 / 1.12;
@@ -211,7 +204,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       this.needsTrainRedraw  = true;
     }, { passive: false });
 
-    // Mouse drag: pan
     let dragging = false;
     let lastX = 0, lastY = 0;
     container.addEventListener('mousedown', (e: MouseEvent) => {
@@ -230,7 +222,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     container.addEventListener('mouseup',    endDrag);
     container.addEventListener('mouseleave', endDrag);
 
-    // Window resize: resize canvases and redraw
     window.addEventListener('resize', () => {
       this.resizeCanvases();
       this.needsStaticRedraw = true;
@@ -271,8 +262,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const loop = (timestamp: number) => {
       if (this.destroyed) return;
 
-      // Advance simulation clock every frame (smooth)
-      // localSpeed IS the speedFactor sent to the backend, so 1 real-ms → localSpeed sim-ms.
       const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
       this.lastRafTimestamp = timestamp;
       if (!this.state.paused) {
@@ -289,9 +278,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
-      // Trigger Angular CD at ~5 fps so the template (clock, people) stays current
       if (timestamp - this.lastCdTick >= 200) {
         this.lastCdTick = timestamp;
+        this.peopleHistory = [...this.peopleHistory.slice(1), this.state.metroPeople];
         this.ngZone.run(() => {});
       }
 
@@ -302,14 +291,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   // ── Label size ───────────────────────────────────────────────
 
-  // Interpolates font target from 11px (at zoom ×2.5) to 13px (at zoom ×5),
-  // giving a smooth growth instead of a hard jump.
   private static readonly LABEL_ZOOM_HIGH = 5.0;
 
   private labelTargetPx(): number {
     const mul  = this.currentScale / this.fitScale;
-    const low  = TrainComponent.LABEL_SHOW_ALL_MUL;  // 2.5
-    const high = TrainComponent.LABEL_ZOOM_HIGH;      // 5.0
+    const low  = TrainComponent.LABEL_SHOW_ALL_MUL;
+    const high = TrainComponent.LABEL_ZOOM_HIGH;
     if (mul <= low)  return TrainComponent.LABEL_SIZE_PX;
     if (mul >= high) return TrainComponent.LABEL_SIZE_ZOOM_PX;
     const t = (mul - low) / (high - low);
@@ -323,10 +310,24 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    ctx.lineWidth = TrainComponent.PATH_WIDTH_PX / this.currentScale;
-    ctx.lineJoin  = 'round';
-    ctx.lineCap   = 'round';
+    ctx.lineCap  = 'round';
+    ctx.lineJoin = 'round';
 
+    // Glow pass
+    ctx.globalAlpha = 0.18;
+    for (const segment of this.metroData.paths) {
+      if (segment.path.length < 2) continue;
+      ctx.beginPath();
+      ctx.moveTo(segment.path[0].x, segment.path[0].y);
+      for (const p of segment.path.slice(1)) ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = this.lineColors(segment.line);
+      ctx.lineWidth = (TrainComponent.PATH_WIDTH_PX * 2) / this.currentScale;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // Main stroke
+    ctx.lineWidth = TrainComponent.PATH_WIDTH_PX / this.currentScale;
     for (const segment of this.metroData.paths) {
       if (segment.path.length < 2) continue;
       ctx.beginPath();
@@ -337,11 +338,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // Pre-compute which labels to show at fitScale — stable across all zoom levels
   private computeLabelVisibility(): void {
     const scale   = this.fitScale;
     const fontSize = Math.round(TrainComponent.LABEL_SIZE_PX / scale);
-    this.ctxStations.font = `${fontSize}px Inter, Verdana, sans-serif`;
+    this.ctxStations.font = `${fontSize}px 'JetBrains Mono', monospace`;
     const r       = TrainComponent.DOT_RADIUS_PX / scale;
     const padding = 2 / scale;
     const placed: { x: number; y: number; w: number; h: number }[] = [];
@@ -374,17 +374,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const showAll    = (scale / this.fitScale) >= TrainComponent.LABEL_SHOW_ALL_MUL;
     const fontSize   = Math.round(this.labelTargetPx() / scale);
 
-    ctx.fillStyle   = 'white';
-    ctx.strokeStyle = '#0d1117';
     ctx.lineWidth   = lw;
-    if (showLabels) ctx.font = `${fontSize}px Inter, Verdana, sans-serif`;
+    if (showLabels) ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
 
     this.metroData.stations.forEach((station, i) => {
       const { x, y } = station.position;
 
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle   = '#0c0e11';
       ctx.fill();
+      ctx.strokeStyle = '#e6ebf2';
       ctx.stroke();
       ctx.closePath();
 
@@ -394,9 +394,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         const ly = y + fontSize * 0.35;
         const bw = ctx.measureText(station.name).width + padding * 2;
         const bh = fontSize * 1.1;
-        ctx.fillStyle = '#0d1117';
+        ctx.fillStyle = 'rgba(8,9,11,0.9)';
         ctx.fillRect(lx - padding, ly - fontSize * 0.85, bw, bh);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#e6ebf2';
         ctx.fillText(station.name, lx, ly);
       }
     });
@@ -408,18 +408,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    const w  = 18 / scale;   // train length  (screen px / scale = world units)
-    const h  =  7 / scale;   // train height
-    const r  =  h / 2;       // full half-height → pill shape
+    const w  = 18 / scale;
+    const h  =  7 / scale;
+    const r  =  h / 2;
     const lw =  1 / scale;
 
     ctx.lineWidth = lw;
 
     for (const train of this.state.trains) {
-      // Interpolate position between last known position and target
       if (train.travelMs > 0) {
         const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
-        const ease = t * t * (3 - 2 * t); // smoothstep
+        const ease = t * t * (3 - 2 * t);
         train.x = train.fromX + (train.targetX - train.fromX) * ease;
         train.y = train.fromY + (train.targetY - train.fromY) * ease;
       }
@@ -430,26 +429,22 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
       ctx.save();
 
-      // Background fill
       this.pillRect(ctx, x, y, w, h, r);
-      ctx.fillStyle = '#21262d';
+      ctx.fillStyle = '#11141a';
       ctx.fill();
 
-      // Occupancy fill — clipped to pill shape
       ctx.clip();
-      ctx.fillStyle = occ < 0.5 ? '#3fb950' : occ < 0.8 ? '#d29922' : '#f85149';
+      ctx.fillStyle = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
       ctx.fillRect(x, y, w * occ, h);
 
       ctx.restore();
 
-      // Outline
       this.pillRect(ctx, x, y, w, h, r);
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
       ctx.stroke();
     }
   }
 
-  // Cross-browser rounded rectangle (pill when r = h/2)
   private pillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -464,7 +459,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     ctx.closePath();
   }
 
-  // ── Clock ────────────────────────────────────────────────────
+  // ── Clock & time ─────────────────────────────────────────────
 
   displayClock(): string {
     return new Date(this.time).toLocaleTimeString('en-GB', {
@@ -473,19 +468,28 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  get dayProgress(): number {
+    return (this.time % 86_400_000) / 86_400_000;
+  }
+
+  // ── Config steppers ──────────────────────────────────────────
+
   stepConfig(field: keyof typeof this.cfg.config, delta: number): void {
     const next = this.cfg.config[field] + delta;
     this.cfg.save({ ...this.cfg.config, [field]: next });
   }
 
-  speedDown(): void {
-    this.speedIdx = Math.max(0, this.speedIdx - 1);
+  // ── Speed ────────────────────────────────────────────────────
+
+  setSpeedIdx(i: number): void {
+    this.speedIdx = i;
     this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
   }
-  speedUp(): void {
-    this.speedIdx = Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1);
-    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
-  }
+
+  speedDown(): void { this.setSpeedIdx(Math.max(0, this.speedIdx - 1)); }
+  speedUp():   void { this.setSpeedIdx(Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1)); }
+
+  // ── Simulation controls ───────────────────────────────────────
 
   playPause(): void {
     if (this.state.paused) {
@@ -500,16 +504,38 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
     this.state.reset();
     this.wsService.send({ message: 'reset' });
-    this.cd.detectChanges();
+    this.cd.markForCheck();
   }
 
+  // ── Load gauge ────────────────────────────────────────────────
+
+  readonly gaugeCount = 16;
+  gaugeCells(): string[] {
+    const filled = Math.round(this.state.simLoad * this.gaugeCount);
+    return Array.from({ length: this.gaugeCount }, (_, i) => {
+      if (i >= filled) return '';
+      if (i >= 14) return 'over';
+      if (i >= 11) return 'warn';
+      return 'on';
+    });
+  }
+
+  // ── Formatting helpers ────────────────────────────────────────
+
   formatCount(n: number): string {
-    if (n >= 10_000) return `${Math.round(n / 1000)}k`;
-    if (n >= 1_000)  return `${(n / 1000).toFixed(1)}k`;
+    if (n >= 100_000) return `${Math.round(n / 1000)}k`;
+    if (n >= 10_000)  return `${(n / 1000).toFixed(1)}k`;
+    if (n >= 1_000)   return `${(n / 1000).toFixed(2)}k`;
     return String(n);
   }
 
-  // ── Stats helpers ────────────────────────────────────────────
+  sparklinePoints(values: number[]): string {
+    const w = 100, h = 22;
+    const max = Math.max(...values, 1);
+    return values.map((v, i) => `${(i / (values.length - 1)) * w},${h - (v / max) * h}`).join(' ');
+  }
+
+  // ── Stats helpers ─────────────────────────────────────────────
 
   linePeople(): [string, number][] {
     return Array.from(this.state.platformsPeople.entries())
@@ -526,14 +552,26 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     return Math.round((count / max) * 100);
   }
 
-  computeCheckPeople(): number {
-    return this.state.metroPeople
-      - this.state.trainsPeople
-      - this.allPeople(this.state.platformsPeople)
-      - this.allPeople(this.state.stationsPeople);
+  lineColors(line: string): string {
+    return LINE_COLORS[line] ?? '#6b7488';
   }
 
-  lineColors(line: string): string {
-    return LINE_COLORS[line] ?? 'red';
+  // ── Telemetry strip ───────────────────────────────────────────
+
+  get telemetryTrains(): number   { return this.state.trains.length; }
+  get telemetrySegments(): number { return this.metroData.paths.length; }
+  get telemetryStations(): number { return this.metroData.stations.length; }
+  get telemetryUptime(): number   { return Math.floor(this.time / 60_000) % 999; }
+
+  get zoomReadout(): string {
+    return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
+  }
+
+  get peakLabel(): string {
+    const h = (this.time / 3_600_000) % 24;
+    if (h >= 7.5 && h < 9.5)  return 'PEAK · AM';
+    if (h >= 17  && h < 19.5) return 'PEAK · PM';
+    if (h < 6 || h > 23)      return 'NIGHT';
+    return 'OFF · PEAK';
   }
 }

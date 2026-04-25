@@ -7,177 +7,267 @@
     <canvas #canvas_trains   class="canvas-layer"></canvas>
   </div>
 
-  <!-- Left panel: configurable parameters -->
+  <!-- Corner brackets -->
+  <div class="corners" aria-hidden="true">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+  </div>
+
+  <!-- Scope crosshair -->
+  <div class="scope" aria-hidden="true"></div>
+
+  <!-- ── Left panel: CONTROL · INPUT ── -->
   <aside class="panel panel-left" [class.panel--collapsed]="leftCollapsed">
-    <button class="panel-toggle" (click)="leftCollapsed = !leftCollapsed"
-            [title]="leftCollapsed ? 'Expand' : 'Collapse'">
-      <span class="material-icons">{{ leftCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
-    </button>
-
     @if (!leftCollapsed) {
-      <div class="panel-body">
-
-        <div class="panel-section">
-          <span class="panel-label">CLOCK</span>
-          <span class="panel-clock">{{ displayClock() }}</span>
-          <span class="panel-sub">×{{ state.timeMultiplier }} speed</span>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">TRAIN CONFIG</span>
-          <div class="cfg-row">
-            <label class="cfg-label">Wagon cap.</label>
-            <div class="stepper">
-              <button class="stepper-btn" (click)="stepConfig('wagonCapacity', -5)">−</button>
-              <span class="stepper-val">{{ cfg.config.wagonCapacity }}</span>
-              <button class="stepper-btn" (click)="stepConfig('wagonCapacity', 5)">+</button>
-            </div>
-          </div>
-          <div class="cfg-row">
-            <label class="cfg-label">Wagons/train</label>
-            <div class="stepper">
-              <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', -1)">−</button>
-              <span class="stepper-val">{{ cfg.config.wagonsPerTrain }}</span>
-              <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', 1)">+</button>
-            </div>
-          </div>
-          <div class="stat-row capacity">
-            <span class="stat-name">Capacity</span>
-            <span class="stat-val">{{ cfg.trainCapacity }} pax</span>
-          </div>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">SPEED</span>
-          <div class="cfg-row">
-            <label class="cfg-label">Sim speed</label>
-            <div class="stepper">
-              <button class="stepper-btn" (click)="speedDown()">−</button>
-              <span class="stepper-val">×{{ localSpeed }}</span>
-              <button class="stepper-btn" (click)="speedUp()">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">SIMULATION</span>
-          <div class="sim-controls">
-            <button class="play-btn" (click)="playPause()" [title]="state.paused ? 'Resume' : 'Pause'">
-              <span class="material-icons">{{ state.paused ? 'play_arrow' : 'pause' }}</span>
-            </button>
-            <input class="time-input" type="time"
-                   [value]="resetTime"
-                   (change)="resetTime = $any($event.target).value">
-            <button class="reset-btn icon-only" (click)="resetSimulation()" title="Reset">
-              <span class="material-icons">restart_alt</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">CPU LOAD</span>
-          <div class="load-indicator">
-            <div class="load-dot" [class.load-ok]="state.simLoad <= 0.7"
-                                  [class.load-warn]="state.simLoad > 0.7 && state.simLoad <= 1.0"
-                                  [class.load-over]="state.simLoad > 1.0"></div>
-            <span class="load-val">{{ (state.simLoad * 100).toFixed(0) }}%</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Events/tick</span>
-            <span class="stat-val">{{ state.eventsPerTick }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Queue</span>
-            <span class="stat-val">{{ state.queueSize }}</span>
-          </div>
-        </div>
-
+      <div class="panel-head">
+        <span class="panel-head-title">CONTROL · INPUT</span>
+        <span class="panel-head-id">CH·01</span>
+        <button class="panel-toggle" (click)="leftCollapsed = true">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7.5,2.5 4,6 7.5,9.5"/>
+          </svg>
+        </button>
       </div>
+    } @else {
+      <button class="panel-toggle panel-toggle--solo" (click)="leftCollapsed = false">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4.5,2.5 8,6 4.5,9.5"/>
+        </svg>
+      </button>
     }
-  </aside>
 
-  <!-- Right panel: simulation results -->
-  <aside class="panel panel-right" [class.panel--collapsed]="rightCollapsed">
-    <button class="panel-toggle" (click)="rightCollapsed = !rightCollapsed"
-            [title]="rightCollapsed ? 'Expand' : 'Collapse'">
-      <span class="material-icons">{{ rightCollapsed ? 'chevron_left' : 'chevron_right' }}</span>
-    </button>
+    <div class="panel-body">
 
-    @if (!rightCollapsed) {
-      <div class="panel-body">
+      <!-- SIM CLOCK -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">SIM · CLOCK</span>
+          <span class="section-meta">UTC</span>
+        </div>
+        <div class="clock">{{ displayClock() }}</div>
+        <div class="tape" [style.--progress]="(dayProgress * 100).toFixed(2) + '%'"></div>
+        <div class="clock-meta">
+          <span>×{{ localSpeed }} SPEED</span>
+          <span>DAY <span class="v">{{ (dayProgress * 100).toFixed(1) }}%</span></span>
+        </div>
+      </div>
 
-        <div class="panel-section">
-          <span class="panel-label">PEOPLE</span>
-          <div class="stat-row">
-            <span class="stat-name">Simulation</span>
-            <span class="stat-val">{{ state.simulationPeople }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">In metro</span>
-            <span class="stat-val">{{ state.metroPeople }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">In trains</span>
-            <span class="stat-val">{{ state.trainsPeople }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Platforms</span>
-            <span class="stat-val">{{ allPeople(state.platformsPeople) }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-name">Stations</span>
-            <span class="stat-val">{{ allPeople(state.stationsPeople) }}</span>
+      <!-- FLEET CONFIG -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">FLEET · CONFIG</span>
+          <span class="section-meta">ROLLING STOCK</span>
+        </div>
+        <div class="cfg-row">
+          <label class="cfg-label">WAGON CAP.</label>
+          <div class="stepper">
+            <button class="stepper-btn" (click)="stepConfig('wagonCapacity', -5)">−</button>
+            <div class="stepper-val">{{ cfg.config.wagonCapacity }}</div>
+            <button class="stepper-btn" (click)="stepConfig('wagonCapacity', 5)">+</button>
           </div>
         </div>
+        <div class="cfg-row">
+          <label class="cfg-label">WAGONS / TRAIN</label>
+          <div class="stepper">
+            <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', -1)">−</button>
+            <div class="stepper-val">{{ cfg.config.wagonsPerTrain }}</div>
+            <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', 1)">+</button>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">CAPACITY</span>
+          <span class="row-val ok">{{ cfg.trainCapacity }}<span class="unit">PAX</span></span>
+        </div>
+      </div>
 
-        <div class="panel-divider"></div>
-
-        <div class="panel-section">
-          <span class="panel-label">BY LINE</span>
-          @for (line of linePeople(); track line[0]) {
-            <div class="line-row">
-              <span class="line-dot" [style.background]="lineColors(line[0])"></span>
-              <span class="line-num">{{ line[0] }}</span>
-              <div class="line-bar-bg">
-                <div class="line-bar-fill"
-                     [style.width.%]="linePercent(line[1])"
-                     [style.background]="lineColors(line[0])">
-                </div>
-              </div>
-              <span class="line-count">{{ formatCount(line[1]) }}</span>
-            </div>
+      <!-- SPEED MULTIPLIER -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">TIME · MULTIPLIER</span>
+          <span class="section-meta">×{{ localSpeed }}</span>
+        </div>
+        <div class="speed-row">
+          @for (s of speedPresets; track s; let i = $index) {
+            <button class="speed-btn" [class.active]="i === speedIdx_" (click)="setSpeedIdx(i)">×{{ s }}</button>
           }
         </div>
-
       </div>
-    }
+
+      <!-- SIMULATION CONTROLS -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">SIMULATION</span>
+          <span class="section-meta">{{ state.paused ? 'PAUSED' : 'RUNNING' }}</span>
+        </div>
+        <div class="sim-controls">
+          <button class="btn-play" [class.paused]="state.paused" (click)="playPause()">
+            @if (state.paused) {
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 2 L10 6 L3 10 Z"/></svg>
+            } @else {
+              <svg viewBox="0 0 12 12" fill="currentColor">
+                <rect x="3" y="2" width="2.5" height="8"/>
+                <rect x="6.5" y="2" width="2.5" height="8"/>
+              </svg>
+            }
+          </button>
+          <input class="time-input" type="time"
+                 [value]="resetTime"
+                 (change)="resetTime = $any($event.target).value">
+          <button class="btn-reset" (click)="resetSimulation()" title="Reset">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 8a6 6 0 1 0 1.5-3.97"/>
+              <polyline points="2,2 2,5 5,5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- SYSTEM LOAD -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">SYSTEM · LOAD</span>
+          <span class="section-meta">CPU</span>
+        </div>
+        <div class="gauge">
+          <div class="gauge-bars">
+            @for (cls of gaugeCells(); track $index) {
+              <div class="gauge-bar" [class]="cls"></div>
+            }
+          </div>
+          <div class="gauge-val" [class.warn]="state.simLoad > 0.7 && state.simLoad <= 0.85"
+                                 [class.crit]="state.simLoad > 0.85">
+            {{ (state.simLoad * 100).toFixed(0) }}<span class="gauge-pct">%</span>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">EVENTS / TICK</span>
+          <span class="row-val">{{ state.eventsPerTick }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">QUEUE</span>
+          <span class="row-val">{{ state.queueSize }}</span>
+        </div>
+      </div>
+
+    </div>
   </aside>
 
-  <!-- Zoom indicator (dev only) -->
-  @if (isDev) {
-    <div class="zoom-indicator">×{{ (currentScale / fitScale).toFixed(2) }}</div>
-  }
+  <!-- ── Right panel: OUTPUT · TELEMETRY ── -->
+  <aside class="panel panel-right" [class.panel--collapsed]="rightCollapsed">
+    @if (!rightCollapsed) {
+      <div class="panel-head">
+        <button class="panel-toggle panel-toggle--left" (click)="rightCollapsed = true">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7.5,2.5 4,6 7.5,9.5"/>
+          </svg>
+        </button>
+        <span class="panel-head-title">OUTPUT · TELEMETRY</span>
+        <span class="panel-head-id">CH·02</span>
+      </div>
+    } @else {
+      <button class="panel-toggle panel-toggle--solo" (click)="rightCollapsed = false">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4.5,2.5 8,6 4.5,9.5"/>
+        </svg>
+      </button>
+    }
+
+    <div class="panel-body">
+
+      <!-- POPULATION KPI -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">SIM · POPULATION</span>
+          <span class="section-meta">{{ peakLabel }}</span>
+        </div>
+        <div class="kpi">
+          <div class="kpi-val amber">{{ formatCount(state.simulationPeople) }}<span class="unit">PAX</span></div>
+          <div class="kpi-sub">
+            <span>IN METRO <span class="kpi-sub-v">{{ formatCount(state.metroPeople) }}</span></span>
+            <span>· EXT <span class="kpi-sub-v">{{ formatCount(state.simulationPeople - state.metroPeople) }}</span></span>
+          </div>
+        </div>
+        <div class="sparkline-wrap">
+          <svg width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none">
+            <polyline [attr.points]="sparklinePoints(peopleHistory)"
+                      fill="none" stroke="#f5b454" stroke-width="1" opacity="0.9"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- DISTRIBUTION -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">DISTRIBUTION</span>
+          <span class="section-meta">PAX</span>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">IN TRAINS</span>
+          <span class="row-val" style="color:var(--cyan)">{{ formatCount(state.trainsPeople) }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">PLATFORMS</span>
+          <span class="row-val">{{ formatCount(allPeople(state.platformsPeople)) }}</span>
+        </div>
+        <div class="stat-row">
+          <span class="row-name">STATION HALL</span>
+          <span class="row-val">{{ formatCount(allPeople(state.stationsPeople)) }}</span>
+        </div>
+      </div>
+
+      <!-- BY LINE -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">SATURATION · BY LINE</span>
+          <span class="section-meta">{{ linePeople().length }} CH</span>
+        </div>
+        @for (line of linePeople(); track line[0]) {
+          <div class="line-row">
+            <div class="line-chip" [style.background]="lineColors(line[0])">{{ line[0] }}</div>
+            <div class="line-bar-bg">
+              <div class="line-bar-fill"
+                   [style.width.%]="linePercent(line[1])"
+                   [style.background]="lineColors(line[0])">
+              </div>
+            </div>
+            <span class="line-count">{{ formatCount(line[1]) }}</span>
+          </div>
+        }
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Bottom telemetry strip -->
+  <div class="telemetry" [style.--p]="((dayProgress) * 100).toFixed(1) + '%'">
+    <span class="telemetry-tag">▸ NET</span>
+    <div class="telemetry-track"></div>
+    <div class="telemetry-stat"><span class="k">TRAINS</span><span class="v">{{ telemetryTrains }}</span></div>
+    <div class="telemetry-stat"><span class="k">SEGMENTS</span><span class="v">{{ telemetrySegments }}</span></div>
+    <div class="telemetry-stat"><span class="k">STATIONS</span><span class="v">{{ telemetryStations }}</span></div>
+    <div class="telemetry-stat"><span class="k">UPTIME</span><span class="v">{{ telemetryUptime }}m</span></div>
+  </div>
 
   <!-- Zoom controls -->
+  <div class="zoom-readout">{{ zoomReadout }}</div>
   <div class="zoom-bar">
-    <button class="zoom-btn" (click)="zoomIn()"    title="Zoom in">
-      <span class="material-icons">add</span>
+    <button class="zoom-btn" (click)="zoomIn()" title="Zoom in">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M6 2v8M2 6h8"/>
+      </svg>
     </button>
-    <div class="zoom-sep"></div>
-    <button class="zoom-btn" (click)="zoomOut()"   title="Zoom out">
-      <span class="material-icons">remove</span>
+    <button class="zoom-btn" (click)="zoomOut()" title="Zoom out">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <path d="M2 6h8"/>
+      </svg>
     </button>
-    <div class="zoom-sep"></div>
-    <button class="zoom-btn" (click)="zoomReset()" title="Reset zoom">
-      <span class="material-icons">center_focus_strong</span>
+    <button class="zoom-btn" (click)="zoomReset()" title="Recenter">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
+        <circle cx="8" cy="8" r="3"/>
+        <path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15" stroke-linecap="round"/>
+      </svg>
     </button>
   </div>
 

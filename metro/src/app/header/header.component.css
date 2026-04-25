@@ -1,71 +1,136 @@
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  height: 48px;
-  padding: 0 16px;
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
-  flex-shrink: 0;
-  z-index: 100;
+  height: 44px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line-2);
+  padding: 0 14px;
+  position: relative;
+  z-index: 30;
+  gap: 24px;
 }
 
-.topbar-left {
+.topbar::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim) 20%, var(--amber) 50%, var(--amber-dim) 80%, transparent);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Brand ────────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--amber);
+  background: var(--bg-1);
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.brand-logo::before, .brand-logo::after {
+  content: '';
+  position: absolute;
+  background: var(--amber);
+}
+.brand-logo::before { width: 60%; height: 1.5px; }
+.brand-logo::after  { width: 1.5px; height: 60%; }
+
+.brand-title {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--t-1);
+}
+.brand-sub {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  color: var(--t-3);
+  margin-top: 1px;
+}
+.brand-rev {
+  font-size: 9px;
+  color: var(--amber);
+  letter-spacing: 0.16em;
+  padding-left: 12px;
+  margin-left: 8px;
+  border-left: 1px solid var(--line-2);
+  text-transform: uppercase;
+}
+
+/* ── Center meta ──────────────────────────────────────── */
+.topbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 10px;
+  color: var(--t-3);
+  letter-spacing: 0.18em;
+}
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar-meta .v {
+  color: var(--t-1);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+/* ── Right ────────────────────────────────────────────── */
+.topbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.topbar-icon {
-  font-size: 20px;
-  color: #58a6ff;
-}
-
-.topbar-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #e6edf3;
-  letter-spacing: 0.01em;
-}
-
-.topbar-right {
+/* connection chip */
+.conn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--line-2);
+  background: var(--bg-1);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--t-2);
+  height: 28px;
 }
-
-.status-dot {
-  width: 8px;
-  height: 8px;
+.conn-dot {
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: #6e7681;
-  transition: background 0.3s;
+  background: var(--t-4);
 }
+.conn.connected    .conn-dot { background: var(--ok);   box-shadow: 0 0 8px var(--ok); }
+.conn.reconnecting .conn-dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: pulse 1.2s infinite; }
+.conn.disconnected .conn-dot { background: var(--crit); }
 
-.status-dot.connected    { background: #3fb950; box-shadow: 0 0 6px #3fb95066; }
-.status-dot.reconnecting { background: #d29922; box-shadow: 0 0 6px #d2992266; }
-.status-dot.disconnected { background: #f85149; }
-
+/* icon button */
 .icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: #8b949e;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
+  transition: color .12s, border-color .12s, background .12s;
 }
-
 .icon-btn:hover {
-  color: #e6edf3;
-  border-color: #30363d;
-  background: #21262d;
+  color: var(--amber);
+  border-color: var(--amber-dim);
+  background: var(--bg-3);
 }
-
-.icon-btn .material-icons {
-  font-size: 18px;
-}
+.icon-btn svg { width: 14px; height: 14px; }

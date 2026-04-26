@@ -5,6 +5,7 @@ export interface MoveTrain {
   y: number;
   people?: number;
   capacity?: number;
+  anden?: number;
 }
 
 export interface PeopleInLinePlatforms {
@@ -41,6 +42,12 @@ export interface NewTrain {
   y: number;
   people?: number;
   capacity?: number;
+  anden?: number;
+}
+
+export interface RemoveTrain {
+  message: 'removeTrain';
+  train: string;
 }
 
 export interface TimeMultiplier {
@@ -89,6 +96,7 @@ export type SimulationMessage =
   | PeopleInMetro
   | PeopleInSimulation
   | NewTrain
+  | RemoveTrain
   | TimeMultiplier
   | PlatformOvercrowded
   | StationOvercrowded

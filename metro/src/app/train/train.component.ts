@@ -7,7 +7,7 @@ import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
-import { LINE_COLORS } from '../constants';
+import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
 
 @Component({
   selector: 'app-train',
@@ -114,6 +114,20 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           this.state.reset();
         }
         this.state.process(msg);
+        // Resolve track geometry for path-following animation
+        if ((msg.message === 'newTrain' || msg.message === 'moveTrain') && msg.anden != null) {
+          const train = this.state.getTrain(msg.train);
+          if (train) {
+            const seg = this.metroData.paths.find(s => s.id === String(msg.anden));
+            if (seg && seg.path.length >= 2) {
+              train.pathPoints = seg.path;
+              train.line = seg.line;
+              const last = seg.path[seg.path.length - 1];
+              const prev = seg.path[seg.path.length - 2];
+              train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
+            }
+          }
+        }
         this.cd.markForCheck();
       });
 
@@ -403,49 +417,97 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   private drawTrains(now: number): void {
-    const ctx   = this.ctxTrains;
-    const scale = this.currentScale;
+    const ctx = this.ctxTrains;
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    const w  = 18 / scale;
-    const h  =  7 / scale;
-    const r  =  h / 2;
-    const lw =  1 / scale;
-
-    ctx.lineWidth = lw;
-
     for (const train of this.state.trains) {
+      // Advance position along track geometry (or fall back to straight interpolation)
       if (train.travelMs > 0) {
         const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
         const ease = t * t * (3 - 2 * t);
-        train.x = train.fromX + (train.targetX - train.fromX) * ease;
-        train.y = train.fromY + (train.targetY - train.fromY) * ease;
+        if (train.pathPoints.length >= 2) {
+          const pos = this.interpolateOnPath(train.pathPoints, ease);
+          train.x       = pos.x;
+          train.y       = pos.y;
+          train.heading = pos.heading;
+        } else {
+          train.x = train.fromX + (train.targetX - train.fromX) * ease;
+          train.y = train.fromY + (train.targetY - train.fromY) * ease;
+        }
       }
 
-      const x   = train.x - w / 2;
-      const y   = train.y - h / 2;
-      const occ = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      const wagons  = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
+      const stride  = WAGON_W + WAGON_GAP;
+      const occ     = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      const fillClr = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
+      const r       = WAGON_H * 0.3;
 
       ctx.save();
+      ctx.translate(train.x, train.y);
+      ctx.rotate(train.heading);
 
-      this.pillRect(ctx, x, y, w, h, r);
-      ctx.fillStyle = '#11141a';
-      ctx.fill();
+      for (let i = 0; i < wagons; i++) {
+        const ox = (i - (wagons - 1) / 2) * stride;
+        const wx = ox - WAGON_W / 2;
+        const wy = -WAGON_H / 2;
+        // Dark body
+        this.roundedRect(ctx, wx, wy, WAGON_W, WAGON_H, r);
+        ctx.fillStyle = '#11141a';
+        ctx.fill();
+        // Occupancy colour inset
+        const inset = 0.25;
+        this.roundedRect(ctx, wx + inset, wy + inset, WAGON_W - inset * 2, WAGON_H - inset * 2, r * 0.5);
+        ctx.fillStyle = fillClr;
+        ctx.fill();
+      }
 
-      ctx.clip();
-      ctx.fillStyle = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
-      ctx.fillRect(x, y, w * occ, h);
+      // Thin border for the whole train at once
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth   = 0.2;
+      for (let i = 0; i < wagons; i++) {
+        const ox = (i - (wagons - 1) / 2) * stride;
+        this.roundedRect(ctx, ox - WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
+        ctx.stroke();
+      }
 
       ctx.restore();
-
-      this.pillRect(ctx, x, y, w, h, r);
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.stroke();
     }
   }
 
-  private pillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+  private interpolateOnPath(
+    pts: { x: number; y: number }[],
+    t: number,
+  ): { x: number; y: number; heading: number } {
+    // Cumulative arc lengths
+    const lens: number[] = [0];
+    for (let i = 1; i < pts.length; i++) {
+      const dx = pts[i].x - pts[i - 1].x;
+      const dy = pts[i].y - pts[i - 1].y;
+      lens.push(lens[i - 1] + Math.sqrt(dx * dx + dy * dy));
+    }
+    const total  = lens[lens.length - 1];
+    const target = t * total;
+
+    let i = 1;
+    while (i < lens.length - 1 && lens[i] < target) i++;
+
+    const p0 = pts[i - 1];
+    const p1 = pts[i];
+    const segLen = lens[i] - lens[i - 1];
+    const segT   = segLen > 0 ? (target - lens[i - 1]) / segLen : 0;
+
+    return {
+      x:       p0.x + (p1.x - p0.x) * segT,
+      y:       p0.y + (p1.y - p0.y) * segT,
+      heading: Math.atan2(p1.y - p0.y, p1.x - p0.x),
+    };
+  }
+
+  private roundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number, y: number, w: number, h: number, r: number,
+  ): void {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);

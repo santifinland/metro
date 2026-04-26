@@ -9,6 +9,7 @@ export class SimulationStateService {
   // Keyed by train ID so newTrain from a snapshot replay does an upsert, not a duplicate push
   private readonly trainsMap = new Map<string, Train>();
   get trains(): Train[] { return Array.from(this.trainsMap.values()); }
+  getTrain(id: string): Train | undefined { return this.trainsMap.get(id); }
 
   dirty = false;
   simulationPeople = 0;
@@ -53,6 +54,7 @@ export class SimulationStateService {
           train.travelMs = 135_000 * this.timeMultiplier;
           if (msg.people   !== undefined) train.people   = msg.people;
           if (msg.capacity !== undefined) train.capacity = msg.capacity;
+          if (msg.anden    !== undefined) train.anden    = msg.anden;
           this.dirty = true;
         }
         break;
@@ -68,9 +70,17 @@ export class SimulationStateService {
           existing.travelMs = 135_000 / this.timeMultiplier;
           if (msg.people   !== undefined) existing.people   = msg.people;
           if (msg.capacity !== undefined) existing.capacity = msg.capacity;
+          if (msg.anden    !== undefined) existing.anden    = msg.anden;
         } else {
-          this.trainsMap.set(msg.train, new Train(msg.train, msg.x, msg.y, msg.people ?? 0, msg.capacity ?? 600));
+          const t = new Train(msg.train, msg.x, msg.y, msg.people ?? 0, msg.capacity ?? 600);
+          if (msg.anden !== undefined) t.anden = msg.anden;
+          this.trainsMap.set(msg.train, t);
         }
+        this.dirty = true;
+        break;
+      }
+      case 'removeTrain': {
+        this.trainsMap.delete(msg.train);
         this.dirty = true;
         break;
       }

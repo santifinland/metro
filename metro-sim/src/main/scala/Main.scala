@@ -4,7 +4,7 @@ import scala.concurrent.duration.DurationInt
 import scala.util.{Failure, Random, Success}
 
 import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior}
-import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
 import org.apache.pekko.actor.typed.scaladsl.adapter._
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.http.scaladsl.server.Directives.{handleWebSocketMessages, path}
@@ -35,6 +35,8 @@ object Main {
     scribe.info(s"Metro starting. Sim speed: ${speedFactor}× real time")
     SimClock.setSpeed(speedFactor)
     SimClock.start()
+    // Pre-populate snapshot so connecting clients know simulation starts paused
+    WebSocket.sendStat("simPaused", """{"message": "simPaused", "paused": true}""")
 
     // Get daily entrance data
     val entrance: String = scala.io.Source.fromFile("data/entrance.json").mkString
@@ -90,8 +92,8 @@ object Main {
       if (text.contains("\"reset\"")) {
         SimClock.reset()
         WebSocket.resetSnapshot()
+        WebSocket.sendStat("simPaused", """{"message": "simPaused", "paused": true}""")
         CommandBus.fireReset()
-        broadcastPaused()
       } else if (text.contains("\"setSpeed\"")) {
         val factor = text.split("\"factor\"\\s*:\\s*").drop(1).headOption
           .flatMap(_.trim.takeWhile(c => c.isDigit || c == '.').toDoubleOption)
@@ -124,6 +126,15 @@ object Main {
 object Guardian {
 
   sealed trait Command
+  case class AdjustTrainsForHour(hour: Int) extends Command
+
+  // Fraction of max trains per line per hour (Madrid Metro schedule approximation)
+  private val TrainFractionByHour: Map[Int, Double] = Map(
+    6 -> 0.35, 7 -> 0.55, 8 -> 0.90, 9 -> 0.90, 10 -> 0.70,
+    11 -> 0.60, 12 -> 0.60, 13 -> 0.65, 14 -> 0.70, 15 -> 0.65,
+    16 -> 0.60, 17 -> 0.80, 18 -> 0.90, 19 -> 0.90, 20 -> 0.75,
+    21 -> 0.60, 22 -> 0.45, 23 -> 0.30
+  )
 
   def apply(
     metroConf: MetroConf,
@@ -188,21 +199,39 @@ object Guardian {
             }
         }
 
-      // Build trains — keep refs so we can reset them later
       val random = new Random
-      val percentageOfStationsWithTrains = 80
-      val trainActors = scala.collection.mutable.Buffer[ActorRef[TrainMessage]]()
-      platformActors.foreach { case (_, linePlatforms) =>
+
+      // Helper: spawn a single train on a random platform of the given line
+      def spawnTrain(platforms: Seq[ActorRef[PlatformMessage]]): ActorRef[TrainMessage] = {
+        val start = platforms(random.nextInt(platforms.size))
+        val uuid  = java.util.UUID.randomUUID.toString
+        val train = context.spawn(Train(ui, allPaths), uuid)
+        train ! Move(start)
+        train
+      }
+
+      // Mutable train tracking per line
+      val trainsByLine = scala.collection.mutable.Map[String, scala.collection.mutable.Buffer[ActorRef[TrainMessage]]]()
+
+      // Initialize trains for 6 am (start of service)
+      platformActors.foreach { case (lineKey, linePlatforms) =>
         val platforms = linePlatforms.values.toSeq
-        val trainCount = (percentageOfStationsWithTrains * platforms.length / 100) + 1
-        for (_ <- 1 to trainCount) {
-          val start = platforms(random.nextInt(platforms.size))
-          val uuid  = java.util.UUID.randomUUID.toString
-          val train = context.spawn(Train(ui, allPaths), uuid)
-          train ! Move(start)
-          trainActors += train
+        val maxTrains = math.max(1, platforms.size / 2)
+        val initialCount = math.max(1, math.round(TrainFractionByHour(6) * maxTrains).toInt)
+        val buf = scala.collection.mutable.Buffer[ActorRef[TrainMessage]]()
+        for (_ <- 1 to initialCount) buf += spawnTrain(platforms)
+        trainsByLine(lineKey) = buf
+        scribe.info(s"Line $lineKey: $initialCount trains at 06:00 (max $maxTrains)")
+      }
+
+      // Schedule hourly train count adjustments
+      def scheduleHourlyAdjustments(): Unit = {
+        for (h <- 7 to 23) {
+          val targetSimMs = h.toLong * 3600L * 1000L
+          SimClock.scheduleAt(targetSimMs) { () => context.self ! AdjustTrainsForHour(h) }
         }
       }
+      scheduleHourlyAdjustments()
 
       // Simulator
       val allStationAndPlatformActors: List[ActorRef[_]] =
@@ -213,18 +242,42 @@ object Guardian {
         "simulator"
       )
 
-      // Register CommandBus reset handler — called from WebSocket thread on reset command
       val allPlatformSeq = allPlatformActors.values.toSeq
+
       CommandBus.onReset { () =>
         stationActors.values.foreach(_ ! ResetStation)
         allPlatformActors.values.foreach(_ ! ResetPlatform)
-        trainActors.foreach { train =>
+        trainsByLine.values.flatten.foreach { train =>
           val p = allPlatformSeq(random.nextInt(allPlatformSeq.size))
           train ! ResetTrain(p)
         }
         simulatorRef ! ResetSimulator
+        scheduleHourlyAdjustments()
       }
 
-      Behaviors.empty[Command]
+      Behaviors.receiveMessage[Command] {
+        case AdjustTrainsForHour(h) =>
+          val fraction = TrainFractionByHour.getOrElse(h, 0.30)
+          platformActors.foreach { case (lineKey, linePlatforms) =>
+            val platforms = linePlatforms.values.toSeq
+            val maxTrains = math.max(1, platforms.size / 2)
+            val target  = math.max(1, math.round(fraction * maxTrains).toInt)
+            val buf     = trainsByLine(lineKey)
+            val current = buf.size
+            if (target > current) {
+              val adding = target - current
+              for (_ <- 1 to adding) buf += spawnTrain(platforms)
+              scribe.info(s"Hour $h: +$adding trains on line $lineKey → ${buf.size}/${maxTrains}")
+            } else if (target < current) {
+              val retiring = current - target
+              buf.take(retiring).toSeq.foreach { t =>
+                t ! RetireTrain
+                buf -= t
+              }
+              scribe.info(s"Hour $h: -$retiring trains on line $lineKey → ${buf.size}/${maxTrains}")
+            }
+          }
+          Behaviors.same
+      }
     }
 }

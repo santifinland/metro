@@ -14,6 +14,9 @@ export class Train {
   anden: number;
   // Path geometry for track-following animation
   pathPoints: { x: number; y: number }[];
+  pathArcLens: number[];   // cached cumulative arc lengths for pathPoints
+  pathSegStart: number;    // arc position where the current tramo starts inside composite
+  pathSegEnd: number;      // arc position where the current tramo ends inside composite
   heading: number;
   line: string;
 
@@ -31,6 +34,9 @@ export class Train {
     this.capacity = capacity;
     this.anden = 0;
     this.pathPoints = [];
+    this.pathArcLens = [];
+    this.pathSegStart = 0;
+    this.pathSegEnd = 0;
     this.heading = 0;
     this.line = '';
   }

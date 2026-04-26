@@ -201,27 +201,46 @@ object Guardian {
 
       val random = new Random
 
-      // Helper: spawn a single train on a random platform of the given line
-      def spawnTrain(platforms: Seq[ActorRef[PlatformMessage]]): ActorRef[TrainMessage] = {
-        val start = platforms(random.nextInt(platforms.size))
+      // Spawn a train at a specific platform
+      def spawnTrainAt(start: ActorRef[PlatformMessage]): ActorRef[TrainMessage] = {
         val uuid  = java.util.UUID.randomUUID.toString
         val train = context.spawn(Train(ui, allPaths), uuid)
         train ! Move(start)
         train
       }
 
+      // Spawn a train at a random platform (used for dynamic additions mid-service)
+      def spawnTrainRandom(platforms: Seq[ActorRef[PlatformMessage]]): ActorRef[TrainMessage] =
+        spawnTrainAt(platforms(random.nextInt(platforms.size)))
+
+      // Sorted platforms for a line (matches the physical track order)
+      def sortedPlatformsForLine(lineKey: String, linePlatforms: Map[String, ActorRef[PlatformMessage]]): Seq[ActorRef[PlatformMessage]] = {
+        val sorted = sortedLinePaths
+          .getOrElse(lineKey, Seq.empty)
+          .flatMap { p =>
+            val name = Metro.platformName(p.features.denominacion, p.features.codigoanden)
+            linePlatforms.get(name)
+          }
+        if (sorted.nonEmpty) sorted else linePlatforms.values.toSeq
+      }
+
       // Mutable train tracking per line
       val trainsByLine = scala.collection.mutable.Map[String, scala.collection.mutable.Buffer[ActorRef[TrainMessage]]]()
 
-      // Initialize trains for 6 am (start of service)
+      // Initialize trains for 6 am — evenly spaced along the sorted platform sequence
       platformActors.foreach { case (lineKey, linePlatforms) =>
-        val platforms = linePlatforms.values.toSeq
+        val platforms = sortedPlatformsForLine(lineKey, linePlatforms)
         val maxTrains = math.max(1, platforms.size / 2)
         val initialCount = math.max(1, math.round(TrainFractionByHour(6) * maxTrains).toInt)
+        val step   = platforms.size.toDouble / initialCount
+        val offset = random.nextInt(platforms.size)
         val buf = scala.collection.mutable.Buffer[ActorRef[TrainMessage]]()
-        for (_ <- 1 to initialCount) buf += spawnTrain(platforms)
+        for (i <- 0 until initialCount) {
+          val idx = (offset + (i * step).toInt) % platforms.size
+          buf += spawnTrainAt(platforms(idx))
+        }
         trainsByLine(lineKey) = buf
-        scribe.info(s"Line $lineKey: $initialCount trains at 06:00 (max $maxTrains)")
+        scribe.info(s"Line $lineKey: $initialCount trains at 06:00 (max $maxTrains, step=${step.toInt})")
       }
 
       // Schedule hourly train count adjustments
@@ -266,7 +285,7 @@ object Guardian {
             val current = buf.size
             if (target > current) {
               val adding = target - current
-              for (_ <- 1 to adding) buf += spawnTrain(platforms)
+              for (_ <- 1 to adding) buf += spawnTrainRandom(platforms)
               scribe.info(s"Hour $h: +$adding trains on line $lineKey → ${buf.size}/${maxTrains}")
             } else if (target < current) {
               val retiring = current - target

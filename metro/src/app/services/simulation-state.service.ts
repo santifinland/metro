@@ -67,7 +67,7 @@ export class SimulationStateService {
           existing.targetX = msg.x;
           existing.targetY = msg.y;
           existing.departedAt = performance.now();
-          existing.travelMs = 135_000 / this.timeMultiplier;
+          existing.travelMs = 135_000 * this.timeMultiplier;
           if (msg.people   !== undefined) existing.people   = msg.people;
           if (msg.capacity !== undefined) existing.capacity = msg.capacity;
           if (msg.anden    !== undefined) existing.anden    = msg.anden;

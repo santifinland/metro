@@ -19,13 +19,26 @@ import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP 
 export class TrainComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('canvasContainer', { static: false, read: ElementRef }) canvasContainer!: ElementRef;
+  @ViewChild('canvas_tiles',    { static: false, read: ElementRef }) canvasTiles!: ElementRef;
   @ViewChild('canvas_stations', { static: false, read: ElementRef }) canvasStations!: ElementRef;
   @ViewChild('canvas_paths',    { static: false, read: ElementRef }) canvasPaths!: ElementRef;
   @ViewChild('canvas_trains',   { static: false, read: ElementRef }) canvasTrains!: ElementRef;
 
+  private ctxTiles!: CanvasRenderingContext2D;
   private ctxStations!: CanvasRenderingContext2D;
   private ctxPaths!: CanvasRenderingContext2D;
   private ctxTrains!: CanvasRenderingContext2D;
+
+  showSatellite = false;
+  private readonly tileCache = new Map<string, HTMLImageElement>();
+
+  // Projection constants matching Position.ts
+  private readonly LAMBDA0 =  -3.718762;
+  private readonly PHI0    =  40.4202961;   // degrees — used in y formula
+  private readonly RADIUS  =  6371;
+  private readonly COS_P1  = Math.cos(40.4202961); // phi1 treated as radians in Position.ts
+  private readonly CW      = 3400;
+  private readonly CH      = 2000;
 
   leftCollapsed  = false;
   rightCollapsed = false;
@@ -84,6 +97,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.resizeCanvases();
 
+    this.ctxTiles    = this.canvasTiles.nativeElement.getContext('2d')!;
     this.ctxStations = this.canvasStations.nativeElement.getContext('2d')!;
     this.ctxPaths    = this.canvasPaths.nativeElement.getContext('2d')!;
     this.ctxTrains   = this.canvasTrains.nativeElement.getContext('2d')!;
@@ -129,6 +143,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
               const last = path[path.length - 1];
               const prev = path[path.length - 2];
               train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
+              // Scale travel time by actual segment arc length (reference: 50 cu ≈ median)
+              const segArcLen = segEnd - segStart;
+              if (segArcLen > 0) {
+                train.travelMs = train.travelMs * segArcLen / 50;
+              }
             }
           }
         }
@@ -151,7 +170,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const el = this.canvasContainer.nativeElement as HTMLElement;
     const W  = el.clientWidth;
     const H  = el.clientHeight;
-    for (const ref of [this.canvasPaths, this.canvasStations, this.canvasTrains]) {
+    for (const ref of [this.canvasTiles, this.canvasPaths, this.canvasStations, this.canvasTrains]) {
       const c = ref.nativeElement as HTMLCanvasElement;
       c.width  = W * this.dpr;
       c.height = H * this.dpr;
@@ -212,7 +231,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       const factor    = e.deltaY < 0 ? 1.12 : 1 / 1.12;
       const newScale  = Math.max(
         this.fitScale * 0.5,
-        Math.min(this.fitScale * 30, this.currentScale * factor),
+        Math.min(this.fitScale * 50, this.currentScale * factor),
       );
       const actual = newScale / this.currentScale;
       this.panX = e.clientX + (this.panX - e.clientX) * actual;
@@ -264,7 +283,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const cy = el.clientHeight / 2;
     const newScale = Math.max(
       this.fitScale * 0.5,
-      Math.min(this.fitScale * 30, this.currentScale * factor),
+      Math.min(this.fitScale * 50, this.currentScale * factor),
     );
     const actual = newScale / this.currentScale;
     this.panX = cx + (this.panX - cx) * actual;
@@ -287,6 +306,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       }
 
       if (this.needsStaticRedraw) {
+        this.drawTiles();
         this.drawPaths();
         this.drawStations();
         this.needsStaticRedraw = false;
@@ -437,21 +457,25 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
       const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
 
-      // frontArc: arc position of the train's NOSE on the composite path.
-      // Anchoring by the nose means wagons extend backward into the prepended
-      // tramos and the arrow extends forward into the appended tramo — no clamping.
-      let frontArc = 0;
+      // centerArc: arc position of the train's CENTRE on the composite path.
+      // At rest the centre sits on the platform endpoint → train is centred on station.
+      // Prepended tramos give rear wagons geometry; appended tramo gives nose + arrow room.
+      // Clamp keeps all wagons on-path when a tramo has no neighbours (e.g. Line R).
+      let centerArc = 0;
       if (hasPath) {
-        const segStart = train.pathSegStart;
-        const segEnd   = train.pathSegEnd;
+        const segStart  = train.pathSegStart;
+        const segEnd    = train.pathSegEnd;
+        const lensTotal = train.pathArcLens[train.pathArcLens.length - 1];
         if (train.travelMs > 0) {
           const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
           const ease = t * t * (3 - 2 * t);
-          frontArc = segStart + ease * (segEnd - segStart);
+          centerArc = segStart + ease * (segEnd - segStart);
         } else {
-          frontArc = segEnd;
+          centerArc = segEnd;
         }
-        const c = this.positionAtArc(train.pathPoints, train.pathArcLens, frontArc - halfLen);
+        // Clamp so rear wagon >= 0 and nose <= lensTotal
+        centerArc = Math.max(halfLen, Math.min(lensTotal - halfLen, centerArc));
+        const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
         train.x = c.x; train.y = c.y; train.heading = c.heading;
       } else if (train.travelMs > 0) {
         const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
@@ -462,11 +486,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
       // Draw each wagon independently at its arc position (articulated through curves)
       for (let i = wagons - 1; i >= 0; i--) {
-        // wagon 0 = rear, wagon wagons-1 = nose
-        const arcOffset = (i - (wagons - 1)) * stride;  // nose at frontArc, rear further back
+        const arcOffset = (i - (wagons - 1) / 2) * stride;  // centered on centerArc
         let wx: number, wy: number, wh: number;
         if (hasPath) {
-          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, frontArc + arcOffset);
+          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset);
           wx = p.x; wy = p.y; wh = p.heading;
         } else {
           wx = train.x; wy = train.y; wh = train.heading;
@@ -487,22 +510,30 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         ctx.fill();
 
         this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth   = 0.60;
+        ctx.stroke();
+
+        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
         ctx.strokeStyle = lineClr;
-        ctx.lineWidth   = 0.35;
+        ctx.lineWidth   = 0.25;
         ctx.stroke();
 
         ctx.restore();
       }
 
-      // Direction arrow ahead of the nose, inside the appended tramo
+      // Direction arrow just ahead of the nose (nose = centerArc + halfLen)
       const arrowH   = WAGON_H * 0.8;
-      const arrowArc = frontArc + WAGON_W / 2 + 0.1 + arrowH;
+      const arrowArc = centerArc + halfLen + WAGON_W / 2 + arrowH;
       let ax: number, ay: number, ah: number;
       if (hasPath) {
         const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
-        ax = train.x; ay = train.y; ah = train.heading;
+        // Fallback: project nose in heading direction
+        ax = train.x + Math.cos(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
+        ay = train.y + Math.sin(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
+        ah = train.heading;
       }
       ctx.save();
       ctx.translate(ax, ay);
@@ -531,6 +562,107 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   // Return position + heading at a given arc-length along a path (clamps at endpoints).
   // With composite paths (prev + current tramo) clamping is rarely triggered.
+  // ── Satellite tile map ───────────────────────────────────────
+
+  toggleSatellite(): void {
+    this.showSatellite = !this.showSatellite;
+    this.needsStaticRedraw = true;
+  }
+
+  private tileZoom(): number {
+    const s = this.currentScale;
+    if (s < 0.3) return 12;
+    if (s < 0.7) return 13;
+    if (s < 1.5) return 14;
+    if (s < 3.0) return 15;
+    return 16;
+  }
+
+  // Canvas (x,y) → geographic (lon, lat)
+  private canvasToLonLat(cx: number, cy: number): [number, number] {
+    const lon = this.LAMBDA0 - (cx - this.CW / 2) / (this.RADIUS * this.COS_P1);
+    const lat = this.PHI0   - (cy - this.CH / 2) / this.RADIUS;
+    return [lon, lat];
+  }
+
+  // Geographic (lon, lat) → canvas (x, y)
+  private lonLatToCanvas(lon: number, lat: number): [number, number] {
+    const x = -this.RADIUS * (lon - this.LAMBDA0) * this.COS_P1 + this.CW / 2;
+    const y = -this.RADIUS * (lat - this.PHI0)                   + this.CH / 2;
+    return [x, y];
+  }
+
+  // Slippy-map tile top-left corner → geographic (lon, lat)
+  private tileToLonLat(tx: number, ty: number, z: number): [number, number] {
+    const n   = 2 ** z;
+    const lon = tx / n * 360 - 180;
+    const lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI;
+    return [lon, lat];
+  }
+
+  // Geographic (lon, lat) → slippy-map tile index
+  private lonLatToTile(lon: number, lat: number, z: number): [number, number] {
+    const n      = 2 ** z;
+    const tx     = Math.floor((lon + 180) / 360 * n);
+    const latRad = lat * Math.PI / 180;
+    const ty     = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+    return [tx, ty];
+  }
+
+  private drawTiles(): void {
+    this.clearCtx(this.ctxTiles);
+    if (!this.showSatellite) return;
+
+    const ctx = this.ctxTiles;
+    this.applyTransform(ctx);
+
+    const z  = this.tileZoom();
+    const cw = ctx.canvas.width  / this.dpr;
+    const ch = ctx.canvas.height / this.dpr;
+
+    // Visible canvas-coordinate corners (inverse of applyTransform)
+    const toCanvas = (sx: number, sy: number): [number, number] => [
+      (sx - this.panX) / this.currentScale,
+      (sy - this.panY) / this.currentScale,
+    ];
+    const [cx0, cy0] = toCanvas(0,  0);   // top-left  → high lat, small lon
+    const [cx1, cy1] = toCanvas(cw, ch);  // bot-right → low lat,  large lon
+
+    const [lon0, lat0] = this.canvasToLonLat(cx0, cy0);
+    const [lon1, lat1] = this.canvasToLonLat(cx1, cy1);
+
+    const [txMin, tyMin] = this.lonLatToTile(lon0, lat0, z);  // NW corner → small ty
+    const [txMax, tyMax] = this.lonLatToTile(lon1, lat1, z);  // SE corner → large ty
+
+    for (let ty = tyMin; ty <= tyMax + 1; ty++) {
+      for (let tx = txMin; tx <= txMax + 1; tx++) {
+        const [lonTL, latTL] = this.tileToLonLat(tx,     ty,     z);
+        const [lonBR, latBR] = this.tileToLonLat(tx + 1, ty + 1, z);
+        const [cx,  cy ]     = this.lonLatToCanvas(lonTL, latTL);
+        const [cxe, cye]     = this.lonLatToCanvas(lonBR, latBR);
+        const tw = cxe - cx;
+        const th = cye - cy;
+        if (tw <= 0 || th <= 0) continue;
+
+        const key = `${z}/${ty}/${tx}`;
+        const img = this.tileCache.get(key);
+        if (img?.complete && img.naturalWidth > 0) {
+          ctx.drawImage(img, cx, cy, tw, th);
+        } else if (!img) {
+          if (this.tileCache.size > 300) {
+            // Evict oldest entry to bound memory
+            this.tileCache.delete(this.tileCache.keys().next().value!);
+          }
+          const image        = new Image();
+          image.crossOrigin  = 'anonymous';
+          image.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${tx}`;
+          image.onload = () => { this.needsStaticRedraw = true; };
+          this.tileCache.set(key, image);
+        }
+      }
+    }
+  }
+
   private positionAtArc(
     pts:  { x: number; y: number }[],
     lens: number[],

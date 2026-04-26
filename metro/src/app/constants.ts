@@ -15,10 +15,11 @@ export const TRAIN_WAGONS: Record<string, number> = {
 };
 export const DEFAULT_WAGONS = 6;
 
-// Wagon dimensions in canvas coordinate space (scale with zoom)
-export const WAGON_W    = 3.5;
-export const WAGON_H    = 3.0;
-export const WAGON_GAP  = 0.5;
+// Wagon dimensions in canvas coordinate space (≈real geographic scale, ~17m/cu)
+// 6-car train: 6×1.15 + 5×0.12 ≈ 7.5 cu ≈ 127m  (real: ~120m)
+export const WAGON_W    = 1.15;
+export const WAGON_H    = 0.70;
+export const WAGON_GAP  = 0.12;
 
 // Colors per metro line (key = line identifier used in simulation messages)
 export const LINE_COLORS: Record<string, string> = {

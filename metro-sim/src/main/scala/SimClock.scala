@@ -30,7 +30,7 @@ object SimClock {
   @volatile private var _simTimeMs:       Long    = 6L * 3600L * 1000L  // starts at 06:00
   @volatile private var _speedFactor:     Double  = 10.0               // default: 10× real time
   @volatile private var _running:         Boolean = false
-  @volatile private var _paused:          Boolean = false
+  @volatile private var _paused:          Boolean = true
 
   def isPaused: Boolean = _paused
   def pause():  Unit    = { _paused = true }

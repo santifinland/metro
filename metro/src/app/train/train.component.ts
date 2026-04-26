@@ -7,7 +7,7 @@ import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
-import { LINE_COLORS } from '../constants';
+import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
 
 @Component({
   selector: 'app-train',
@@ -114,6 +114,24 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           this.state.reset();
         }
         this.state.process(msg);
+        // Resolve track geometry for path-following animation
+        if ((msg.message === 'newTrain' || msg.message === 'moveTrain') && msg.anden != null) {
+          const train = this.state.getTrain(msg.train);
+          if (train) {
+            const seg = this.metroData.paths.find(s => s.id === String(msg.anden));
+            if (seg && seg.path.length >= 2) {
+              const { path, segStart, segEnd } = this.buildCompositePath(seg);
+              train.pathPoints    = path;
+              train.pathArcLens   = this.computeArcLens(path);
+              train.pathSegStart  = segStart;
+              train.pathSegEnd    = segEnd;
+              train.line = seg.line;
+              const last = path[path.length - 1];
+              const prev = path[path.length - 2];
+              train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
+            }
+          }
+        }
         this.cd.markForCheck();
       });
 
@@ -403,49 +421,194 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   }
 
   private drawTrains(now: number): void {
-    const ctx   = this.ctxTrains;
-    const scale = this.currentScale;
+    const ctx = this.ctxTrains;
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    const w  = 18 / scale;
-    const h  =  7 / scale;
-    const r  =  h / 2;
-    const lw =  1 / scale;
-
-    ctx.lineWidth = lw;
-
     for (const train of this.state.trains) {
-      if (train.travelMs > 0) {
+      const wagons  = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
+      const stride  = WAGON_W + WAGON_GAP;
+      const halfLen = (wagons - 1) / 2 * stride;
+      const occ     = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      const fillClr = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
+      const lineClr = this.lineColors(train.line);
+      const r       = WAGON_H * 0.3;
+      const inset   = 0.25;
+
+      const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
+
+      // frontArc: arc position of the train's NOSE on the composite path.
+      // Anchoring by the nose means wagons extend backward into the prepended
+      // tramos and the arrow extends forward into the appended tramo — no clamping.
+      let frontArc = 0;
+      if (hasPath) {
+        const segStart = train.pathSegStart;
+        const segEnd   = train.pathSegEnd;
+        if (train.travelMs > 0) {
+          const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
+          const ease = t * t * (3 - 2 * t);
+          frontArc = segStart + ease * (segEnd - segStart);
+        } else {
+          frontArc = segEnd;
+        }
+        const c = this.positionAtArc(train.pathPoints, train.pathArcLens, frontArc - halfLen);
+        train.x = c.x; train.y = c.y; train.heading = c.heading;
+      } else if (train.travelMs > 0) {
         const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
         const ease = t * t * (3 - 2 * t);
         train.x = train.fromX + (train.targetX - train.fromX) * ease;
         train.y = train.fromY + (train.targetY - train.fromY) * ease;
       }
 
-      const x   = train.x - w / 2;
-      const y   = train.y - h / 2;
-      const occ = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      // Draw each wagon independently at its arc position (articulated through curves)
+      for (let i = wagons - 1; i >= 0; i--) {
+        // wagon 0 = rear, wagon wagons-1 = nose
+        const arcOffset = (i - (wagons - 1)) * stride;  // nose at frontArc, rear further back
+        let wx: number, wy: number, wh: number;
+        if (hasPath) {
+          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, frontArc + arcOffset);
+          wx = p.x; wy = p.y; wh = p.heading;
+        } else {
+          wx = train.x; wy = train.y; wh = train.heading;
+        }
 
+        ctx.save();
+        ctx.translate(wx, wy);
+        ctx.rotate(wh);
+
+        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
+        ctx.fillStyle = '#11141a';
+        ctx.fill();
+
+        this.roundedRect(ctx,
+          -WAGON_W / 2 + inset, -WAGON_H / 2 + inset,
+          WAGON_W - inset * 2,   WAGON_H - inset * 2, r * 0.5);
+        ctx.fillStyle = fillClr;
+        ctx.fill();
+
+        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
+        ctx.strokeStyle = lineClr;
+        ctx.lineWidth   = 0.35;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Direction arrow ahead of the nose, inside the appended tramo
+      const arrowH   = WAGON_H * 0.8;
+      const arrowArc = frontArc + WAGON_W / 2 + 0.1 + arrowH;
+      let ax: number, ay: number, ah: number;
+      if (hasPath) {
+        const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc);
+        ax = ap.x; ay = ap.y; ah = ap.heading;
+      } else {
+        ax = train.x; ay = train.y; ah = train.heading;
+      }
       ctx.save();
-
-      this.pillRect(ctx, x, y, w, h, r);
-      ctx.fillStyle = '#11141a';
+      ctx.translate(ax, ay);
+      ctx.rotate(ah);
+      ctx.beginPath();
+      ctx.moveTo(arrowH,  0);
+      ctx.lineTo(0,      -arrowH * 0.6);
+      ctx.lineTo(0,       arrowH * 0.6);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.fill();
-
-      ctx.clip();
-      ctx.fillStyle = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
-      ctx.fillRect(x, y, w * occ, h);
-
       ctx.restore();
-
-      this.pillRect(ctx, x, y, w, h, r);
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.stroke();
     }
   }
 
-  private pillRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+  // Pre-compute cumulative arc lengths for a path (call once when path changes)
+  private computeArcLens(pts: { x: number; y: number }[]): number[] {
+    const lens: number[] = [0];
+    for (let i = 1; i < pts.length; i++) {
+      const dx = pts[i].x - pts[i - 1].x;
+      const dy = pts[i].y - pts[i - 1].y;
+      lens.push(lens[i - 1] + Math.sqrt(dx * dx + dy * dy));
+    }
+    return lens;
+  }
+
+  // Return position + heading at a given arc-length along a path (clamps at endpoints).
+  // With composite paths (prev + current tramo) clamping is rarely triggered.
+  private positionAtArc(
+    pts:  { x: number; y: number }[],
+    lens: number[],
+    arc:  number,
+  ): { x: number; y: number; heading: number } {
+    const total   = lens[lens.length - 1];
+    const clamped = Math.max(0, Math.min(total, arc));
+
+    let i = 1;
+    while (i < lens.length - 1 && lens[i] < clamped) i++;
+
+    const p0     = pts[i - 1];
+    const p1     = pts[i];
+    const segLen = lens[i] - lens[i - 1];
+    const segT   = segLen > 0 ? (clamped - lens[i - 1]) / segLen : 0;
+
+    return {
+      x:       p0.x + (p1.x - p0.x) * segT,
+      y:       p0.y + (p1.y - p0.y) * segT,
+      heading: Math.atan2(p1.y - p0.y, p1.x - p0.x),
+    };
+  }
+
+  // Build a composite path: up to 2 previous tramos + current tramo + 1 next tramo.
+  // Returns the path and the arc positions of the current tramo's start and end,
+  // so drawTrains can anchor the train nose at segEnd without clamping issues.
+  private buildCompositePath(
+    seg: { id: string; line: string; sentido: string; path: { x: number; y: number }[] },
+  ): { path: { x: number; y: number }[]; segStart: number; segEnd: number } {
+    const CONNECT_SQ = 4;  // ≈ 2 canvas-unit junction tolerance
+    const usedIds = new Set<string>([seg.id]);
+
+    // ── Prepend up to 2 previous tramos (rear-wagon room) ──────────────────
+    let prepended: { x: number; y: number }[] = [];
+    let searchFrom = seg.path[0];
+    for (let k = 0; k < 2; k++) {
+      let best = CONNECT_SQ, prev: typeof seg | null = null;
+      for (const s of this.metroData.paths) {
+        if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
+        if (usedIds.has(s.id) || s.path.length < 2) continue;
+        const e = s.path[s.path.length - 1];
+        const d = (e.x - searchFrom.x) ** 2 + (e.y - searchFrom.y) ** 2;
+        if (d < best) { best = d; prev = s; }
+      }
+      if (!prev) break;
+      prepended  = [...prev.path.slice(0, -1), ...prepended];
+      searchFrom = prev.path[0];
+      usedIds.add(prev.id);
+    }
+
+    // ── Append 1 next tramo (nose + arrow room) ─────────────────────────────
+    let appended: { x: number; y: number }[] = [];
+    const segTail = seg.path[seg.path.length - 1];
+    { // block for scoping
+      let best = CONNECT_SQ, next: typeof seg | null = null;
+      for (const s of this.metroData.paths) {
+        if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
+        if (usedIds.has(s.id) || s.path.length < 2) continue;
+        const d = (s.path[0].x - segTail.x) ** 2 + (s.path[0].y - segTail.y) ** 2;
+        if (d < best) { best = d; next = s; }
+      }
+      if (next) { appended = next.path.slice(1); usedIds.add(next.id); }
+    }
+
+    const path = [...prepended, ...seg.path, ...appended];
+
+    // Compute segStart and segEnd arc positions within the composite path
+    const lens    = this.computeArcLens(path);
+    const segStart = lens[prepended.length];
+    const segEnd   = lens[prepended.length + seg.path.length - 1];
+
+    return { path, segStart, segEnd };
+  }
+
+  private roundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number, y: number, w: number, h: number, r: number,
+  ): void {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);

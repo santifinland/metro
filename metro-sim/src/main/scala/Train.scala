@@ -38,6 +38,7 @@ object Train {
 
         var platform: Option[ActorRef[PlatformMessage]] = None
         var nextPlatform: Option[ActorRef[PlatformMessage]] = None
+        var retiring = false
         var x: Double = 0
         var y: Double = 0
         val trainName = context.self.path.name
@@ -62,10 +63,10 @@ object Train {
             if (platform.isEmpty) {
               platform = Some(p)
               scribe.debug(s"Train $trainName starting at ${p.path.name}")
-              findPlatformPath(p).foreach { pp =>
-                x = pp.x; y = pp.y
-                WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, isNew = true)
-              }
+              val pp = findPlatformPath(p)
+              pp.foreach { path => x = path.x; y = path.y }
+              val anden = pp.map(_.features.codigoanden).getOrElse(0)
+              WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, isNew = true)
               SimClock.scheduleIn(travelMs()) { () =>
                 platform.foreach(_ ! GetNextPlatform(selfRef))
               }
@@ -82,13 +83,24 @@ object Train {
             platform = nextPlatform
             platform.get ! ArrivedAtPlatform(selfRef)
             people.foreach { case (_, person) => person ! ArrivedAtPlatformToPeople(platform.get) }
-            findPlatformPath(platform.get).foreach { pp => x = pp.x; y = pp.y }
-            WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, isNew = false)
+            val pp = findPlatformPath(platform.get)
+            pp.foreach { path => x = path.x; y = path.y }
+            val anden = pp.map(_.features.codigoanden).getOrElse(0)
+            WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, isNew = false)
             nextPlatform = None
-            SimClock.scheduleIn(doorsMs()) { () =>
-              platform.foreach(_ ! GetNextPlatform(selfRef))
+            if (retiring) {
+              scribe.info(s"Train $trainName retiring after arrival at platform")
+              SimClock.scheduleIn(doorsMs()) { () =>
+                platform.foreach(_ ! LeavingPlatform)
+                WebSocket.removeTrain(trainName)
+              }
+              Behaviors.stopped
+            } else {
+              SimClock.scheduleIn(doorsMs()) { () =>
+                platform.foreach(_ ! GetNextPlatform(selfRef))
+              }
+              Behaviors.same
             }
-            Behaviors.same
 
           case NextPlatformForTrain(p) =>
             nextPlatform = Some(p)
@@ -102,7 +114,9 @@ object Train {
             Behaviors.same
 
           case RequestEnterTrain(person) =>
-            if (people.size < MAX_CAPACITY) {
+            if (retiring) {
+              person ! NotAcceptedEnterTrain
+            } else if (people.size < MAX_CAPACITY) {
               people(person.path.name) = person
               person ! AcceptedEnterTrain(platform.get)
             } else {
@@ -116,11 +130,17 @@ object Train {
             people.remove(personId)
             Behaviors.same
 
+          case RetireTrain =>
+            scribe.info(s"Train $trainName marked for retirement")
+            retiring = true
+            Behaviors.same
+
           case ResetTrain(startPlatform) =>
             scribe.debug(s"Train $trainName resetting")
             people.clear()
             platform     = None
             nextPlatform = None
+            retiring     = false
             x = 0; y = 0
             startPlatform ! ReservePlatform(selfRef)
             Behaviors.same

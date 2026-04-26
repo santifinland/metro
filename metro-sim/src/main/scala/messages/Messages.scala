@@ -50,6 +50,7 @@ object Messages {
   case class ExitTrain(personId: String) extends TrainMessage
   case object TrainStatsTick extends TrainMessage
   case class ResetTrain(startPlatform: ActorRef[PlatformMessage]) extends TrainMessage
+  case object RetireTrain extends TrainMessage
 
   // ─── Line messages (sent TO a Line actor) ─────────────────────────────────
   sealed trait LineMessage

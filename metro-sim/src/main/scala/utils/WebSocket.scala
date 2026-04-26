@@ -59,15 +59,21 @@ object WebSocket {
   }
 
   /** Send a train position event and update the snapshot. */
-  def sendTrain(trainId: String, x: Double, y: Double, people: Int, capacity: Int, isNew: Boolean): Unit = {
+  def sendTrain(trainId: String, x: Double, y: Double, people: Int, capacity: Int, anden: Int, isNew: Boolean): Unit = {
     val liveType = if (isNew) "newTrain" else "moveTrain"
-    val liveJson = s"""{"message": "$liveType", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity}"""
+    val liveJson = s"""{"message": "$liveType", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity, "anden": $anden}"""
     // Snapshot always as newTrain so reconnecting clients (re)create the train
     WebSocket.synchronized {
       snapshot(s"train:$trainId") =
-        s"""{"message": "newTrain", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity}"""
+        s"""{"message": "newTrain", "train": "$trainId", "x": $x, "y": $y, "people": $people, "capacity": $capacity, "anden": $anden}"""
     }
     broadcast(liveJson)
+  }
+
+  /** Remove a train from the snapshot and notify clients. */
+  def removeTrain(trainId: String): Unit = {
+    WebSocket.synchronized { snapshot.remove(s"train:$trainId") }
+    broadcast(s"""{"message": "removeTrain", "train": "$trainId"}""")
   }
 
   /** Send a stat message and update the snapshot under the given key. */

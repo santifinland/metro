@@ -143,11 +143,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
               const last = path[path.length - 1];
               const prev = path[path.length - 2];
               train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
-              // Scale travel time by actual segment arc length (reference: 50 cu ≈ median)
-              const segArcLen = segEnd - segStart;
-              if (segArcLen > 0) {
-                train.travelMs = train.travelMs * segArcLen / 50;
-              }
             }
           }
         }

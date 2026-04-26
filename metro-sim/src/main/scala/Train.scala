@@ -15,8 +15,7 @@ object Train {
   private val MAX_CAPACITY = 1000
 
   // Delays in simulation milliseconds (no timeMultiplier — SimClock handles speed)
-  private val MinTravelMs = 90_000L
-  private val MaxTravelMs = 180_000L
+  private val FallbackTravelMs = 122_000L  // network average from MITMA data
   private val MinDoorsMs  = 20_000L
   private val MaxDoorsMs  = 40_000L
   private val FullRetryMs = 30_000L
@@ -25,7 +24,11 @@ object Train {
     Behaviors.setup { context =>
       val rng = new Random
 
-      def travelMs(): Long = MinTravelMs + rng.nextLong(MaxTravelMs - MinTravelMs)
+      def travelMsForPath(p: Option[Path]): Long = p match {
+        case Some(pp) if pp.features.velocidadtramoanterior > 0 && pp.features.longitudtramoanterior > 0 =>
+          (pp.features.longitudtramoanterior / pp.features.velocidadtramoanterior * 3600 * 1000).toLong
+        case _ => FallbackTravelMs
+      }
       def doorsMs():  Long = MinDoorsMs  + rng.nextLong(MaxDoorsMs  - MinDoorsMs)
 
       Behaviors.withTimers { timers =>
@@ -41,6 +44,7 @@ object Train {
         var retiring = false
         var x: Double = 0
         var y: Double = 0
+        var lastTravelSimMs: Long = FallbackTravelMs
         val trainName = context.self.path.name
         val selfRef   = context.self
 
@@ -66,15 +70,17 @@ object Train {
               val pp = findPlatformPath(p)
               pp.foreach { path => x = path.x; y = path.y }
               val anden = pp.map(_.features.codigoanden).getOrElse(0)
-              WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, isNew = true)
-              SimClock.scheduleIn(travelMs()) { () =>
+              WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, travelMs = 0L, isNew = true)
+              SimClock.scheduleIn(travelMsForPath(pp)) { () =>
                 platform.foreach(_ ! GetNextPlatform(selfRef))
               }
             } else {
               scribe.debug(s"Train $trainName departing from ${platform.get.path.name}")
               nextPlatform = Some(p)
               platform.get ! LeavingPlatform
-              SimClock.scheduleIn(travelMs()) { () => selfRef ! TrainArrivedAtPlatform }
+              val nextPp = findPlatformPath(p)
+              lastTravelSimMs = travelMsForPath(nextPp)
+              SimClock.scheduleIn(lastTravelSimMs) { () => selfRef ! TrainArrivedAtPlatform }
             }
             Behaviors.same
 
@@ -86,7 +92,8 @@ object Train {
             val pp = findPlatformPath(platform.get)
             pp.foreach { path => x = path.x; y = path.y }
             val anden = pp.map(_.features.codigoanden).getOrElse(0)
-            WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, isNew = false)
+            val wallClockMs = (lastTravelSimMs.toDouble / SimClock.speedFactor).toLong
+            WebSocket.sendTrain(trainName, x, y, people.size, MAX_CAPACITY, anden, wallClockMs, isNew = false)
             nextPlatform = None
             if (retiring) {
               scribe.info(s"Train $trainName retiring after arrival at platform")

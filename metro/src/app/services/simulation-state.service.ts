@@ -16,7 +16,7 @@ export class SimulationStateService {
   metroPeople = 0;
   trainsPeople = 0;
   timeMultiplier = 1;
-  paused = false;
+  paused = true;
   simLoad = 0;
   eventsPerTick = 0;
   queueSize = 0;
@@ -51,7 +51,7 @@ export class SimulationStateService {
           train.targetX = msg.x;
           train.targetY = msg.y;
           train.departedAt = performance.now();
-          train.travelMs = 135_000 * this.timeMultiplier;
+          train.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier;
           if (msg.people   !== undefined) train.people   = msg.people;
           if (msg.capacity !== undefined) train.capacity = msg.capacity;
           if (msg.anden    !== undefined) train.anden    = msg.anden;
@@ -67,7 +67,7 @@ export class SimulationStateService {
           existing.targetX = msg.x;
           existing.targetY = msg.y;
           existing.departedAt = performance.now();
-          existing.travelMs = 135_000 * this.timeMultiplier;
+          existing.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier;
           if (msg.people   !== undefined) existing.people   = msg.people;
           if (msg.capacity !== undefined) existing.capacity = msg.capacity;
           if (msg.anden    !== undefined) existing.anden    = msg.anden;

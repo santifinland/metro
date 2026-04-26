@@ -12,9 +12,11 @@ export class Station {
   slots: Slot[];
   next: any;
   people: number;
+  longitudM: number;    // meters of the incoming segment (LONGITUDTRAMOANTERIOR)
+  velocidadKmh: number; // average speed km/h of the incoming segment (VELOCIDADTRAMOANTERIOR)
 
   constructor(id: string, name: string, line: string, position: Position, path: Position[], sentido: string,
-              slots: Slot[], next?: Station) {
+              slots: Slot[], next?: Station, longitudM = 0, velocidadKmh = 0) {
     this.id = id;
     this.name = name;
     this.line = line;
@@ -24,6 +26,8 @@ export class Station {
     this.empty = true;
     this.slots = slots;
     this.next = next;
-    this.people = 0
+    this.people = 0;
+    this.longitudM = longitudM;
+    this.velocidadKmh = velocidadKmh;
   }
 }

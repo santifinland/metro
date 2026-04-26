@@ -28,7 +28,10 @@ export class Madrid {
         p.geometry.coordinates.reverse()[0][0]);
       const slots: Slot[] = []
       const station = new Station(p.properties.CODIGOANDEN.toString(), p.properties.DENOMINACION,
-        p.properties.NUMEROLINEAUSUARIO, position, path, p.properties.SENTIDO, slots)
+        p.properties.NUMEROLINEAUSUARIO, position, path, p.properties.SENTIDO, slots,
+        undefined,
+        p.properties.LONGITUDTRAMOANTERIOR ?? 0,
+        p.properties.VELOCIDADTRAMOANTERIOR ?? 0)
       this.paths.push(station)
     }
 

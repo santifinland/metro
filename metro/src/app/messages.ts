@@ -6,6 +6,7 @@ export interface MoveTrain {
   people?: number;
   capacity?: number;
   anden?: number;
+  travelMs?: number;
 }
 
 export interface PeopleInLinePlatforms {
@@ -43,6 +44,7 @@ export interface NewTrain {
   people?: number;
   capacity?: number;
   anden?: number;
+  travelMs?: number;
 }
 
 export interface RemoveTrain {

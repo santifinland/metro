@@ -71,6 +71,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   resetTime = '06:05';
 
   private labelVisible: boolean[] = [];
+  private stationLineMap = new Map<string, string[]>();
 
   // Sparkline history
   peopleHistory: number[] = Array(40).fill(0);
@@ -104,6 +105,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
     this.computeFit();
     this.computeLabelVisibility();
+    this.buildStationLineMap();
     this.setupEvents();
 
     this.needsStaticRedraw = true;
@@ -395,6 +397,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private buildStationLineMap(): void {
+    this.stationLineMap.clear();
+    for (const p of this.metroData.paths) {
+      const lines = this.stationLineMap.get(p.name) ?? [];
+      if (!lines.includes(p.line)) {
+        lines.push(p.line);
+        this.stationLineMap.set(p.name, lines);
+      }
+    }
+  }
+
   private drawStations(): void {
     const ctx   = this.ctxStations;
     const scale = this.currentScale;
@@ -422,15 +435,45 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       ctx.closePath();
 
       if (showLabels && (showAll || this.labelVisible[i])) {
-        const padding = 2 / scale;
-        const lx = x + r + padding;
-        const ly = y + fontSize * 0.35;
-        const bw = ctx.measureText(station.name).width + padding * 2;
-        const bh = fontSize * 1.1;
+        const padding  = 2 / scale;
+        const lx       = x + r + padding;
+        const ly       = y + fontSize * 0.35;
+        const textW    = ctx.measureText(station.name).width;
+        const bh       = fontSize * 1.1;
+
+        // Indicator squares: one per line serving this station, shown at showAll zoom
+        const stLines = showAll ? (this.stationLineMap.get(station.name) ?? []) : [];
+        const sqW     = fontSize * 0.72;
+        const sqGap   = sqW * 0.35;
+        const rowGap  = sqW * 0.22;
+        const indRowH = stLines.length > 0 ? sqW + rowGap + sqW * 0.55 + padding * 0.5 : 0;
+        const indW    = stLines.length > 0 ? stLines.length * (sqW + sqGap) - sqGap : 0;
+        const boxW    = Math.max(textW + padding * 2, indW + padding * 2);
+        const boxH    = bh + indRowH;
+
         ctx.fillStyle = 'rgba(8,9,11,0.9)';
-        ctx.fillRect(lx - padding, ly - fontSize * 0.85, bw, bh);
+        ctx.fillRect(lx - padding, ly - fontSize * 0.85, boxW, boxH);
         ctx.fillStyle = '#e6ebf2';
         ctx.fillText(station.name, lx, ly);
+
+        if (stLines.length > 0) {
+          const maxP = Array.from(this.state.platformsPeople.values()).reduce((a, b) => Math.max(a, b), 1);
+          const maxS = Array.from(this.state.stationsPeople.values()).reduce((a, b) => Math.max(a, b), 1);
+          const sqY0 = ly + fontSize * 0.22;
+          const sqY1 = sqY0 + sqW + rowGap;
+          stLines.forEach((line, idx) => {
+            const px   = lx + idx * (sqW + sqGap);
+            const pOcc = Math.min(1, (this.state.platformsPeople.get(line) ?? 0) / maxP);
+            const sOcc = Math.min(1, (this.state.stationsPeople.get(line) ?? 0) / maxS);
+            const clr  = this.lineColors(line);
+            ctx.globalAlpha = 0.25 + 0.75 * pOcc;
+            ctx.fillStyle   = clr;
+            ctx.fillRect(px, sqY0, sqW, sqW);
+            ctx.globalAlpha = 0.20 + 0.80 * sOcc;
+            ctx.fillRect(px, sqY1, sqW, sqW * 0.55);
+          });
+          ctx.globalAlpha = 1.0;
+        }
       }
     });
   }
@@ -440,15 +483,20 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
+    // Minimum wagon height = 1.4× path width in screen pixels; scale up uniformly when zoomed out.
+    const trainSizeRatio = Math.max(1.0, TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale));
+
     for (const train of this.state.trains) {
-      const wagons  = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
-      const stride  = WAGON_W + WAGON_GAP;
-      const halfLen = (wagons - 1) / 2 * stride;
-      const occ     = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
-      const fillClr = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
-      const lineClr = this.lineColors(train.line);
-      const r       = WAGON_H * 0.3;
-      const inset   = 0.25;
+      const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
+      const stride    = WAGON_W + WAGON_GAP;
+      const halfLen   = (wagons - 1) / 2 * stride;
+      const effStride = stride  * trainSizeRatio;
+      const effHalf   = halfLen * trainSizeRatio;
+      const occ       = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      const fillClr   = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
+      const lineClr   = this.lineColors(train.line);
+      const r         = WAGON_H * 0.3;
+      const inset     = 0.25;
 
       const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
 
@@ -469,7 +517,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           centerArc = segEnd;
         }
         // Clamp so rear wagon >= 0 and nose <= lensTotal
-        centerArc = Math.max(halfLen, Math.min(lensTotal - halfLen, centerArc));
+        centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
         const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
         train.x = c.x; train.y = c.y; train.heading = c.heading;
       } else if (train.travelMs > 0) {
@@ -481,7 +529,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
       // Draw each wagon independently at its arc position (articulated through curves)
       for (let i = wagons - 1; i >= 0; i--) {
-        const arcOffset = (i - (wagons - 1) / 2) * stride;  // centered on centerArc
+        const arcOffset = (i - (wagons - 1) / 2) * effStride;
         let wx: number, wy: number, wh: number;
         if (hasPath) {
           const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset);
@@ -493,6 +541,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         ctx.save();
         ctx.translate(wx, wy);
         ctx.rotate(wh);
+        ctx.scale(trainSizeRatio, trainSizeRatio);
 
         this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
         ctx.fillStyle = '#11141a';
@@ -517,22 +566,23 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         ctx.restore();
       }
 
-      // Direction arrow just ahead of the nose (nose = centerArc + halfLen)
+      // Direction arrow just ahead of the nose (nose = centerArc + effHalf)
       const arrowH   = WAGON_H * 0.8;
-      const arrowArc = centerArc + halfLen + WAGON_W / 2 + arrowH;
+      const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
       let ax: number, ay: number, ah: number;
       if (hasPath) {
         const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
         // Fallback: project nose in heading direction
-        ax = train.x + Math.cos(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
-        ay = train.y + Math.sin(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
+        ax = train.x + Math.cos(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
+        ay = train.y + Math.sin(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
         ah = train.heading;
       }
       ctx.save();
       ctx.translate(ax, ay);
       ctx.rotate(ah);
+      ctx.scale(trainSizeRatio, trainSizeRatio);
       ctx.beginPath();
       ctx.moveTo(arrowH,  0);
       ctx.lineTo(0,      -arrowH * 0.6);

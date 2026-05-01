@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP 
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
-export class TrainComponent implements AfterViewInit, OnDestroy {
+export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   @ViewChild('canvasContainer', { static: false, read: ElementRef }) canvasContainer!: ElementRef;
   @ViewChild('canvas_tiles',    { static: false, read: ElementRef }) canvasTiles!: ElementRef;
@@ -25,6 +25,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas_trains',   { static: false, read: ElementRef }) canvasTrains!: ElementRef;
   @ViewChild('stationsOverlay', { static: false, read: ElementRef }) private stationsOverlay!: ElementRef;
   private _overlayElements: HTMLElement[] | null = null;
+  private selectedStationIdx  = -1;
+  private _lastSelectedIdx    = -2;
+  private _hoveredStationIdx  = -1;
+  private _lastHoveredIdx     = -2;
+  private _mouseContainerX    = -1;
+  private _mouseContainerY    = -1;
+  showAllPanels = false;
 
   private ctxTiles!: CanvasRenderingContext2D;
   private ctxStations!: CanvasRenderingContext2D;
@@ -97,6 +104,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.state.initLines(Array.from(lines));
   }
 
+  ngOnInit(): void {
+    this.buildStationLineMap();
+  }
+
   ngAfterViewInit(): void {
     this.resizeCanvases();
 
@@ -107,7 +118,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
     this.computeFit();
     this.computeLabelVisibility();
-    this.buildStationLineMap();
     this.setupEvents();
 
     this.needsStaticRedraw = true;
@@ -241,22 +251,48 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     }, { passive: false });
 
     let dragging = false;
+    let mouseMoved = false;
     let lastX = 0, lastY = 0;
     container.addEventListener('mousedown', (e: MouseEvent) => {
-      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      dragging = true; mouseMoved = false;
+      lastX = e.clientX; lastY = e.clientY;
       container.style.cursor = 'grabbing';
     });
     container.addEventListener('mousemove', (e: MouseEvent) => {
-      if (!dragging) return;
-      this.panX += e.clientX - lastX;
-      this.panY += e.clientY - lastY;
+      // Track container-relative mouse position for hover detection in RAF
+      const rect = container.getBoundingClientRect();
+      this._mouseContainerX = e.clientX - rect.left;
+      this._mouseContainerY = e.clientY - rect.top;
+
+      if (!dragging) {
+        // Show pointer cursor when over a clickable station dot
+        const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+        container.style.cursor = near >= 0 ? 'pointer' : 'grab';
+        return;
+      }
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      if (dx * dx + dy * dy > 64) mouseMoved = true;  // 8px threshold
+      this.panX += dx;
+      this.panY += dy;
       lastX = e.clientX; lastY = e.clientY;
       this.needsStaticRedraw = true;
       this.needsTrainRedraw  = true;
     });
-    const endDrag = () => { dragging = false; container.style.cursor = 'grab'; };
-    container.addEventListener('mouseup',    endDrag);
-    container.addEventListener('mouseleave', endDrag);
+    const endDrag = () => {
+      dragging = false;
+      const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+      container.style.cursor = near >= 0 ? 'pointer' : 'grab';
+    };
+    container.addEventListener('mouseup', (e: MouseEvent) => {
+      if (dragging && !mouseMoved) this.handleMapClick(e.clientX, e.clientY);
+      endDrag();
+    });
+    container.addEventListener('mouseleave', () => {
+      dragging = false;
+      this._mouseContainerX = -1;
+      this._mouseContainerY = -1;
+      container.style.cursor = 'grab';
+    });
 
     window.addEventListener('resize', () => {
       this.resizeCanvases();
@@ -400,13 +436,34 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private findNearestStation(cx: number, cy: number, hitPx = 14): number {
+    let bestIdx = -1, bestDist = hitPx * hitPx;
+    this.metroData.stations.forEach((s, i) => {
+      const sx = s.position.x * this.currentScale + this.panX;
+      const sy = s.position.y * this.currentScale + this.panY;
+      const d2 = (cx - sx) ** 2 + (cy - sy) ** 2;
+      if (d2 < bestDist) { bestDist = d2; bestIdx = i; }
+    });
+    return bestIdx;
+  }
+
+  onStationLabelClick(idx: number): void {
+    this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
+  }
+
+  private handleMapClick(clientX: number, clientY: number): void {
+    const rect = (this.canvasContainer.nativeElement as HTMLElement).getBoundingClientRect();
+    const bestIdx = this.findNearestStation(clientX - rect.left, clientY - rect.top);
+    this.selectedStationIdx = bestIdx === this.selectedStationIdx ? -1 : bestIdx;
+  }
+
   private updateStationsOverlay(): void {
     const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
     if (!el) return;
     const fitMul = this.currentScale / this.fitScale;
     el.classList.toggle('show-interchange', fitMul > 1.05);
     el.classList.toggle('show-all',         fitMul > 1.7);
-    el.classList.toggle('show-panel',       fitMul > 1.4);
+    el.classList.toggle('show-panel',       fitMul > 15 || this.showAllPanels);
     el.classList.toggle('zoom-deep',        fitMul > 7);
     if (!this._overlayElements) {
       const items = el.querySelectorAll<HTMLElement>('.stn-label-wrap');
@@ -421,14 +478,34 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         this._overlayElements[i].style.left = (st.position.x * s + px) + 'px';
         this._overlayElements[i].style.top  = (st.position.y * s + py) + 'px';
       }
+      // Sync selected class only when it changes
+      if (this.selectedStationIdx !== this._lastSelectedIdx) {
+        if (this._lastSelectedIdx >= 0) this._overlayElements[this._lastSelectedIdx]?.classList.remove('is-selected');
+        if (this.selectedStationIdx >= 0) this._overlayElements[this.selectedStationIdx]?.classList.add('is-selected');
+        this._lastSelectedIdx = this.selectedStationIdx;
+      }
+      // Sync hover class
+      const hoverIdx = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+      if (hoverIdx !== this._lastHoveredIdx) {
+        if (this._lastHoveredIdx >= 0) this._overlayElements[this._lastHoveredIdx]?.classList.remove('is-hover');
+        if (hoverIdx >= 0) this._overlayElements[hoverIdx]?.classList.add('is-hover');
+        this._hoveredStationIdx = hoverIdx;
+        this._lastHoveredIdx = hoverIdx;
+      }
     }
   }
 
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
+    // Deduplicate by line+sentido so bidirectional lines (e.g. L5 with sentido 1 & 2)
+    // appear as two entries — same as L6 which has distinct line IDs '6-1' / '6-2'.
+    const seen = new Map<string, Set<string>>();
     for (const p of this.metroData.paths) {
-      const lines = this.stationLineMap.get(p.name) ?? [];
-      if (!lines.includes(p.line)) {
+      const dirKey = p.line + '/' + (p.sentido ?? '');
+      if (!seen.has(p.name)) seen.set(p.name, new Set());
+      if (!seen.get(p.name)!.has(dirKey)) {
+        seen.get(p.name)!.add(dirKey);
+        const lines = this.stationLineMap.get(p.name) ?? [];
         lines.push(p.line);
         this.stationLineMap.set(p.name, lines);
       }
@@ -888,10 +965,16 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   get stationLabelItems() {
     return this.metroData.stations.map(s => {
-      const lines     = this.stationLineMap.get(s.name) ?? [];
-      const platforms = lines.map(l => ({ line: l, total: this.state.platformsPeople.get(l) ?? 0 }));
-      const transit   = lines.reduce((sum, l) => sum + (this.state.stationsPeople.get(l) ?? 0), 0);
-      const total     = transit + platforms.reduce((sum, p) => sum + p.total, 0);
+      const lines = this.stationLineMap.get(s.name) ?? [];
+      // Count occurrences per line ID to split aggregated totals across directions
+      const lineOcc = new Map<string, number>();
+      for (const l of lines) lineOcc.set(l, (lineOcc.get(l) ?? 0) + 1);
+      const platforms = lines.map(l => ({
+        line:  l,
+        total: Math.round((this.state.platformsPeople.get(l) ?? 0) / (lineOcc.get(l) ?? 1)),
+      }));
+      const transit = lines.reduce((sum, l) => sum + (this.state.stationsPeople.get(l) ?? 0), 0);
+      const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);
       return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };
     });
   }

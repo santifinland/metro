@@ -9,10 +9,12 @@
 
     <!-- Station labels overlay (HTML, positioned via RAF) -->
     <div #stationsOverlay class="station-labels">
-      @for (item of stationLabelItems; track item.name) {
+      @for (item of stationLabelItems; track item.name; let idx = $index) {
         <div class="stn-label-wrap" [class.is-interchange]="item.lines.length >= 2">
           <div class="stn-label">
-            <div class="stn-name">
+            <div class="stn-name"
+                 (mousedown)="$event.stopPropagation()"
+                 (click)="onStationLabelClick(idx)">
               <span class="stn-tick"></span>
               <span class="stn-text">{{ item.name }}</span>
             </div>
@@ -21,10 +23,12 @@
                 <span class="k">TOTAL</span>
                 <span class="v">{{ fmtCount(item.total) }}</span>
               </div>
-              <div class="stn-panel-row stn-transit">
-                <span class="k">↳ TRANSIT</span>
-                <span class="v">{{ fmtCount(item.transit) }}</span>
-              </div>
+              @if (item.transit > 0) {
+                <div class="stn-panel-row stn-transit">
+                  <span class="k">↳ TRANSIT</span>
+                  <span class="v">{{ fmtCount(item.transit) }}</span>
+                </div>
+              }
               <div class="stn-panel-sep">
                 <span>{{ item.lines.length === 1 ? 'PLATFORM' : 'PLATFORMS · ' + item.lines.length }}</span>
               </div>
@@ -250,6 +254,22 @@
           <span class="row-name">STATION HALL</span>
           <span class="row-val">{{ formatCount(allPeople(state.stationsPeople)) }}</span>
         </div>
+      </div>
+
+      <!-- STATION PANELS TOGGLE -->
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">STATION · PANELS</span>
+        </div>
+        <button class="panels-toggle-btn" [class.active]="showAllPanels" (click)="showAllPanels = !showAllPanels">
+          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+            <rect x="1" y="1" width="4" height="4" rx="0.5"/>
+            <rect x="7" y="1" width="4" height="4" rx="0.5"/>
+            <rect x="1" y="7" width="4" height="4" rx="0.5"/>
+            <rect x="7" y="7" width="4" height="4" rx="0.5"/>
+          </svg>
+          <span>{{ showAllPanels ? 'OCULTAR TODOS' : 'MOSTRAR TODOS' }}</span>
+        </button>
       </div>
 
       <!-- BY LINE -->

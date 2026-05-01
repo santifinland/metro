@@ -559,66 +559,75 @@
 }
 
 /* Visibility rules driven by classes toggled in RAF */
-.stn-label-wrap            { display: none; position: absolute; }
-.stn-panel                 { display: none; }
+.stn-label-wrap { display: none; position: absolute; pointer-events: none; }
+.stn-panel      { display: none; }
 
 .station-labels.show-interchange .stn-label-wrap.is-interchange { display: block; }
 .station-labels.show-all         .stn-label-wrap                { display: block; }
 .station-labels.show-panel       .stn-panel                     { display: flex; }
 
-/* ── Name pill ───────────────────────────────────────────── */
+/* ── Name — texto con halo cartográfico, sin caja negra ─── */
 .stn-label {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  transform: translate(8px, -6px);
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  gap: 4px;
+  transform: translate(10px, -7px);
 }
-.station-labels.zoom-deep .stn-label { transform: translate(16px, -6px); }
+.station-labels.zoom-deep .stn-label { transform: translate(18px, -7px); }
 
 .stn-name {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(8,9,11,0.92);
-  border: 1px solid var(--line-2);
-  padding: 2px 7px 2px 5px;
   align-self: flex-start;
-  font-size: 9.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
+  padding: 2px 4px 2px 2px;
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
   color: var(--t-1);
   white-space: nowrap;
   text-transform: uppercase;
+  -webkit-text-stroke: 3px rgba(14, 19, 28, 0.92);
+  paint-order: stroke fill;
+  text-shadow: 0 0 6px rgba(14,19,28,0.8), 0 1px 2px rgba(0,0,0,0.6);
+  pointer-events: auto;
+  cursor: pointer;
 }
 .stn-tick {
-  width: 4px; height: 4px;
-  background: var(--t-3);
+  width: 5px; height: 5px;
+  background: var(--amber);
   flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px rgba(14,19,28,0.9), 0 0 6px rgba(245,180,84,0.5);
 }
 .stn-text { line-height: 1; }
 
-/* ── Numeric panel ───────────────────────────────────────── */
+/* ── Numeric panel — slate, no longer a black slab ──────── */
 .stn-panel {
   align-self: flex-start;
-  min-width: 132px;
-  background: rgba(8,9,11,0.94);
-  border: 1px solid var(--line-2);
-  border-left: 1px solid var(--line-3);
-  padding: 5px 7px 6px;
+  min-width: 138px;
+  background: linear-gradient(180deg, rgba(34,44,70,0.94) 0%, rgba(20,27,44,0.94) 100%);
+  border: 1px solid var(--panel-edge);
+  border-left: none;
+  padding: 6px 8px 7px;
   font-size: 9px;
   letter-spacing: 0.04em;
   flex-direction: column;
   gap: 2px;
   position: relative;
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.2);
+  backdrop-filter: blur(10px) saturate(160%);
 }
 .stn-panel::before {
   content: '';
   position: absolute;
-  left: -1px; top: 0; bottom: 0;
+  left: 0; top: 0; bottom: 0;
   width: 2px;
-  background: var(--amber-dim);
-  opacity: 0.55;
+  background: linear-gradient(180deg, var(--amber), var(--amber-dim));
+  opacity: 0.85;
+  box-shadow: 0 0 8px rgba(245,180,84,0.4);
 }
 
 .stn-panel-row {
@@ -690,3 +699,27 @@
   text-align: right;
   padding-right: 4px;
 }
+
+/* ── Panels toggle button ────────────────────────────────── */
+.panels-toggle-btn {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%; padding: 6px 10px;
+  background: none; border: 1px solid var(--line-2);
+  color: var(--t-3); font-size: 9px; letter-spacing: 0.12em;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.panels-toggle-btn svg { width: 10px; height: 10px; flex-shrink: 0; }
+.panels-toggle-btn:hover { color: var(--t-1); border-color: var(--line-3); background: var(--bg-3); }
+.panels-toggle-btn.active { color: var(--amber); border-color: var(--amber-dim); }
+
+/* ── Hovered station — cursor affordance ────────────────────── */
+.stn-label-wrap.is-hover .stn-name  { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
+.stn-label-wrap.is-hover .stn-tick  { background: var(--amber); box-shadow: 0 0 0 1.5px rgba(14,19,28,0.9), 0 0 10px rgba(245,180,84,0.8); }
+
+/* ── Selected station — always visible with panel + amber accent ── */
+.stn-label-wrap.is-selected                       { display: block; z-index: 10; }
+.stn-label-wrap.is-selected .stn-panel            { display: flex; }
+.stn-label-wrap.is-selected .stn-label            { filter: drop-shadow(0 4px 12px rgba(245,180,84,0.28)); }
+.stn-label-wrap.is-selected .stn-name             { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
+.stn-label-wrap.is-selected .stn-tick             { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.stn-label-wrap.is-selected .stn-panel::before    { background: var(--amber); opacity: 1; box-shadow: 0 0 6px var(--amber); }

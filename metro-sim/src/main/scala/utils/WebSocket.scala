@@ -3,7 +3,6 @@ package utils
 import org.apache.pekko.NotUsed
 import org.apache.pekko.http.scaladsl.model.ws.{Message, TextMessage}
 import org.apache.pekko.stream.OverflowStrategy
-import org.apache.pekko.stream.QueueOfferResult
 import org.apache.pekko.stream.scaladsl.{Flow, Sink, Source, SourceQueueWithComplete}
 
 object WebSocket {
@@ -23,7 +22,6 @@ object WebSocket {
   def listen(): Flow[Message, Message, NotUsed] = {
     val connId = java.util.UUID.randomUUID.toString
 
-    // Fix 2: parse incoming messages instead of dropping them
     val inbound: Sink[Message, Any] = Sink.foreach {
       case TextMessage.Strict(text) => commandHandler(text)
       case _                        => ()
@@ -33,7 +31,6 @@ object WebSocket {
       Source.queue[Message](4096, OverflowStrategy.dropHead)
 
     Flow.fromSinkAndSourceMat(inbound, outbound) { (_, queue) =>
-      // Fix 3: remove connection from list when client disconnects
       queue.watchCompletion().foreach { _ =>
         WebSocket.synchronized {
           connections = connections.filterNot(_._1 == connId)

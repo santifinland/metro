@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -16,13 +16,22 @@ import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP 
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css']
 })
-export class TrainComponent implements AfterViewInit, OnDestroy {
+export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   @ViewChild('canvasContainer', { static: false, read: ElementRef }) canvasContainer!: ElementRef;
   @ViewChild('canvas_tiles',    { static: false, read: ElementRef }) canvasTiles!: ElementRef;
   @ViewChild('canvas_stations', { static: false, read: ElementRef }) canvasStations!: ElementRef;
   @ViewChild('canvas_paths',    { static: false, read: ElementRef }) canvasPaths!: ElementRef;
   @ViewChild('canvas_trains',   { static: false, read: ElementRef }) canvasTrains!: ElementRef;
+  @ViewChild('stationsOverlay', { static: false, read: ElementRef }) private stationsOverlay!: ElementRef;
+  private _overlayElements: HTMLElement[] | null = null;
+  private selectedStationIdx  = -1;
+  private _lastSelectedIdx    = -2;
+  private _hoveredStationIdx  = -1;
+  private _lastHoveredIdx     = -2;
+  private _mouseContainerX    = -1;
+  private _mouseContainerY    = -1;
+  showAllPanels = false;
 
   private ctxTiles!: CanvasRenderingContext2D;
   private ctxStations!: CanvasRenderingContext2D;
@@ -71,6 +80,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   resetTime = '06:05';
 
   private labelVisible: boolean[] = [];
+  private stationLineMap = new Map<string, string[]>();
 
   // Sparkline history
   peopleHistory: number[] = Array(40).fill(0);
@@ -92,6 +102,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   ) {
     const lines = new Set(this.metroData.paths.map(p => p.line));
     this.state.initLines(Array.from(lines));
+  }
+
+  ngOnInit(): void {
+    this.buildStationLineMap();
   }
 
   ngAfterViewInit(): void {
@@ -237,22 +251,48 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     }, { passive: false });
 
     let dragging = false;
+    let mouseMoved = false;
     let lastX = 0, lastY = 0;
     container.addEventListener('mousedown', (e: MouseEvent) => {
-      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      dragging = true; mouseMoved = false;
+      lastX = e.clientX; lastY = e.clientY;
       container.style.cursor = 'grabbing';
     });
     container.addEventListener('mousemove', (e: MouseEvent) => {
-      if (!dragging) return;
-      this.panX += e.clientX - lastX;
-      this.panY += e.clientY - lastY;
+      // Track container-relative mouse position for hover detection in RAF
+      const rect = container.getBoundingClientRect();
+      this._mouseContainerX = e.clientX - rect.left;
+      this._mouseContainerY = e.clientY - rect.top;
+
+      if (!dragging) {
+        // Show pointer cursor when over a clickable station dot
+        const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+        container.style.cursor = near >= 0 ? 'pointer' : 'grab';
+        return;
+      }
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      if (dx * dx + dy * dy > 64) mouseMoved = true;  // 8px threshold
+      this.panX += dx;
+      this.panY += dy;
       lastX = e.clientX; lastY = e.clientY;
       this.needsStaticRedraw = true;
       this.needsTrainRedraw  = true;
     });
-    const endDrag = () => { dragging = false; container.style.cursor = 'grab'; };
-    container.addEventListener('mouseup',    endDrag);
-    container.addEventListener('mouseleave', endDrag);
+    const endDrag = () => {
+      dragging = false;
+      const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+      container.style.cursor = near >= 0 ? 'pointer' : 'grab';
+    };
+    container.addEventListener('mouseup', (e: MouseEvent) => {
+      if (dragging && !mouseMoved) this.handleMapClick(e.clientX, e.clientY);
+      endDrag();
+    });
+    container.addEventListener('mouseleave', () => {
+      dragging = false;
+      this._mouseContainerX = -1;
+      this._mouseContainerY = -1;
+      container.style.cursor = 'grab';
+    });
 
     window.addEventListener('resize', () => {
       this.resizeCanvases();
@@ -308,6 +348,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       }
 
       this.drawTrains(timestamp);
+      this.updateStationsOverlay();
       this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
@@ -395,24 +436,92 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private findNearestStation(cx: number, cy: number, hitPx = 14): number {
+    let bestIdx = -1, bestDist = hitPx * hitPx;
+    this.metroData.stations.forEach((s, i) => {
+      const sx = s.position.x * this.currentScale + this.panX;
+      const sy = s.position.y * this.currentScale + this.panY;
+      const d2 = (cx - sx) ** 2 + (cy - sy) ** 2;
+      if (d2 < bestDist) { bestDist = d2; bestIdx = i; }
+    });
+    return bestIdx;
+  }
+
+  onStationLabelClick(idx: number): void {
+    this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
+  }
+
+  private handleMapClick(clientX: number, clientY: number): void {
+    const rect = (this.canvasContainer.nativeElement as HTMLElement).getBoundingClientRect();
+    const bestIdx = this.findNearestStation(clientX - rect.left, clientY - rect.top);
+    this.selectedStationIdx = bestIdx === this.selectedStationIdx ? -1 : bestIdx;
+  }
+
+  private updateStationsOverlay(): void {
+    const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
+    if (!el) return;
+    const fitMul = this.currentScale / this.fitScale;
+    el.classList.toggle('show-interchange', fitMul > 1.05);
+    el.classList.toggle('show-all',         fitMul > 1.7);
+    el.classList.toggle('show-panel',       fitMul > 15 || this.showAllPanels);
+    el.classList.toggle('zoom-deep',        fitMul > 7);
+    if (!this._overlayElements) {
+      const items = el.querySelectorAll<HTMLElement>('.stn-label-wrap');
+      if (items.length > 0) this._overlayElements = Array.from(items);
+    }
+    if (this._overlayElements) {
+      const stations = this.metroData.stations;
+      const s = this.currentScale, px = this.panX, py = this.panY;
+      for (let i = 0; i < this._overlayElements.length; i++) {
+        const st = stations[i];
+        if (!st) continue;
+        this._overlayElements[i].style.left = (st.position.x * s + px) + 'px';
+        this._overlayElements[i].style.top  = (st.position.y * s + py) + 'px';
+      }
+      // Sync selected class only when it changes
+      if (this.selectedStationIdx !== this._lastSelectedIdx) {
+        if (this._lastSelectedIdx >= 0) this._overlayElements[this._lastSelectedIdx]?.classList.remove('is-selected');
+        if (this.selectedStationIdx >= 0) this._overlayElements[this.selectedStationIdx]?.classList.add('is-selected');
+        this._lastSelectedIdx = this.selectedStationIdx;
+      }
+      // Sync hover class
+      const hoverIdx = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
+      if (hoverIdx !== this._lastHoveredIdx) {
+        if (this._lastHoveredIdx >= 0) this._overlayElements[this._lastHoveredIdx]?.classList.remove('is-hover');
+        if (hoverIdx >= 0) this._overlayElements[hoverIdx]?.classList.add('is-hover');
+        this._hoveredStationIdx = hoverIdx;
+        this._lastHoveredIdx = hoverIdx;
+      }
+    }
+  }
+
+  private buildStationLineMap(): void {
+    this.stationLineMap.clear();
+    // Deduplicate by line+sentido so bidirectional lines (e.g. L5 with sentido 1 & 2)
+    // appear as two entries — same as L6 which has distinct line IDs '6-1' / '6-2'.
+    const seen = new Map<string, Set<string>>();
+    for (const p of this.metroData.paths) {
+      const dirKey = p.line + '/' + (p.sentido ?? '');
+      if (!seen.has(p.name)) seen.set(p.name, new Set());
+      if (!seen.get(p.name)!.has(dirKey)) {
+        seen.get(p.name)!.add(dirKey);
+        const lines = this.stationLineMap.get(p.name) ?? [];
+        lines.push(p.line);
+        this.stationLineMap.set(p.name, lines);
+      }
+    }
+  }
+
   private drawStations(): void {
     const ctx   = this.ctxStations;
     const scale = this.currentScale;
     this.clearCtx(ctx);
     this.applyTransform(ctx);
-
-    const r   = TrainComponent.DOT_RADIUS_PX / scale;
-    const lw  = TrainComponent.DOT_STROKE_PX / scale;
-    const showLabels = scale >= this.fitScale * 0.8;
-    const showAll    = (scale / this.fitScale) >= TrainComponent.LABEL_SHOW_ALL_MUL;
-    const fontSize   = Math.round(this.labelTargetPx() / scale);
-
-    ctx.lineWidth   = lw;
-    if (showLabels) ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-
-    this.metroData.stations.forEach((station, i) => {
+    const r  = TrainComponent.DOT_RADIUS_PX / scale;
+    const lw = TrainComponent.DOT_STROKE_PX / scale;
+    ctx.lineWidth = lw;
+    this.metroData.stations.forEach(station => {
       const { x, y } = station.position;
-
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle   = '#0c0e11';
@@ -420,18 +529,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       ctx.strokeStyle = '#e6ebf2';
       ctx.stroke();
       ctx.closePath();
-
-      if (showLabels && (showAll || this.labelVisible[i])) {
-        const padding = 2 / scale;
-        const lx = x + r + padding;
-        const ly = y + fontSize * 0.35;
-        const bw = ctx.measureText(station.name).width + padding * 2;
-        const bh = fontSize * 1.1;
-        ctx.fillStyle = 'rgba(8,9,11,0.9)';
-        ctx.fillRect(lx - padding, ly - fontSize * 0.85, bw, bh);
-        ctx.fillStyle = '#e6ebf2';
-        ctx.fillText(station.name, lx, ly);
-      }
     });
   }
 
@@ -440,15 +537,22 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
+    // Scale wagons up at low zoom, capped at the size they have at fitMul=3.11 (empirically clean).
+    const capRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.fitScale * 3.11);
+    const rawRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale);
+    const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
+
     for (const train of this.state.trains) {
-      const wagons  = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
-      const stride  = WAGON_W + WAGON_GAP;
-      const halfLen = (wagons - 1) / 2 * stride;
-      const occ     = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
-      const fillClr = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
-      const lineClr = this.lineColors(train.line);
-      const r       = WAGON_H * 0.3;
-      const inset   = 0.25;
+      const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
+      const stride    = WAGON_W + WAGON_GAP;
+      const halfLen   = (wagons - 1) / 2 * stride;
+      const effStride = stride  * trainSizeRatio;
+      const effHalf   = halfLen * trainSizeRatio;
+      const occ       = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
+      const fillClr   = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
+      const lineClr   = this.lineColors(train.line);
+      const r         = WAGON_H * 0.3;
+      const inset     = 0.25;
 
       const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
 
@@ -469,7 +573,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
           centerArc = segEnd;
         }
         // Clamp so rear wagon >= 0 and nose <= lensTotal
-        centerArc = Math.max(halfLen, Math.min(lensTotal - halfLen, centerArc));
+        centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
         const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
         train.x = c.x; train.y = c.y; train.heading = c.heading;
       } else if (train.travelMs > 0) {
@@ -481,7 +585,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
       // Draw each wagon independently at its arc position (articulated through curves)
       for (let i = wagons - 1; i >= 0; i--) {
-        const arcOffset = (i - (wagons - 1) / 2) * stride;  // centered on centerArc
+        const arcOffset = (i - (wagons - 1) / 2) * effStride;
         let wx: number, wy: number, wh: number;
         if (hasPath) {
           const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset);
@@ -493,6 +597,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         ctx.save();
         ctx.translate(wx, wy);
         ctx.rotate(wh);
+        ctx.scale(trainSizeRatio, trainSizeRatio);
 
         this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
         ctx.fillStyle = '#11141a';
@@ -517,22 +622,23 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
         ctx.restore();
       }
 
-      // Direction arrow just ahead of the nose (nose = centerArc + halfLen)
+      // Direction arrow just ahead of the nose (nose = centerArc + effHalf)
       const arrowH   = WAGON_H * 0.8;
-      const arrowArc = centerArc + halfLen + WAGON_W / 2 + arrowH;
+      const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
       let ax: number, ay: number, ah: number;
       if (hasPath) {
         const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
         // Fallback: project nose in heading direction
-        ax = train.x + Math.cos(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
-        ay = train.y + Math.sin(train.heading) * (halfLen + WAGON_W / 2 + arrowH);
+        ax = train.x + Math.cos(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
+        ay = train.y + Math.sin(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
         ah = train.heading;
       }
       ctx.save();
       ctx.translate(ax, ay);
       ctx.rotate(ah);
+      ctx.scale(trainSizeRatio, trainSizeRatio);
       ctx.beginPath();
       ctx.moveTo(arrowH,  0);
       ctx.lineTo(0,      -arrowH * 0.6);
@@ -855,6 +961,28 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   get zoomReadout(): string {
     return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
+  }
+
+  get stationLabelItems() {
+    return this.metroData.stations.map(s => {
+      const lines = this.stationLineMap.get(s.name) ?? [];
+      // Count occurrences per line ID to split aggregated totals across directions
+      const lineOcc = new Map<string, number>();
+      for (const l of lines) lineOcc.set(l, (lineOcc.get(l) ?? 0) + 1);
+      const platforms = lines.map(l => ({
+        line:  l,
+        total: Math.round((this.state.platformsPeople.get(l) ?? 0) / (lineOcc.get(l) ?? 1)),
+      }));
+      const transit = lines.reduce((sum, l) => sum + (this.state.stationsPeople.get(l) ?? 0), 0);
+      const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);
+      return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };
+    });
+  }
+
+  fmtCount(n: number): string {
+    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
+    if (n >= 1000)  return (n / 1000).toFixed(2) + 'k';
+    return String(n);
   }
 
   get peakLabel(): string {

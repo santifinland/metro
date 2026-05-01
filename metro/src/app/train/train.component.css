@@ -511,20 +511,17 @@
 
 /* ── Zoom controls ────────────────────────────────────────── */
 .zoom-readout {
-  position: absolute;
-  bottom: 56px;
-  right: 14px;
-  background: rgba(12, 14, 17, 0.92);
-  border: 1px solid var(--line-2);
-  border-bottom: none;
+  width: 40px;
+  height: 28px;
+  display: grid;
+  place-items: center;
   font-size: 10px;
   color: var(--amber);
-  text-align: center;
-  padding: 4px 0;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
-  width: 40px;
-  z-index: 20;
+  border-top: 1px solid var(--line-2);
+  border-bottom: 1px solid var(--line-2);
+  user-select: none;
 }
 .zoom-bar {
   position: absolute;
@@ -551,3 +548,145 @@
 .zoom-btn:hover      { color: var(--amber); background: var(--bg-3); }
 .zoom-btn.active     { color: var(--cyan);  background: var(--bg-3); }
 .zoom-btn svg { width: 12px; height: 12px; }
+
+/* ── Station labels overlay ───────────────────────────────── */
+.station-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  font-family: var(--mono);
+}
+
+/* Visibility rules driven by classes toggled in RAF */
+.stn-label-wrap            { display: none; position: absolute; }
+.stn-panel                 { display: none; }
+
+.station-labels.show-interchange .stn-label-wrap.is-interchange { display: block; }
+.station-labels.show-all         .stn-label-wrap                { display: block; }
+.station-labels.show-panel       .stn-panel                     { display: flex; }
+
+/* ── Name pill ───────────────────────────────────────────── */
+.stn-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transform: translate(8px, -6px);
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}
+.station-labels.zoom-deep .stn-label { transform: translate(16px, -6px); }
+
+.stn-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(8,9,11,0.92);
+  border: 1px solid var(--line-2);
+  padding: 2px 7px 2px 5px;
+  align-self: flex-start;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--t-1);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.stn-tick {
+  width: 4px; height: 4px;
+  background: var(--t-3);
+  flex-shrink: 0;
+}
+.stn-text { line-height: 1; }
+
+/* ── Numeric panel ───────────────────────────────────────── */
+.stn-panel {
+  align-self: flex-start;
+  min-width: 132px;
+  background: rgba(8,9,11,0.94);
+  border: 1px solid var(--line-2);
+  border-left: 1px solid var(--line-3);
+  padding: 5px 7px 6px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+.stn-panel::before {
+  content: '';
+  position: absolute;
+  left: -1px; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--amber-dim);
+  opacity: 0.55;
+}
+
+.stn-panel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  height: 13px;
+}
+.stn-panel-row .k {
+  font-size: 8.5px;
+  color: var(--t-3);
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+.stn-panel-row .v {
+  font-size: 12px;
+  color: var(--t-1);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.stn-panel-row.stn-total .v   { color: var(--amber); font-size: 13px; }
+.stn-panel-row.stn-transit .v { color: var(--cyan); }
+
+.stn-panel-sep {
+  display: flex;
+  align-items: center;
+  font-size: 8px;
+  color: var(--t-4);
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  margin: 3px 0 1px;
+  padding-top: 3px;
+  border-top: 1px dashed var(--line-2);
+}
+.stn-panel-sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-1);
+  margin-left: 6px;
+}
+
+/* ── Per-platform row ────────────────────────────────────── */
+.stn-platform {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 6px;
+  height: 14px;
+}
+.line-chip {
+  width: 16px; height: 12px;
+  font-size: 8px;
+  line-height: 12px;
+  text-align: center;
+  border-radius: 1px;
+  font-family: var(--sans, system-ui);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.stn-platform-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--t-1);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-right: 4px;
+}

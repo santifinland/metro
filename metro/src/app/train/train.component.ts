@@ -23,6 +23,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas_stations', { static: false, read: ElementRef }) canvasStations!: ElementRef;
   @ViewChild('canvas_paths',    { static: false, read: ElementRef }) canvasPaths!: ElementRef;
   @ViewChild('canvas_trains',   { static: false, read: ElementRef }) canvasTrains!: ElementRef;
+  @ViewChild('stationsOverlay', { static: false, read: ElementRef }) private stationsOverlay!: ElementRef;
+  private _overlayElements: HTMLElement[] | null = null;
 
   private ctxTiles!: CanvasRenderingContext2D;
   private ctxStations!: CanvasRenderingContext2D;
@@ -310,6 +312,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       }
 
       this.drawTrains(timestamp);
+      this.updateStationsOverlay();
       this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
@@ -397,6 +400,30 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  private updateStationsOverlay(): void {
+    const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
+    if (!el) return;
+    const fitMul = this.currentScale / this.fitScale;
+    el.classList.toggle('show-interchange', fitMul > 1.05);
+    el.classList.toggle('show-all',         fitMul > 1.7);
+    el.classList.toggle('show-panel',       fitMul > 1.4);
+    el.classList.toggle('zoom-deep',        fitMul > 7);
+    if (!this._overlayElements) {
+      const items = el.querySelectorAll<HTMLElement>('.stn-label-wrap');
+      if (items.length > 0) this._overlayElements = Array.from(items);
+    }
+    if (this._overlayElements) {
+      const stations = this.metroData.stations;
+      const s = this.currentScale, px = this.panX, py = this.panY;
+      for (let i = 0; i < this._overlayElements.length; i++) {
+        const st = stations[i];
+        if (!st) continue;
+        this._overlayElements[i].style.left = (st.position.x * s + px) + 'px';
+        this._overlayElements[i].style.top  = (st.position.y * s + py) + 'px';
+      }
+    }
+  }
+
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
     for (const p of this.metroData.paths) {
@@ -413,19 +440,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     const scale = this.currentScale;
     this.clearCtx(ctx);
     this.applyTransform(ctx);
-
-    const r   = TrainComponent.DOT_RADIUS_PX / scale;
-    const lw  = TrainComponent.DOT_STROKE_PX / scale;
-    const showLabels = scale >= this.fitScale * 0.8;
-    const showAll    = (scale / this.fitScale) >= TrainComponent.LABEL_SHOW_ALL_MUL;
-    const fontSize   = Math.round(this.labelTargetPx() / scale);
-
-    ctx.lineWidth   = lw;
-    if (showLabels) ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-
-    this.metroData.stations.forEach((station, i) => {
+    const r  = TrainComponent.DOT_RADIUS_PX / scale;
+    const lw = TrainComponent.DOT_STROKE_PX / scale;
+    ctx.lineWidth = lw;
+    this.metroData.stations.forEach(station => {
       const { x, y } = station.position;
-
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle   = '#0c0e11';
@@ -433,48 +452,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
       ctx.strokeStyle = '#e6ebf2';
       ctx.stroke();
       ctx.closePath();
-
-      if (showLabels && (showAll || this.labelVisible[i])) {
-        const padding  = 2 / scale;
-        const lx       = x + r + padding;
-        const ly       = y + fontSize * 0.35;
-        const textW    = ctx.measureText(station.name).width;
-        const bh       = fontSize * 1.1;
-
-        // Indicator squares: one per line serving this station, shown at showAll zoom
-        const stLines = showAll ? (this.stationLineMap.get(station.name) ?? []) : [];
-        const sqW     = fontSize * 0.72;
-        const sqGap   = sqW * 0.35;
-        const rowGap  = sqW * 0.22;
-        const indRowH = stLines.length > 0 ? sqW + rowGap + sqW * 0.55 + padding * 0.5 : 0;
-        const indW    = stLines.length > 0 ? stLines.length * (sqW + sqGap) - sqGap : 0;
-        const boxW    = Math.max(textW + padding * 2, indW + padding * 2);
-        const boxH    = bh + indRowH;
-
-        ctx.fillStyle = 'rgba(8,9,11,0.9)';
-        ctx.fillRect(lx - padding, ly - fontSize * 0.85, boxW, boxH);
-        ctx.fillStyle = '#e6ebf2';
-        ctx.fillText(station.name, lx, ly);
-
-        if (stLines.length > 0) {
-          const maxP = Array.from(this.state.platformsPeople.values()).reduce((a, b) => Math.max(a, b), 1);
-          const maxS = Array.from(this.state.stationsPeople.values()).reduce((a, b) => Math.max(a, b), 1);
-          const sqY0 = ly + fontSize * 0.22;
-          const sqY1 = sqY0 + sqW + rowGap;
-          stLines.forEach((line, idx) => {
-            const px   = lx + idx * (sqW + sqGap);
-            const pOcc = Math.min(1, (this.state.platformsPeople.get(line) ?? 0) / maxP);
-            const sOcc = Math.min(1, (this.state.stationsPeople.get(line) ?? 0) / maxS);
-            const clr  = this.lineColors(line);
-            ctx.globalAlpha = 0.25 + 0.75 * pOcc;
-            ctx.fillStyle   = clr;
-            ctx.fillRect(px, sqY0, sqW, sqW);
-            ctx.globalAlpha = 0.20 + 0.80 * sOcc;
-            ctx.fillRect(px, sqY1, sqW, sqW * 0.55);
-          });
-          ctx.globalAlpha = 1.0;
-        }
-      }
     });
   }
 
@@ -483,8 +460,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    // Minimum wagon height = 1.4× path width in screen pixels; scale up uniformly when zoomed out.
-    const trainSizeRatio = Math.max(1.0, TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale));
+    // Scale wagons up at low zoom, capped at the size they have at fitMul=3.11 (empirically clean).
+    const capRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.fitScale * 3.11);
+    const rawRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale);
+    const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
 
     for (const train of this.state.trains) {
       const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
@@ -905,6 +884,22 @@ export class TrainComponent implements AfterViewInit, OnDestroy {
 
   get zoomReadout(): string {
     return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
+  }
+
+  get stationLabelItems() {
+    return this.metroData.stations.map(s => {
+      const lines     = this.stationLineMap.get(s.name) ?? [];
+      const platforms = lines.map(l => ({ line: l, total: this.state.platformsPeople.get(l) ?? 0 }));
+      const transit   = lines.reduce((sum, l) => sum + (this.state.stationsPeople.get(l) ?? 0), 0);
+      const total     = transit + platforms.reduce((sum, p) => sum + p.total, 0);
+      return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };
+    });
+  }
+
+  fmtCount(n: number): string {
+    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
+    if (n >= 1000)  return (n / 1000).toFixed(2) + 'k';
+    return String(n);
   }
 
   get peakLabel(): string {

@@ -26,7 +26,7 @@ object Train {
 
       def travelMsForPath(p: Option[Path]): Long = p match {
         case Some(pp) if pp.features.velocidadtramoanterior > 0 && pp.features.longitudtramoanterior > 0 =>
-          (pp.features.longitudtramoanterior / pp.features.velocidadtramoanterior * 3600 * 1000).toLong
+          (pp.features.longitudtramoanterior / pp.features.velocidadtramoanterior * 3600).toLong
         case _ => FallbackTravelMs
       }
       def doorsMs():  Long = MinDoorsMs  + rng.nextLong(MaxDoorsMs  - MinDoorsMs)
@@ -77,7 +77,6 @@ object Train {
             } else {
               scribe.debug(s"Train $trainName departing from ${platform.get.path.name}")
               nextPlatform = Some(p)
-              platform.get ! LeavingPlatform
               val nextPp = findPlatformPath(p)
               lastTravelSimMs = travelMsForPath(nextPp)
               SimClock.scheduleIn(lastTravelSimMs) { () => selfRef ! TrainArrivedAtPlatform }
@@ -86,7 +85,9 @@ object Train {
 
           case TrainArrivedAtPlatform =>
             scribe.debug(s"Train $trainName arriving at ${nextPlatform.get.path.name}")
+            val prevPlatform = platform
             platform = nextPlatform
+            prevPlatform.get ! LeavingPlatform
             platform.get ! ArrivedAtPlatform(selfRef)
             people.foreach { case (_, person) => person ! ArrivedAtPlatformToPeople(platform.get) }
             val pp = findPlatformPath(platform.get)

@@ -63,6 +63,8 @@ object Messages {
   case class PeopleInTrain(trainId: String, people: Int) extends UIMessage
   case class PeopleInLinePlatforms(lineId: String, people: Int) extends UIMessage
   case class PeopleInLineStations(lineId: String, people: Int) extends UIMessage
+  case class PeopleInSpecificPlatform(anden: Int, people: Int) extends UIMessage
+  case class PeopleInSpecificStation(stationId: String, people: Int) extends UIMessage
   case class PlatformOvercrowded(platformId: String, people: Int) extends UIMessage
   case class StationOvercrowded(stationId: String, people: Int) extends UIMessage
   case class PeopleInMetro(people: Int) extends UIMessage

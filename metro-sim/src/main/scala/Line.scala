@@ -24,6 +24,14 @@ object Line {
           val stationPeople = stations.values.sum
           ui ! PeopleInLinePlatforms(lineId, platformPeople)
           ui ! PeopleInLineStations(lineId, stationPeople)
+          platforms.foreach { case (platformId, count) =>
+            platformId.split("_").last.toIntOption.foreach { anden =>
+              ui ! PeopleInSpecificPlatform(anden, count)
+            }
+          }
+          stations.foreach { case (stationId, count) =>
+            ui ! PeopleInSpecificStation(stationId, count)
+          }
           Behaviors.same
 
         case PeopleInPlatform(platformId, people) =>

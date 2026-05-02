@@ -23,6 +23,8 @@ export class SimulationStateService {
 
   readonly platformsPeople = new Map<string, number>();
   readonly stationsPeople = new Map<string, number>();
+  readonly andenPeople = new Map<number, number>();
+  readonly stationIdPeople = new Map<string, number>();
 
   initLines(lines: string[]): void {
     for (const line of lines) {
@@ -38,6 +40,8 @@ export class SimulationStateService {
     this.trainsPeople = 0;
     for (const key of this.platformsPeople.keys()) this.platformsPeople.set(key, 0);
     for (const key of this.stationsPeople.keys()) this.stationsPeople.set(key, 0);
+    this.andenPeople.clear();
+    this.stationIdPeople.clear();
     this.dirty = true;
   }
 
@@ -89,6 +93,12 @@ export class SimulationStateService {
         break;
       case 'peopleInLineStations':
         this.stationsPeople.set(msg.line.slice(1), msg.people);
+        break;
+      case 'peopleInPlatform':
+        this.andenPeople.set(msg.anden, msg.people);
+        break;
+      case 'peopleInStation':
+        this.stationIdPeople.set(msg.stationId, msg.people);
         break;
       case 'peopleInTrains':
         this.trainsPeople = msg.people;

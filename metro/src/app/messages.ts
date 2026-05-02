@@ -57,6 +57,18 @@ export interface TimeMultiplier {
   multiplier: number;
 }
 
+export interface PeopleInPlatform {
+  message: 'peopleInPlatform';
+  anden: number;
+  people: number;
+}
+
+export interface PeopleInStation {
+  message: 'peopleInStation';
+  stationId: string;
+  people: number;
+}
+
 export interface PlatformOvercrowded {
   message: 'platformOvercrowded';
   platform: string;
@@ -94,6 +106,8 @@ export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
   | PeopleInLineStations
+  | PeopleInPlatform
+  | PeopleInStation
   | PeopleInTrains
   | PeopleInMetro
   | PeopleInSimulation

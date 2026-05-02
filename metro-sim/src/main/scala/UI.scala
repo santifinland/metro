@@ -53,6 +53,16 @@ object UI {
             s"""{"message": "peopleInLineStations", "line": "$lineId", "people": $people}""")
           Behaviors.same
 
+        case PeopleInSpecificPlatform(anden, people) =>
+          WebSocket.sendStat(s"peopleInPlatform:$anden",
+            s"""{"message": "peopleInPlatform", "anden": $anden, "people": $people}""")
+          Behaviors.same
+
+        case PeopleInSpecificStation(stationId, people) =>
+          WebSocket.sendStat(s"peopleInStation:$stationId",
+            s"""{"message": "peopleInStation", "stationId": "$stationId", "people": $people}""")
+          Behaviors.same
+
         case PlatformOvercrowded(platformId, people) =>
           scribe.debug(s"There are $people people in platform $platformId")
           WebSocket.sendText(

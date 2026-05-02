@@ -1032,6 +1032,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const line = lines[idx] ?? '';
         const destination = this.metroData.lineDestinations.get(`${line}/${pe.sentido}`) ?? '';
         return {
+          id: pe.id,
           line,
           destination,
           total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0,

@@ -30,7 +30,7 @@
               <div class="stn-panel-sep">
                 <span>{{ item.lines.length === 1 ? 'PLATFORM' : 'PLATFORMS · ' + item.lines.length }}</span>
               </div>
-              @for (p of item.platforms; track p.line + p.destination) {
+              @for (p of item.platforms; track p.id) {
                 <div class="stn-platform">
                   <span class="line-chip" [style.background]="lineColors(p.line)"
                         [style.color]="p.line === 'R' ? '#000' : '#fff'">{{ p.line }}</span>

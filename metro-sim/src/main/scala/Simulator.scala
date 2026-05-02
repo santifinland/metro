@@ -20,6 +20,7 @@ object Simulator {
     16 -> 6, 17 -> 7, 18 -> 8, 19 -> 8, 20 -> 7,
     21 -> 5, 22 -> 3, 23 -> 2
   )
+  private val HourDistributionSum: Double = HourDistribution.values.sum
 
   private val TimeStepMs = 10_000L
 
@@ -109,11 +110,11 @@ object Simulator {
                 .values.flatten
               dailyEntrance: Double  = startStationId.entrance / 30.0
               hourMultiplier: Double = HourDistribution.getOrElse(hourKey, 0.0)
-              peopleCount: Double    = (dailyEntrance * TimeStepMs / 86_400_000.0 +
-                startNode.partialPerson) * hourMultiplier
+              baseCount: Double      = dailyEntrance * hourMultiplier / HourDistributionSum * TimeStepMs / 3_600_000.0
+              peopleCount: Double    = baseCount + startNode.partialPerson
               integerPart: Int    = peopleCount.toInt
               floatPart:   Double = peopleCount - integerPart
-              _ = if (floatPart > 0) startNode.setPartialPerson(floatPart)
+              _ = startNode.setPartialPerson(floatPart)
               _ <- 1 to integerPart
               destinationNode = pickDestination(startNode, hourKey)
               journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode

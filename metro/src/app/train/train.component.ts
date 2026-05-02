@@ -81,6 +81,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private labelVisible: boolean[] = [];
   private stationLineMap = new Map<string, string[]>();
+  private stationPlatformIds = new Map<string, string[]>();
+  private stationNormalizedMap = new Map<string, string>();
 
   // Sparkline history
   peopleHistory: number[] = Array(40).fill(0);
@@ -106,6 +108,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.buildStationLineMap();
+    for (const s of this.metroData.stations) {
+      const normalized = s.name.normalize('NFD').replace(/\p{Mn}/gu, '');
+      this.stationNormalizedMap.set(normalized, s.name);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -497,6 +503,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
+    this.stationPlatformIds.clear();
     // Deduplicate by line+sentido so bidirectional lines (e.g. L5 with sentido 1 & 2)
     // appear as two entries — same as L6 which has distinct line IDs '6-1' / '6-2'.
     const seen = new Map<string, Set<string>>();
@@ -508,6 +515,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const lines = this.stationLineMap.get(p.name) ?? [];
         lines.push(p.line);
         this.stationLineMap.set(p.name, lines);
+        const pids = this.stationPlatformIds.get(p.name) ?? [];
+        pids.push(p.id);
+        this.stationPlatformIds.set(p.name, pids);
       }
     }
   }
@@ -964,16 +974,24 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   get stationLabelItems() {
+    // Build transit map: original-station-name → total people in station hall
+    // Station actors send "Station_NOMBRE_CODE" keys; we match by normalized denominacion.
+    const transitByName = new Map<string, number>();
+    this.state.stationIdPeople.forEach((count, stationId) => {
+      const parts = stationId.replace(/^Station_/, '').split('_');
+      const normalized = parts.slice(0, -1).join(' ');
+      const originalName = this.stationNormalizedMap.get(normalized);
+      if (originalName) transitByName.set(originalName, (transitByName.get(originalName) ?? 0) + count);
+    });
+
     return this.metroData.stations.map(s => {
-      const lines = this.stationLineMap.get(s.name) ?? [];
-      // Count occurrences per line ID to split aggregated totals across directions
-      const lineOcc = new Map<string, number>();
-      for (const l of lines) lineOcc.set(l, (lineOcc.get(l) ?? 0) + 1);
-      const platforms = lines.map(l => ({
-        line:  l,
-        total: Math.round((this.state.platformsPeople.get(l) ?? 0) / (lineOcc.get(l) ?? 1)),
+      const lines      = this.stationLineMap.get(s.name) ?? [];
+      const platformIds = this.stationPlatformIds.get(s.name) ?? [];
+      const platforms  = platformIds.map((pid, idx) => ({
+        line:  lines[idx] ?? '',
+        total: this.state.andenPeople.get(parseInt(pid, 10)) ?? 0,
       }));
-      const transit = lines.reduce((sum, l) => sum + (this.state.stationsPeople.get(l) ?? 0), 0);
+      const transit = transitByName.get(s.name) ?? 0;
       const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);
       return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };
     });

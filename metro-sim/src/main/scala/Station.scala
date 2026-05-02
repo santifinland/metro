@@ -13,7 +13,7 @@ object Station {
   def apply(line: ActorRef[LineMessage], name: String): Behavior[StationMessage] =
     Behaviors.setup { context =>
       Behaviors.withTimers { timers =>
-        timers.startTimerWithFixedDelay("stats-tick", StationStatsTick, 3.seconds, 1.second)
+        timers.startTimerWithFixedDelay("stats-tick", StationStatsTick, 3.seconds, 3.seconds)
 
         val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
           scala.collection.mutable.Map.empty

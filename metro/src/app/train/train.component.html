@@ -23,19 +23,18 @@
                 <span class="k">TOTAL</span>
                 <span class="v">{{ fmtCount(item.total) }}</span>
               </div>
-              @if (item.transit > 0) {
-                <div class="stn-panel-row stn-transit">
-                  <span class="k">↳ TRANSIT</span>
-                  <span class="v">{{ fmtCount(item.transit) }}</span>
-                </div>
-              }
+              <div class="stn-panel-row stn-transit">
+                <span class="k">↳ TRANSIT</span>
+                <span class="v">{{ fmtCount(item.transit) }}</span>
+              </div>
               <div class="stn-panel-sep">
                 <span>{{ item.lines.length === 1 ? 'PLATFORM' : 'PLATFORMS · ' + item.lines.length }}</span>
               </div>
-              @for (p of item.platforms; track p.line) {
+              @for (p of item.platforms; track p.id) {
                 <div class="stn-platform">
                   <span class="line-chip" [style.background]="lineColors(p.line)"
                         [style.color]="p.line === 'R' ? '#000' : '#fff'">{{ p.line }}</span>
+                  <span class="stn-direction">→ {{ p.destination }}</span>
                   <span class="stn-platform-count">{{ fmtCount(p.total) }}</span>
                 </div>
               }
@@ -45,6 +44,28 @@
       }
     </div>
   </div>
+
+  <!-- Train occupancy tooltip -->
+  @if (selectedTrain) {
+    <div class="train-tooltip"
+         [style.left.px]="trainTooltipX"
+         [style.top.px]="trainTooltipY">
+      <div class="train-tooltip-line" [style.background]="lineColors(selectedTrain.line)">{{ selectedTrain.line }}</div>
+      <div class="train-tooltip-body">
+        <span class="train-tooltip-pax">{{ selectedTrain.people }}</span>
+        <span class="train-tooltip-sep">/</span>
+        <span class="train-tooltip-cap">{{ selectedTrain.capacity }}</span>
+        <span class="train-tooltip-unit">PAX</span>
+        <div class="train-tooltip-bar">
+          <div class="train-tooltip-fill"
+               [style.width.%]="selectedTrain.capacity > 0 ? (selectedTrain.people / selectedTrain.capacity * 100) : 0"
+               [class.warn]="selectedTrain.people / selectedTrain.capacity > 0.5"
+               [class.over]="selectedTrain.people / selectedTrain.capacity > 0.8">
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- Corner brackets -->
   <div class="corners" aria-hidden="true">

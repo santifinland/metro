@@ -20,34 +20,22 @@ object Line {
       Behaviors.receiveMessage {
 
         case LineTick =>
-          val platformPeople = platforms.values.sum
-          val stationPeople = stations.values.sum
-          ui ! PeopleInLinePlatforms(lineId, platformPeople)
-          ui ! PeopleInLineStations(lineId, stationPeople)
-          platforms.foreach { case (platformId, count) =>
-            platformId.split("_").last.toIntOption.foreach { anden =>
-              ui ! PeopleInSpecificPlatform(anden, count)
-            }
-          }
-          stations.foreach { case (stationId, count) =>
-            ui ! PeopleInSpecificStation(stationId, count)
-          }
+          ui ! PeopleInLinePlatforms(lineId, platforms.values.sum)
+          ui ! PeopleInLineStations(lineId, stations.values.sum)
           Behaviors.same
 
         case PeopleInPlatform(platformId, people) =>
-          if (people > 0) {
-            scribe.debug(s"There are $people people in platform $platformId")
-            if (people > 100) ui ! PlatformOvercrowded(platformId, people)
-          }
+          if (people > 100) ui ! PlatformOvercrowded(platformId, people)
           platforms(platformId) = people
+          platformId.split("_").last.toIntOption.foreach { anden =>
+            ui ! PeopleInSpecificPlatform(anden, people)
+          }
           Behaviors.same
 
         case PeopleInStation(stationId, people) =>
-          if (people > 0) {
-            scribe.debug(s"There are $people people in station $stationId")
-            if (people > 1000) ui ! StationOvercrowded(stationId, people)
-          }
+          if (people > 1000) ui ! StationOvercrowded(stationId, people)
           stations(stationId) = people
+          ui ! PeopleInSpecificStation(stationId, people)
           Behaviors.same
       }
     }

@@ -21,7 +21,7 @@ object Platform {
         scribe.debug(s"Setting platform $name to empty mode. Next: ${next.path.name}")
         Behaviors.setup { context =>
           Behaviors.withTimers { timers =>
-            timers.startTimerWithFixedDelay("stats-tick", PlatformStatsTick, 3.seconds, 1.second)
+            timers.startTimerWithFixedDelay("stats-tick", PlatformStatsTick, 3.seconds, 3.seconds)
             val people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)] =
               scala.collection.mutable.Map.empty
             empty(context.self, line, name, next, people)

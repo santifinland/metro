@@ -24,6 +24,10 @@ object Train {
     Behaviors.setup { context =>
       val rng = new Random
 
+      val pathByName: Map[String, Path] = allPaths.map { pp =>
+        Metro.platformName(pp.features.denominacion, pp.features.codigoanden) -> pp
+      }.toMap
+
       def travelMsForPath(p: Option[Path]): Long = p match {
         case Some(pp) if pp.features.velocidadtramoanterior > 0 && pp.features.longitudtramoanterior > 0 =>
           (pp.features.longitudtramoanterior / pp.features.velocidadtramoanterior * 3600).toLong
@@ -49,8 +53,7 @@ object Train {
         val selfRef   = context.self
 
         def findPlatformPath(p: ActorRef[PlatformMessage]): Option[Path] =
-          allPaths.find(pp =>
-            Metro.platformName(pp.features.denominacion, pp.features.codigoanden) == p.path.name)
+          pathByName.get(p.path.name)
 
         Behaviors.receiveMessage {
 

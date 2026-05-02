@@ -81,8 +81,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private labelVisible: boolean[] = [];
   private stationLineMap = new Map<string, string[]>();
-  private stationPlatformIds = new Map<string, string[]>();
+  private stationPlatformIds = new Map<string, { id: string; sentido: string }[]>();
   private stationNormalizedMap = new Map<string, string>();
+
+  selectedTrainId: string | null = null;
+  trainTooltipX = 0;
+  trainTooltipY = 0;
 
   // Sparkline history
   peopleHistory: number[] = Array(40).fill(0);
@@ -355,6 +359,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       this.drawTrains(timestamp);
       this.updateStationsOverlay();
+      this.updateTrainTooltip();
       this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
@@ -453,14 +458,42 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return bestIdx;
   }
 
+  private findNearestTrain(cx: number, cy: number, hitPx = 24): string | null {
+    const hitCanvas = hitPx / this.currentScale;
+    let best: string | null = null;
+    let bestDist = hitCanvas * hitCanvas;
+    for (const t of this.state.trains) {
+      const tx = t.x * this.currentScale + this.panX;
+      const ty = t.y * this.currentScale + this.panY;
+      const d2 = (cx - tx) ** 2 + (cy - ty) ** 2;
+      if (d2 < bestDist) { bestDist = d2; best = t.id; }
+    }
+    return best;
+  }
+
+  get selectedTrain() {
+    return this.selectedTrainId ? this.state.getTrain(this.selectedTrainId) : undefined;
+  }
+
   onStationLabelClick(idx: number): void {
     this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
   }
 
   private handleMapClick(clientX: number, clientY: number): void {
     const rect = (this.canvasContainer.nativeElement as HTMLElement).getBoundingClientRect();
-    const bestIdx = this.findNearestStation(clientX - rect.left, clientY - rect.top);
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+
+    const nearTrain = this.findNearestTrain(mx, my);
+    if (nearTrain) {
+      this.selectedTrainId = nearTrain === this.selectedTrainId ? null : nearTrain;
+      this.selectedStationIdx = -1;
+      return;
+    }
+
+    const bestIdx = this.findNearestStation(mx, my);
     this.selectedStationIdx = bestIdx === this.selectedStationIdx ? -1 : bestIdx;
+    this.selectedTrainId = null;
   }
 
   private updateStationsOverlay(): void {
@@ -501,6 +534,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
+  private updateTrainTooltip(): void {
+    if (!this.selectedTrainId) return;
+    const t = this.state.getTrain(this.selectedTrainId);
+    if (!t) { this.selectedTrainId = null; return; }
+    this.trainTooltipX = t.x * this.currentScale + this.panX;
+    this.trainTooltipY = t.y * this.currentScale + this.panY;
+  }
+
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
     this.stationPlatformIds.clear();
@@ -516,7 +557,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         lines.push(p.line);
         this.stationLineMap.set(p.name, lines);
         const pids = this.stationPlatformIds.get(p.name) ?? [];
-        pids.push(p.id);
+        pids.push({ id: p.id, sentido: p.sentido ?? '' });
         this.stationPlatformIds.set(p.name, pids);
       }
     }
@@ -985,12 +1026,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     });
 
     return this.metroData.stations.map(s => {
-      const lines      = this.stationLineMap.get(s.name) ?? [];
-      const platformIds = this.stationPlatformIds.get(s.name) ?? [];
-      const platforms  = platformIds.map((pid, idx) => ({
-        line:  lines[idx] ?? '',
-        total: this.state.andenPeople.get(parseInt(pid, 10)) ?? 0,
-      }));
+      const lines       = this.stationLineMap.get(s.name) ?? [];
+      const platformEntries = this.stationPlatformIds.get(s.name) ?? [];
+      const platforms   = platformEntries.map((pe, idx) => {
+        const line = lines[idx] ?? '';
+        const destination = this.metroData.lineDestinations.get(`${line}/${pe.sentido}`) ?? '';
+        return {
+          line,
+          destination,
+          total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0,
+        };
+      });
       const transit = transitByName.get(s.name) ?? 0;
       const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);
       return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };

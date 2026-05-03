@@ -560,6 +560,7 @@
 
 /* Visibility rules driven by classes toggled in RAF */
 .stn-label-wrap { display: none; position: absolute; pointer-events: none; }
+.stn-panel button, .platform-inspect button { pointer-events: auto; }
 .stn-panel      { display: none; }
 
 .station-labels.show-interchange .stn-label-wrap.is-interchange { display: block; }
@@ -732,55 +733,130 @@
 .stn-label-wrap.is-selected .stn-tick             { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
 .stn-label-wrap.is-selected .stn-panel::before    { background: var(--amber); opacity: 1; box-shadow: 0 0 6px var(--amber); }
 
-/* ── Train occupancy tooltip ────────────────────────────────── */
-.train-tooltip {
+/* ── Train panel (station-panel style) ──────────────────────── */
+.train-panel {
   position: absolute;
-  transform: translate(-50%, -140%);
-  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 18px));
   z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
-}
-.train-tooltip-line {
-  font-family: var(--sans, system-ui);
-  font-size: 8px;
-  font-weight: 700;
-  width: 16px; height: 12px;
-  line-height: 12px;
-  text-align: center;
-  border-radius: 1px;
-  color: #fff;
-}
-.train-tooltip-body {
-  background: var(--bg-2);
+  pointer-events: all;
+  background: rgba(12,14,17,0.95);
   border: 1px solid var(--line-2);
-  border-radius: 3px;
-  padding: 4px 6px;
+  backdrop-filter: blur(10px) saturate(140%);
+  min-width: 140px;
+  max-width: 200px;
   display: flex;
-  align-items: baseline;
-  gap: 2px;
-  min-width: 70px;
   flex-direction: column;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
 }
-.train-tooltip-pax  { font-size: 13px; font-weight: 700; color: var(--t-1); font-variant-numeric: tabular-nums; }
-.train-tooltip-sep  { font-size: 10px; color: var(--t-3); }
-.train-tooltip-cap  { font-size: 10px; color: var(--t-2); font-variant-numeric: tabular-nums; }
-.train-tooltip-unit { font-size: 8px; color: var(--t-3); letter-spacing: 0.08em; margin-left: 2px; }
-.train-tooltip-bar {
-  width: 100%; height: 3px;
+.train-panel-head {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line-2);
+}
+.train-panel-title {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: var(--t-3);
+  font-weight: 600;
+}
+.train-panel-close {
+  background: none; border: none;
+  color: var(--t-3); font-size: 15px;
+  cursor: pointer; padding: 0 4px;
+  line-height: 1;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+}
+.train-panel-close:hover { color: var(--t-1); }
+
+.train-occ-bar {
+  height: 3px;
   background: var(--bg-3);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 2px;
+  margin: 0 8px 4px;
 }
-.train-tooltip-fill {
+.train-occ-fill {
   height: 100%;
   background: #4ade80;
-  border-radius: 2px;
-  transition: width 0.3s ease;
+  transition: width 0.3s;
 }
-.train-tooltip-fill.warn { background: #fbbf24; }
-.train-tooltip-fill.over { background: #f87171; }
+.train-occ-fill.warn { background: #fbbf24; }
+.train-occ-fill.over { background: #f87171; }
+
+.train-inspect-btn {
+  margin: 4px 8px 6px;
+  padding: 4px 0;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  color: var(--t-2);
+  background: none;
+  border: 1px solid var(--line-2);
+  cursor: pointer;
+  font-family: var(--mono, monospace);
+  transition: color .12s, border-color .12s, background .12s;
+}
+.train-inspect-btn:hover { color: var(--amber); border-color: var(--amber-dim); background: var(--bg-3); }
+
+.train-persons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.train-person-btn {
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
+  font-size: 9px;
+  font-family: var(--mono, monospace);
+  letter-spacing: 0.06em;
+  padding: 3px 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: color .1s, background .1s, border-color .1s;
+}
+.train-person-btn:hover { color: var(--cyan); border-color: var(--cyan); background: var(--bg-2); }
+
+/* ── Destination groups (train + platform inspect) ──────────── */
+.train-dest-btn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
+  font-size: 8px;
+  font-family: var(--mono, monospace);
+  letter-spacing: 0.04em;
+  padding: 3px 6px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: color .1s, border-color .1s;
+}
+.train-dest-btn:hover { color: var(--amber); border-color: var(--amber-dim); }
+.train-dest-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.train-dest-count { color: var(--cyan); font-weight: 600; }
+.train-dest-arrow { color: var(--t-4); font-size: 7px; }
+
+/* ── Platform inspect panel ─────────────────────────────────── */
+.platform-inspect {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 2px 0 4px 20px;
+  border-left: 1px solid var(--line-2);
+  padding-left: 6px;
+}
+.platform-inspect-loading {
+  font-size: 9px;
+  color: var(--t-4);
+  padding: 4px 6px;
+  font-style: italic;
+}

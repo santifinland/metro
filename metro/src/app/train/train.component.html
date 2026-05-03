@@ -37,6 +37,45 @@
                   <span class="stn-direction">→ {{ p.destination }}</span>
                   <span class="stn-platform-count">{{ fmtCount(p.total) }}</span>
                 </div>
+                @if (inspectedPlatformId !== p.id) {
+                  <button class="train-inspect-btn"
+                          (mousedown)="$event.stopPropagation()"
+                          (click)="togglePlatformInspect(p.id)">
+                    INSPECCIONAR
+                  </button>
+                }
+                @if (inspectedPlatformId === p.id) {
+                  <div class="platform-inspect">
+                    @let platPersons = state.personsInPlatform.get(p.id);
+                    @if (platPersons) {
+                      @for (group of groupByDest(platPersons); track group.destination) {
+                        <button class="train-dest-btn"
+                                (mousedown)="$event.stopPropagation()"
+                                (click)="expandedPlatformDest = expandedPlatformDest === group.destination ? null : group.destination">
+                          <span class="train-dest-label">→ {{ group.destination || '?' }}</span>
+                          <span class="train-dest-count">{{ group.ids.length }}</span>
+                          <span class="train-dest-arrow">{{ expandedPlatformDest === group.destination ? '▴' : '▾' }}</span>
+                        </button>
+                        @if (expandedPlatformDest === group.destination) {
+                          @for (pid of group.ids; track pid) {
+                            <button class="train-person-btn"
+                                    (mousedown)="$event.stopPropagation()"
+                                    (click)="selectPerson(pid)">
+                              {{ pid.slice(0, 8) }}
+                            </button>
+                          }
+                        }
+                      }
+                      <button class="train-inspect-btn"
+                              (mousedown)="$event.stopPropagation()"
+                              (click)="togglePlatformInspect(p.id)">
+                        CERRAR
+                      </button>
+                    } @else {
+                      <div class="platform-inspect-loading">cargando…</div>
+                    }
+                  </div>
+                }
               }
             </div>
           </div>
@@ -45,25 +84,66 @@
     </div>
   </div>
 
-  <!-- Train occupancy tooltip -->
+  <!-- Train panel (matches station panel style) -->
   @if (selectedTrain) {
-    <div class="train-tooltip"
-         [style.left.px]="trainTooltipX"
-         [style.top.px]="trainTooltipY">
-      <div class="train-tooltip-line" [style.background]="lineColors(selectedTrain.line)">{{ selectedTrain.line }}</div>
-      <div class="train-tooltip-body">
-        <span class="train-tooltip-pax">{{ selectedTrain.people }}</span>
-        <span class="train-tooltip-sep">/</span>
-        <span class="train-tooltip-cap">{{ selectedTrain.capacity }}</span>
-        <span class="train-tooltip-unit">PAX</span>
-        <div class="train-tooltip-bar">
-          <div class="train-tooltip-fill"
-               [style.width.%]="selectedTrain.capacity > 0 ? (selectedTrain.people / selectedTrain.capacity * 100) : 0"
-               [class.warn]="selectedTrain.people / selectedTrain.capacity > 0.5"
-               [class.over]="selectedTrain.people / selectedTrain.capacity > 0.8">
-          </div>
+    <div class="train-panel" [style.left.px]="trainPanelX" [style.top.px]="trainPanelY">
+      <div class="train-panel-head">
+        <span class="line-chip" [style.background]="lineColors(selectedTrain.line)"
+              [style.color]="selectedTrain.line === 'R' ? '#000' : '#fff'">{{ selectedTrain.line }}</span>
+        <span class="train-panel-title">TREN</span>
+        <button class="train-panel-close" (mousedown)="$event.stopPropagation()" (click)="selectedTrainId = null; inspectMode = false; stopTracking()">✕</button>
+      </div>
+      <div class="stn-panel-row">
+        <span class="k">OCUPACIÓN</span>
+        <span class="v">{{ inspectMode ? state.personsInTrain.length : selectedTrain.people }} / {{ selectedTrain.capacity }}</span>
+      </div>
+      <div class="train-occ-bar">
+        <div class="train-occ-fill"
+             [style.width.%]="selectedTrain.capacity > 0 ? (selectedTrain.people / selectedTrain.capacity * 100) : 0"
+             [class.warn]="selectedTrain.people / selectedTrain.capacity > 0.5"
+             [class.over]="selectedTrain.people / selectedTrain.capacity > 0.8">
         </div>
       </div>
+
+      @if (trackedPerson) {
+        <div class="stn-panel-sep"><span>SIGUIENDO</span></div>
+        <div class="stn-panel-row stn-transit">
+          <span class="k">ID</span>
+          <span class="v">{{ trackedPerson.slice(0, 8) }}</span>
+        </div>
+        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="stopTracking()">
+          DEJAR DE SEGUIR
+        </button>
+      } @else if (inspectMode) {
+        <div class="stn-panel-sep">
+          <span>PASAJEROS · {{ state.personsInTrain.length }}</span>
+        </div>
+        <div class="train-persons-list">
+          @for (group of groupByDest(state.personsInTrain); track group.destination) {
+            <button class="train-dest-btn"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="expandedTrainDest = expandedTrainDest === group.destination ? null : group.destination">
+              <span class="train-dest-label">→ {{ group.destination || '?' }}</span>
+              <span class="train-dest-count">{{ group.ids.length }}</span>
+              <span class="train-dest-arrow">{{ expandedTrainDest === group.destination ? '▴' : '▾' }}</span>
+            </button>
+            @if (expandedTrainDest === group.destination) {
+              @for (pid of group.ids; track pid) {
+                <button class="train-person-btn" (mousedown)="$event.stopPropagation()" (click)="selectPerson(pid)">
+                  {{ pid.slice(0, 8) }}
+                </button>
+              }
+            }
+          }
+        </div>
+        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="cancelInspect()">
+          CANCELAR
+        </button>
+      } @else {
+        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="inspectTrain()">
+          INSPECCIONAR
+        </button>
+      }
     </div>
   }
 
@@ -282,7 +362,7 @@
         <div class="section-head">
           <span class="section-title">STATION · PANELS</span>
         </div>
-        <button class="panels-toggle-btn" [class.active]="showAllPanels" (click)="showAllPanels = !showAllPanels">
+        <button class="panels-toggle-btn" [class.active]="showAllPanels" (click)="toggleShowAllPanels()">
           <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
             <rect x="1" y="1" width="4" height="4" rx="0.5"/>
             <rect x="7" y="1" width="4" height="4" rx="0.5"/>

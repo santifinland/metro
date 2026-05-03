@@ -13,10 +13,12 @@ object Messages {
   case class AcceptedEnterPlatform(platform: ActorRef[PlatformMessage]) extends PersonMessage
   case object NotAcceptedEnterPlatform extends PersonMessage
   case class TrainInPlatform(train: ActorRef[TrainMessage]) extends PersonMessage
-  case class AcceptedEnterTrain(platform: ActorRef[PlatformMessage]) extends PersonMessage
+  case class AcceptedEnterTrain(platform: ActorRef[PlatformMessage], train: ActorRef[TrainMessage]) extends PersonMessage
   case object NotAcceptedEnterTrain extends PersonMessage
   case class ArrivedAtPlatformToPeople(platform: ActorRef[PlatformMessage]) extends PersonMessage
   case object DebugPerson extends PersonMessage
+  case class TrackMe(ui: ActorRef[UIMessage]) extends PersonMessage
+  case object UntrackMe extends PersonMessage
 
   // ─── Station messages (sent TO a Station actor) ───────────────────────────
   sealed trait StationMessage
@@ -28,9 +30,10 @@ object Messages {
 
   // ─── Platform messages (sent TO a Platform actor) ─────────────────────────
   sealed trait PlatformMessage
-  case class RequestEnterPlatform(person: ActorRef[PersonMessage]) extends PlatformMessage
+  case class RequestEnterPlatform(person: ActorRef[PersonMessage], destination: String) extends PlatformMessage
   case class ExitPlatform(personId: String) extends PlatformMessage
-  case class EnteredPlatformFromTrain(person: ActorRef[PersonMessage]) extends PlatformMessage
+  case class EnteredPlatformFromTrain(person: ActorRef[PersonMessage], destination: String) extends PlatformMessage
+  case object RequestPlatformPersonList extends PlatformMessage
   case class ReservePlatform(train: ActorRef[TrainMessage]) extends PlatformMessage
   case class ArrivedAtPlatform(train: ActorRef[TrainMessage]) extends PlatformMessage
   case object LeavingPlatform extends PlatformMessage
@@ -46,11 +49,12 @@ object Messages {
   case class FullPlatform(platform: ActorRef[PlatformMessage]) extends TrainMessage
   case object TrainArrivedAtPlatform extends TrainMessage
   case class NextPlatformForTrain(platform: ActorRef[PlatformMessage]) extends TrainMessage
-  case class RequestEnterTrain(person: ActorRef[PersonMessage]) extends TrainMessage
+  case class RequestEnterTrain(person: ActorRef[PersonMessage], destination: String) extends TrainMessage
   case class ExitTrain(personId: String) extends TrainMessage
   case object TrainStatsTick extends TrainMessage
   case class ResetTrain(startPlatform: ActorRef[PlatformMessage]) extends TrainMessage
   case object RetireTrain extends TrainMessage
+  case object RequestPersonList extends TrainMessage
 
   // ─── Line messages (sent TO a Line actor) ─────────────────────────────────
   sealed trait LineMessage
@@ -71,6 +75,10 @@ object Messages {
   case class PeopleInSimulation(people: Int) extends UIMessage
   case object UITrainsTick extends UIMessage
   case object UISimTimeTick extends UIMessage
+  case class PersonsInTrain(trainId: String, persons: List[(String, String)]) extends UIMessage
+  case class PersonsInPlatform(anderId: String, persons: List[(String, String)]) extends UIMessage
+  case class PersonPlanPath(personId: String, nodes: List[String]) extends UIMessage
+  case class PersonTrackerUpdate(personId: String, locType: String, locId: String) extends UIMessage
 
   // ─── Simulator messages (sent TO the Simulator actor) ────────────────────
   sealed trait SimulatorMessage
@@ -78,4 +86,6 @@ object Messages {
   case class ArrivedToDestination(person: ActorRef[PersonMessage]) extends SimulatorMessage
   case object SimulatorStatsTick extends SimulatorMessage
   case object ResetSimulator extends SimulatorMessage
+  case class TrackPerson(personId: String) extends SimulatorMessage
+  case object UntrackPerson extends SimulatorMessage
 }

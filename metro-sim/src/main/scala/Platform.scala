@@ -12,10 +12,10 @@ object Platform {
 
   private val MAX_CAPACITY = 500
 
-  def apply(line: ActorRef[LineMessage], name: String): Behavior[PlatformMessage] =
-    Behaviors.setup { _ => waitingForNext(line, name) }
+  def apply(line: ActorRef[LineMessage], ui: ActorRef[UIMessage], name: String): Behavior[PlatformMessage] =
+    Behaviors.setup { _ => waitingForNext(line, ui, name) }
 
-  private def waitingForNext(line: ActorRef[LineMessage], name: String): Behavior[PlatformMessage] =
+  private def waitingForNext(line: ActorRef[LineMessage], ui: ActorRef[UIMessage], name: String): Behavior[PlatformMessage] =
     Behaviors.receiveMessage {
       case SetNextPlatform(next) =>
         scribe.debug(s"Setting platform $name to empty mode. Next: ${next.path.name}")
@@ -24,7 +24,11 @@ object Platform {
             timers.startTimerWithFixedDelay("stats-tick", PlatformStatsTick, 3.seconds, 3.seconds)
             val people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)] =
               scala.collection.mutable.Map.empty
-            empty(context.self, line, name, next, people)
+            val destinations: scala.collection.mutable.Map[String, String] =
+              scala.collection.mutable.Map.empty
+            val anderId = name.split("_").last
+            PlatformRegistry.register(name, context.self)
+            empty(context.self, line, ui, name, anderId, next, people, destinations)
           }
         }
       case _ =>
@@ -35,9 +39,12 @@ object Platform {
   private def empty(
     self: ActorRef[PlatformMessage],
     line: ActorRef[LineMessage],
+    ui: ActorRef[UIMessage],
     name: String,
+    anderId: String,
     next: ActorRef[PlatformMessage],
-    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)]
+    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)],
+    destinations: scala.collection.mutable.Map[String, String],
   ): Behavior[PlatformMessage] =
     Behaviors.receiveMessage {
 
@@ -45,9 +52,10 @@ object Platform {
         line ! PeopleInPlatform(name, people.size)
         Behaviors.same
 
-      case RequestEnterPlatform(person) =>
+      case RequestEnterPlatform(person, destination) =>
         if (people.size < MAX_CAPACITY) {
           people(person.path.name) = (person, true)
+          destinations(person.path.name) = destination
           scribe.debug(s"Platform $name with ${people.size} people")
           person ! AcceptedEnterPlatform(self)
         } else {
@@ -59,19 +67,27 @@ object Platform {
       case ReservePlatform(train) =>
         scribe.debug(s"Platform $name reserved by ${train.path.name}!")
         train ! PlatformReserved(self)
-        full(self, line, name, next, people)
+        full(self, line, ui, name, anderId, next, people, destinations)
 
       case ExitPlatform(personId) =>
         people.remove(personId)
+        destinations.remove(personId)
         Behaviors.same
 
-      case EnteredPlatformFromTrain(person) =>
+      case EnteredPlatformFromTrain(person, destination) =>
         people(person.path.name) = (person, false)
+        destinations(person.path.name) = destination
+        Behaviors.same
+
+      case RequestPlatformPersonList =>
+        val personList = people.keys.map(id => (id, destinations.getOrElse(id, ""))).toList
+        ui ! PersonsInPlatform(anderId, personList)
         Behaviors.same
 
       case ResetPlatform =>
         people.clear()
-        empty(self, line, name, next, people)
+        destinations.clear()
+        empty(self, line, ui, name, anderId, next, people, destinations)
 
       case _ =>
         scribe.warn(s"Empty platform $name received unexpected message")
@@ -81,9 +97,12 @@ object Platform {
   private def full(
     self: ActorRef[PlatformMessage],
     line: ActorRef[LineMessage],
+    ui: ActorRef[UIMessage],
     name: String,
+    anderId: String,
     next: ActorRef[PlatformMessage],
-    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)]
+    people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], Boolean)],
+    destinations: scala.collection.mutable.Map[String, String],
   ): Behavior[PlatformMessage] =
     Behaviors.receiveMessage {
 
@@ -91,9 +110,10 @@ object Platform {
         line ! PeopleInPlatform(name, people.size)
         Behaviors.same
 
-      case RequestEnterPlatform(person) =>
+      case RequestEnterPlatform(person, destination) =>
         if (people.size < MAX_CAPACITY) {
           people(person.path.name) = (person, true)
+          destinations(person.path.name) = destination
           scribe.debug(s"Platform $name with ${people.size} people")
           person ! AcceptedEnterPlatform(self)
         } else {
@@ -109,7 +129,7 @@ object Platform {
 
       case LeavingPlatform =>
         scribe.debug(s"Platform $name freed!")
-        empty(self, line, name, next, people)
+        empty(self, line, ui, name, anderId, next, people, destinations)
 
       case GetNextPlatform(train) =>
         train ! NextPlatformForTrain(next)
@@ -122,15 +142,23 @@ object Platform {
 
       case ExitPlatform(personId) =>
         people.remove(personId)
+        destinations.remove(personId)
         Behaviors.same
 
-      case EnteredPlatformFromTrain(person) =>
+      case EnteredPlatformFromTrain(person, destination) =>
         people(person.path.name) = (person, false)
+        destinations(person.path.name) = destination
+        Behaviors.same
+
+      case RequestPlatformPersonList =>
+        val personList = people.keys.map(id => (id, destinations.getOrElse(id, ""))).toList
+        ui ! PersonsInPlatform(anderId, personList)
         Behaviors.same
 
       case ResetPlatform =>
         people.clear()
-        empty(self, line, name, next, people)
+        destinations.clear()
+        empty(self, line, ui, name, anderId, next, people, destinations)
 
       case _ =>
         scribe.error(s"Full platform $name received unexpected message")

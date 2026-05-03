@@ -6,10 +6,20 @@
 object CommandBus {
 
   @volatile private var _resetHandler: () => Unit = () => ()
+  @volatile private var _requestTrainPersonsHandler: String => Unit = _ => ()
+  @volatile private var _requestPlatformPersonsHandler: String => Unit = _ => ()
+  @volatile private var _trackPersonHandler: String => Unit = _ => ()
+  @volatile private var _untrackPersonHandler: () => Unit = () => ()
 
-  /** Register the function to call when a reset command arrives. Called once at startup. */
-  def onReset(f: () => Unit): Unit = { _resetHandler = f }
+  def onReset(f: () => Unit): Unit                      = { _resetHandler = f }
+  def onRequestTrainPersons(f: String => Unit): Unit    = { _requestTrainPersonsHandler = f }
+  def onRequestPlatformPersons(f: String => Unit): Unit = { _requestPlatformPersonsHandler = f }
+  def onTrackPerson(f: String => Unit): Unit            = { _trackPersonHandler = f }
+  def onUntrackPerson(f: () => Unit): Unit              = { _untrackPersonHandler = f }
 
-  /** Trigger a full simulation reset. Delegates to the registered handler. */
-  def fireReset(): Unit = _resetHandler()
+  def fireReset(): Unit                            = _resetHandler()
+  def fireRequestTrainPersons(id: String): Unit    = _requestTrainPersonsHandler(id)
+  def fireRequestPlatformPersons(id: String): Unit = _requestPlatformPersonsHandler(id)
+  def fireTrackPerson(id: String): Unit            = _trackPersonHandler(id)
+  def fireUntrackPerson(): Unit                    = _untrackPersonHandler()
 }

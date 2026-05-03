@@ -102,6 +102,33 @@ export interface SimPaused {
   paused: boolean;
 }
 
+export interface PersonEntry { id: string; destination: string; }
+
+export interface PersonsInTrain {
+  message: 'personsInTrain';
+  train: string;
+  persons: PersonEntry[];
+}
+
+export interface PersonsInPlatform {
+  message: 'personsInPlatform';
+  anderId: string;
+  persons: PersonEntry[];
+}
+
+export interface PersonPath {
+  message: 'personPath';
+  person: string;
+  nodes: string[];
+}
+
+export interface PersonLocation {
+  message: 'personLocation';
+  person: string;
+  locType: 'platform' | 'station' | 'train';
+  locId: string;
+}
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
@@ -119,4 +146,8 @@ export type SimulationMessage =
   | SimTime
   | ResetAck
   | SimLoad
-  | SimPaused;
+  | SimPaused
+  | PersonsInTrain
+  | PersonsInPlatform
+  | PersonPath
+  | PersonLocation;

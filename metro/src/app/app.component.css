@@ -3,10 +3,17 @@
   min-height: 0;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   position: relative;
   background:
     linear-gradient(var(--line-1) 1px, transparent 1px) 0 0 / 80px 80px,
     linear-gradient(90deg, var(--line-1) 1px, transparent 1px) 0 0 / 80px 80px,
     radial-gradient(ellipse 90% 60% at 50% 50%, #10141c 0%, var(--bg-0) 100%);
   background-color: var(--bg-0);
+}
+
+/* debug route needs vertical scroll */
+.app-main > app-debug {
+  flex: 1;
+  overflow-y: auto;
 }

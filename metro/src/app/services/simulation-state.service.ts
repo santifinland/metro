@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Train } from '../train';
-import { SimulationMessage } from '../messages';
+import { PathNode, PathResult, SimulationMessage } from '../messages';
 
 @Injectable({ providedIn: 'root' })
 export class SimulationStateService {
@@ -33,6 +33,11 @@ export class SimulationStateService {
   trackedPersonLocType = '';
   trackedPersonLocId = '';
 
+  // ── Path-query debug state ───────────────────────────────────────────────
+  // Populated when the backend answers a {"message":"queryPath",...} request.
+  // Bind to this in any debug panel that wants to display the result.
+  pathQueryResult: PathResult | null = null;
+
   initLines(lines: string[]): void {
     for (const line of lines) {
       this.platformsPeople.set(line, 0);
@@ -55,6 +60,7 @@ export class SimulationStateService {
     this.trackedPersonNodes = [];
     this.trackedPersonLocType = '';
     this.trackedPersonLocId = '';
+    this.pathQueryResult = null;
     this.dirty = true;
   }
 
@@ -154,6 +160,43 @@ export class SimulationStateService {
           this.trackedPersonLocId  = msg.locId;
         }
         break;
+      case 'pathResult':
+        this.pathQueryResult = msg;
+        break;
     }
+  }
+
+  /**
+   * Send a path query to the backend.
+   * The result will be stored in `pathQueryResult` once the backend responds.
+   *
+   * Usage in a component that has injected `WebSocketService`:
+   *   wsService.send({ message: 'queryPath', from: 'EMPALME', to: 'BATAN' });
+   *
+   * The helper below accepts partial, case-insensitive station names
+   * (the backend matches by substring on the denominacion field).
+   *
+   * @param ws    The injected WebSocketService instance.
+   * @param from  Origin station name (partial, case-insensitive), e.g. "empalme".
+   * @param to    Destination station name (partial, case-insensitive), e.g. "batan".
+   */
+  queryPath(ws: { send(msg: object): void }, from: string, to: string): void {
+    ws.send({ message: 'queryPath', from, to });
+  }
+
+  /**
+   * Returns a one-line human-readable summary of the last path query result.
+   * Suitable for a status line or tooltip.
+   *
+   * Examples:
+   *   "EMPALME → BATAN: 9 nodes"
+   *   "EMPALME → XYZ: not found — Station not found: XYZ"
+   */
+  pathQuerySummary(): string {
+    const r = this.pathQueryResult;
+    if (!r) return '';
+    if (!r.found) return `${r.from} → ${r.to}: not found — ${r.error ?? ''}`;
+    const stations = r.nodes.filter((n: PathNode) => n.kind === 'station').map((n: PathNode) => n.label);
+    return `${r.from} → ${r.to}: ${r.nodes.length} nodes (stations: ${stations.join(' → ')})`;
   }
 }

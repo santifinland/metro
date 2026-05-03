@@ -627,11 +627,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const last = points[points.length - 1];
         const first = tramo.path[0];
         const gap = (last.x - first.x) ** 2 + (last.y - first.y) ** 2;
-        // gap < 25 px² means the tramos connect (same line); otherwise it's a transfer
+        // gap < 25 px² means the tramos connect (same line); otherwise it's a transfer.
+        // On a gap (transfer or boarding after line change), the tramo's geometry
+        // represents the INCOMING segment on the new line — e.g. Platform_420's
+        // geometry runs ColoniaJardín → CasaDeCampo, but the person boards at
+        // CasaDeCampo. Adding the full tramo would draw through stations never visited.
+        // Instead, add only the boarding point (end of the tramo) so the next
+        // tramo can extend the path from there.
         if (gap < 25) {
           points.push(...tramo.path.slice(1));
         } else {
-          points.push(...tramo.path);
+          points.push(tramo.path[tramo.path.length - 1]);
         }
       }
     }

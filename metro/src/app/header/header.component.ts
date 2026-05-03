@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 
 import { WebSocketService } from '../services/websocket.service';
@@ -9,7 +10,7 @@ import { ConfigDialogComponent } from '../config-dialog/config-dialog.component'
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })

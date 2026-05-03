@@ -129,6 +129,35 @@ export interface PersonLocation {
   locId: string;
 }
 
+// ── Path-query debug types ────────────────────────────────────────────────────
+
+/** A single node returned in a pathResult response. */
+export interface PathNode {
+  /** "station" or "platform" */
+  kind: 'station' | 'platform';
+  /** Internal graph ID, e.g. "Station_EMPALME_101" */
+  id: string;
+  /** Human-readable label, e.g. "EMPALME" or "CASA DE CAMPO (andén 420)" */
+  label: string;
+  /** Line(s) the node belongs to, e.g. "L5" or "L10a" */
+  line: string;
+}
+
+/**
+ * Response to a {"message":"queryPath","from":"…","to":"…"} request.
+ * Sent by the backend whenever a path query is answered.
+ */
+export interface PathResult {
+  message: 'pathResult';
+  from: string;
+  to: string;
+  found: boolean;
+  /** Human-readable error when found=false. */
+  error?: string;
+  /** Ordered sequence of graph nodes from origin to destination. */
+  nodes: PathNode[];
+}
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms
@@ -150,4 +179,5 @@ export type SimulationMessage =
   | PersonsInTrain
   | PersonsInPlatform
   | PersonPath
-  | PersonLocation;
+  | PersonLocation
+  | PathResult;

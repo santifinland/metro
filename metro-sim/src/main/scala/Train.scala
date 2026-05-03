@@ -40,7 +40,7 @@ object Train {
         import scala.concurrent.duration.DurationInt
         timers.startTimerWithFixedDelay("stats-tick", TrainStatsTick, 3.seconds, 1.second)
 
-        val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
+        val people: scala.collection.mutable.Map[String, (ActorRef[PersonMessage], String)] =
           scala.collection.mutable.Map.empty
 
         var platform: Option[ActorRef[PlatformMessage]] = None
@@ -55,10 +55,16 @@ object Train {
         def findPlatformPath(p: ActorRef[PlatformMessage]): Option[Path] =
           pathByName.get(p.path.name)
 
+        TrainRegistry.register(trainName, selfRef)
+
         Behaviors.receiveMessage {
 
           case TrainStatsTick =>
             ui ! PeopleInTrain(trainName, people.size)
+            Behaviors.same
+
+          case RequestPersonList =>
+            ui ! PersonsInTrain(trainName, people.map { case (id, (_, dest)) => (id, dest) }.toList)
             Behaviors.same
 
           case Move(p) =>
@@ -92,7 +98,7 @@ object Train {
             platform = nextPlatform
             prevPlatform.get ! LeavingPlatform
             platform.get ! ArrivedAtPlatform(selfRef)
-            people.foreach { case (_, person) => person ! ArrivedAtPlatformToPeople(platform.get) }
+            people.foreach { case (_, (person, _)) => person ! ArrivedAtPlatformToPeople(platform.get) }
             val pp = findPlatformPath(platform.get)
             pp.foreach { path => x = path.x; y = path.y }
             val anden = pp.map(_.features.codigoanden).getOrElse(0)
@@ -101,6 +107,7 @@ object Train {
             nextPlatform = None
             if (retiring) {
               scribe.info(s"Train $trainName retiring after arrival at platform")
+              TrainRegistry.unregister(trainName)
               SimClock.scheduleIn(doorsMs()) { () =>
                 platform.foreach(_ ! LeavingPlatform)
                 WebSocket.removeTrain(trainName)
@@ -124,12 +131,12 @@ object Train {
             SimClock.scheduleIn(FullRetryMs) { () => p ! ReservePlatform(selfRef) }
             Behaviors.same
 
-          case RequestEnterTrain(person) =>
+          case RequestEnterTrain(person, destination) =>
             if (retiring) {
               person ! NotAcceptedEnterTrain
             } else if (people.size < MAX_CAPACITY) {
-              people(person.path.name) = person
-              person ! AcceptedEnterTrain(platform.get)
+              people(person.path.name) = (person, destination)
+              person ! AcceptedEnterTrain(platform.get, selfRef)
             } else {
               scribe.warn(s"Train $trainName over capacity at ${platform.get.path.name}")
               person ! NotAcceptedEnterTrain

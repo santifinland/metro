@@ -19,6 +19,19 @@ object Person {
       val personName = context.self.path.name
       val selfRef    = context.self
 
+      var trackingUi: Option[ActorRef[UIMessage]] = None
+
+      val destination: String = path.last.path.name
+        .stripPrefix(Metro.StationPrefix)
+        .split("_").dropRight(1)
+        .mkString(" ")
+
+      def report(locType: String, locId: String): Unit =
+        trackingUi.foreach(_ ! PersonTrackerUpdate(personName, locType, locId))
+
+      def platformId(ref: ActorRef[_]): String = ref.path.name.split("_").last
+      def stationId(ref: ActorRef[_]): String  = ref.path.name
+
       def isStation(ref: ActorRef[_]): Boolean = ref.path.name.startsWith(Metro.StationPrefix)
 
       def stationRef(ref: ActorRef[_]): ActorRef[StationMessage] =
@@ -46,12 +59,21 @@ object Person {
             } else {
               val next = path(idx)
               if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
-              else platformRef(next) ! RequestEnterPlatform(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef, destination)
               inStation(station)
             }
 
           case NotAcceptedEnterStation =>
             SimClock.scheduleIn(RetryMs) { () => stationRef(path.head) ! RequestEnterStation(selfRef) }
+            Behaviors.same
+
+          case TrackMe(ui) =>
+            trackingUi = Some(ui)
+            ui ! PersonPlanPath(personName, path.map(_.path.name).toList)
+            Behaviors.same
+
+          case UntrackMe =>
+            trackingUi = None
             Behaviors.same
 
           case _ => Behaviors.same
@@ -72,20 +94,31 @@ object Person {
             } else {
               val next = path(idx)
               if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
-              else platformRef(next) ! RequestEnterPlatform(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef, destination)
               inStation(newStation)
             }
 
           case AcceptedEnterPlatform(platform) =>
             currentStation ! ExitStation(personName)
+            report("platform", platformId(platform))
             scribe.debug(s"Person $personName entered platform ${platform.path.name}")
             inPlatform(platform, path(nextNodeIndex(platform)))
 
           case NotAcceptedEnterPlatform =>
             SimClock.scheduleIn(RetryMs) { () =>
               val idx = nextNodeIndex(currentStation)
-              if (idx < path.size) platformRef(path(idx)) ! RequestEnterPlatform(selfRef)
+              if (idx < path.size) platformRef(path(idx)) ! RequestEnterPlatform(selfRef, destination)
             }
+            Behaviors.same
+
+          case TrackMe(ui) =>
+            trackingUi = Some(ui)
+            ui ! PersonPlanPath(personName, path.map(_.path.name).toList)
+            report("station", stationId(currentStation))
+            Behaviors.same
+
+          case UntrackMe =>
+            trackingUi = None
             Behaviors.same
 
           case _ => Behaviors.same
@@ -96,13 +129,14 @@ object Person {
 
           case TrainInPlatform(train) =>
             scribe.debug(s"Train ${train.path.name} available at ${currentPlatform.path.name}")
-            train ! RequestEnterTrain(selfRef)
+            train ! RequestEnterTrain(selfRef, destination)
             Behaviors.same
 
-          case AcceptedEnterTrain(platform) =>
+          case AcceptedEnterTrain(platform, train) =>
             scribe.debug(s"Person $personName inside train at ${platform.path.name}")
             platform ! ExitPlatform(personName)
-            inTrain(currentPlatform)
+            report("train", train.path.name)
+            inTrain(currentPlatform, train)
 
           case NotAcceptedEnterTrain =>
             scribe.debug(s"Person $personName not accepted in train")
@@ -118,27 +152,53 @@ object Person {
             } else {
               val next = path(idx)
               if (isStation(next)) stationRef(next) ! RequestEnterStation(selfRef)
-              else platformRef(next) ! RequestEnterPlatform(selfRef)
+              else platformRef(next) ! RequestEnterPlatform(selfRef, destination)
               inStation(station)
             }
+
+          case TrackMe(ui) =>
+            trackingUi = Some(ui)
+            ui ! PersonPlanPath(personName, path.map(_.path.name).toList)
+            report("platform", platformId(currentPlatform))
+            Behaviors.same
+
+          case UntrackMe =>
+            trackingUi = None
+            Behaviors.same
 
           case _ => Behaviors.same
         }
 
-      def inTrain(lastPlatform: ActorRef[PlatformMessage]): Behavior[PersonMessage] =
+      def inTrain(lastPlatform: ActorRef[PlatformMessage], train: ActorRef[TrainMessage]): Behavior[PersonMessage] =
         Behaviors.receiveMessage {
 
           case ArrivedAtPlatformToPeople(platform) =>
-            scribe.debug(s"Person $personName at platform ${platform.path.name}")
-            val idx = nextNodeIndex(platform)
-            if (idx < path.size && isStation(path(idx))) {
-              scribe.debug(s"Person $personName disembarking at ${platform.path.name}")
-              platform ! EnteredPlatformFromTrain(selfRef)
-              stationRef(path(idx)) ! RequestEnterStation(selfRef)
-              inPlatform(platform, path(idx))
+            val platformIdx = path.indexWhere(_.path.name == platform.path.name)
+            if (platformIdx < 0) {
+              Behaviors.same  // not our stop
             } else {
-              Behaviors.same
+              val idx = platformIdx + 1
+              if (idx < path.size && isStation(path(idx))) {
+                scribe.debug(s"Person $personName disembarking at ${platform.path.name}")
+                train ! ExitTrain(personName)
+                platform ! EnteredPlatformFromTrain(selfRef, destination)
+                report("platform", platformId(platform))
+                stationRef(path(idx)) ! RequestEnterStation(selfRef)
+                inPlatform(platform, path(idx))
+              } else {
+                Behaviors.same
+              }
             }
+
+          case TrackMe(ui) =>
+            trackingUi = Some(ui)
+            ui ! PersonPlanPath(personName, path.map(_.path.name).toList)
+            report("train", train.path.name)
+            Behaviors.same
+
+          case UntrackMe =>
+            trackingUi = None
+            Behaviors.same
 
           case _ => Behaviors.same
         }

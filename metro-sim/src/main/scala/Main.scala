@@ -107,6 +107,20 @@ object Main {
       } else if (text.contains("\"resume\"")) {
         SimClock.resume()
         broadcastPaused()
+      } else if (text.contains("\"requestTrainPersons\"")) {
+        val trainId = text.split("\"trainId\"\\s*:\\s*\"").drop(1).headOption
+          .map(_.takeWhile(_ != '"')).getOrElse("")
+        if (trainId.nonEmpty) CommandBus.fireRequestTrainPersons(trainId)
+      } else if (text.contains("\"requestPlatformPersons\"")) {
+        val anderId = text.split("\"platformId\"\\s*:\\s*\"").drop(1).headOption
+          .map(_.takeWhile(_ != '"')).getOrElse("")
+        if (anderId.nonEmpty) CommandBus.fireRequestPlatformPersons(anderId)
+      } else if (text.contains("\"trackPerson\"")) {
+        val personId = text.split("\"personId\"\\s*:\\s*\"").drop(1).headOption
+          .map(_.takeWhile(_ != '"')).getOrElse("")
+        if (personId.nonEmpty) CommandBus.fireTrackPerson(personId)
+      } else if (text.contains("\"untrackPerson\"")) {
+        CommandBus.fireUntrackPerson()
       }
     }
 
@@ -176,7 +190,7 @@ object Guardian {
             .filter(x => x.value.lines.contains("L" + lineKey))
             .filter(x => x.value.name.startsWith(Metro.PlatformPrefix))
             .map { x =>
-              x.value.name -> context.spawn(Platform(lineActor, x.value.name), x.value.name)
+              x.value.name -> context.spawn(Platform(lineActor, ui, x.value.name), x.value.name)
             }
             .toMap
           lineKey -> linePlatforms
@@ -273,6 +287,10 @@ object Guardian {
         simulatorRef ! ResetSimulator
         scheduleHourlyAdjustments()
       }
+      CommandBus.onRequestTrainPersons    { trainId  => TrainRegistry.send(trainId, RequestPersonList) }
+      CommandBus.onRequestPlatformPersons { anderId  => PlatformRegistry.sendByAnden(anderId, RequestPlatformPersonList) }
+      CommandBus.onTrackPerson   { personId => simulatorRef ! TrackPerson(personId) }
+      CommandBus.onUntrackPerson { ()        => simulatorRef ! UntrackPerson }
 
       Behaviors.receiveMessage[Command] {
         case AdjustTrainsForHour(h) =>

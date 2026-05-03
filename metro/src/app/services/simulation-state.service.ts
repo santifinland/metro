@@ -26,6 +26,13 @@ export class SimulationStateService {
   readonly andenPeople = new Map<number, number>();
   readonly stationIdPeople = new Map<string, number>();
 
+  personsInTrain: Array<{ id: string; destination: string }> = [];
+  readonly personsInPlatform = new Map<string, Array<{ id: string; destination: string }>>();
+  trackedPersonId: string | null = null;
+  trackedPersonNodes: string[] = [];
+  trackedPersonLocType = '';
+  trackedPersonLocId = '';
+
   initLines(lines: string[]): void {
     for (const line of lines) {
       this.platformsPeople.set(line, 0);
@@ -42,6 +49,12 @@ export class SimulationStateService {
     for (const key of this.stationsPeople.keys()) this.stationsPeople.set(key, 0);
     this.andenPeople.clear();
     this.stationIdPeople.clear();
+    this.personsInTrain = [];
+    this.personsInPlatform.clear();
+    this.trackedPersonId = null;
+    this.trackedPersonNodes = [];
+    this.trackedPersonLocType = '';
+    this.trackedPersonLocId = '';
     this.dirty = true;
   }
 
@@ -125,6 +138,21 @@ export class SimulationStateService {
         break;
       case 'simPaused':
         this.paused = msg.paused;
+        break;
+      case 'personsInTrain':
+        this.personsInTrain = msg.persons;
+        break;
+      case 'personsInPlatform':
+        this.personsInPlatform.set(msg.anderId, msg.persons);
+        break;
+      case 'personPath':
+        if (msg.person === this.trackedPersonId) this.trackedPersonNodes = msg.nodes;
+        break;
+      case 'personLocation':
+        if (msg.person === this.trackedPersonId) {
+          this.trackedPersonLocType = msg.locType;
+          this.trackedPersonLocId  = msg.locId;
+        }
         break;
     }
   }

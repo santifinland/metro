@@ -39,6 +39,7 @@ object Simulator {
         val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
           scala.collection.mutable.Map.empty
         var simulationPeople: Int = 0
+        var trackedPerson: Option[ActorRef[PersonMessage]] = None
         val selfRef = context.self
         val random  = new Random
 
@@ -135,8 +136,26 @@ object Simulator {
             people.remove(person.path.name)
             Behaviors.same
 
+          case TrackPerson(personId) =>
+            trackedPerson.foreach(_ ! UntrackMe)
+            people.get(personId) match {
+              case Some(person) =>
+                person ! TrackMe(ui)
+                trackedPerson = Some(person)
+              case None =>
+                trackedPerson = None
+            }
+            Behaviors.same
+
+          case UntrackPerson =>
+            trackedPerson.foreach(_ ! UntrackMe)
+            trackedPerson = None
+            Behaviors.same
+
           case ResetSimulator =>
             scribe.info("Simulator resetting: stopping all persons")
+            trackedPerson.foreach(_ ! UntrackMe)
+            trackedPerson = None
             people.values.foreach(context.stop)
             people.clear()
             simulationPeople = 0

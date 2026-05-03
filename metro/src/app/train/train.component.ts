@@ -85,8 +85,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private stationNormalizedMap = new Map<string, string>();
 
   selectedTrainId: string | null = null;
-  trainTooltipX = 0;
-  trainTooltipY = 0;
+  hoveredTrainId: string | null = null;
+  trainPanelX = 0;
+  trainPanelY = 0;
+  inspectMode = false;
+  inspectedPlatformId: string | null = null;
+  expandedTrainDest: string | null = null;
+  expandedPlatformDest: string | null = null;
 
   // Sparkline history
   peopleHistory: number[] = Array(40).fill(0);
@@ -275,7 +280,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       this._mouseContainerY = e.clientY - rect.top;
 
       if (!dragging) {
-        // Show pointer cursor when over a clickable station dot
+        const nearTrain = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY, 40);
+        if (nearTrain) { container.style.cursor = 'pointer'; return; }
         const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
         container.style.cursor = near >= 0 ? 'pointer' : 'grab';
         return;
@@ -359,7 +365,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       this.drawTrains(timestamp);
       this.updateStationsOverlay();
-      this.updateTrainTooltip();
+      this.updateTrainPanel();
       this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
@@ -459,9 +465,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private findNearestTrain(cx: number, cy: number, hitPx = 24): string | null {
-    const hitCanvas = hitPx / this.currentScale;
     let best: string | null = null;
-    let bestDist = hitCanvas * hitCanvas;
+    let bestDist = hitPx * hitPx;
     for (const t of this.state.trains) {
       const tx = t.x * this.currentScale + this.panX;
       const ty = t.y * this.currentScale + this.panY;
@@ -471,9 +476,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return best;
   }
 
-  get selectedTrain() {
-    return this.selectedTrainId ? this.state.getTrain(this.selectedTrainId) : undefined;
-  }
+  get selectedTrain() { return this.selectedTrainId ? this.state.getTrain(this.selectedTrainId) : undefined; }
+  get trackedPerson() { return this.state.trackedPersonId; }
 
   onStationLabelClick(idx: number): void {
     this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
@@ -484,8 +488,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const mx = clientX - rect.left;
     const my = clientY - rect.top;
 
-    const nearTrain = this.findNearestTrain(mx, my);
+    const nearTrain = this.findNearestTrain(mx, my, 40);
     if (nearTrain) {
+      if (nearTrain !== this.selectedTrainId) this.inspectMode = false;
       this.selectedTrainId = nearTrain === this.selectedTrainId ? null : nearTrain;
       this.selectedStationIdx = -1;
       return;
@@ -496,14 +501,25 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.selectedTrainId = null;
   }
 
-  private updateStationsOverlay(): void {
+  toggleShowAllPanels(): void {
+    this.showAllPanels = !this.showAllPanels;
+    this.applyOverlayClasses();
+  }
+
+  private applyOverlayClasses(): void {
     const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
     if (!el) return;
     const fitMul = this.currentScale / this.fitScale;
-    el.classList.toggle('show-interchange', fitMul > 1.05);
-    el.classList.toggle('show-all',         fitMul > 1.7);
-    el.classList.toggle('show-panel',       fitMul > 15 || this.showAllPanels);
+    el.classList.toggle('show-interchange', fitMul > 1.05 || this.showAllPanels);
+    el.classList.toggle('show-all',         fitMul > 1.7  || this.showAllPanels);
+    el.classList.toggle('show-panel',       fitMul > 15   || this.showAllPanels);
     el.classList.toggle('zoom-deep',        fitMul > 7);
+  }
+
+  private updateStationsOverlay(): void {
+    this.applyOverlayClasses();
+    const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
+    if (!el) return;
     if (!this._overlayElements) {
       const items = el.querySelectorAll<HTMLElement>('.stn-label-wrap');
       if (items.length > 0) this._overlayElements = Array.from(items);
@@ -534,12 +550,128 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  private updateTrainTooltip(): void {
+  private updateTrainPanel(): void {
+    this.hoveredTrainId = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY, 40);
     if (!this.selectedTrainId) return;
     const t = this.state.getTrain(this.selectedTrainId);
-    if (!t) { this.selectedTrainId = null; return; }
-    this.trainTooltipX = t.x * this.currentScale + this.panX;
-    this.trainTooltipY = t.y * this.currentScale + this.panY;
+    if (!t) { this.selectedTrainId = null; this.inspectMode = false; return; }
+    this.trainPanelX = t.x * this.currentScale + this.panX;
+    this.trainPanelY = t.y * this.currentScale + this.panY;
+  }
+
+  inspectTrain(): void {
+    if (!this.selectedTrainId) return;
+    this.wsService.send({ message: 'pause' });
+    this.wsService.send({ message: 'requestTrainPersons', trainId: this.selectedTrainId } as any);
+    this.inspectMode = true;
+  }
+
+  selectPerson(personId: string): void {
+    this.state.trackedPersonId = personId;
+    this.state.trackedPersonNodes = [];
+    this.state.trackedPersonLocType = '';
+    this.state.trackedPersonLocId = '';
+    this.wsService.send({ message: 'trackPerson', personId } as any);
+    this.wsService.send({ message: 'resume' });
+    this.inspectMode = false;
+  }
+
+  stopTracking(): void {
+    this.state.trackedPersonId = null;
+    this.wsService.send({ message: 'untrackPerson' } as any);
+  }
+
+  cancelInspect(): void {
+    this.inspectMode = false;
+    this.wsService.send({ message: 'resume' });
+  }
+
+  groupByDest(persons: Array<{ id: string; destination: string }>): Array<{ destination: string; ids: string[] }> {
+    const map = new Map<string, string[]>();
+    for (const p of persons) {
+      if (!map.has(p.destination)) map.set(p.destination, []);
+      map.get(p.destination)!.push(p.id);
+    }
+    return Array.from(map.entries())
+      .map(([destination, ids]) => ({ destination, ids }))
+      .sort((a, b) => b.ids.length - a.ids.length);
+  }
+
+  togglePlatformInspect(anderId: string): void {
+    if (this.inspectedPlatformId === anderId) {
+      this.inspectedPlatformId = null;
+      this.expandedPlatformDest = null;
+      this.wsService.send({ message: 'resume' });
+      return;
+    }
+    this.inspectedPlatformId = anderId;
+    this.expandedPlatformDest = null;
+    this.wsService.send({ message: 'pause' });
+    this.wsService.send({ message: 'requestPlatformPersons', platformId: anderId } as any);
+  }
+
+  // Build a polyline following actual rail geometry for the person's planned path.
+  // Each Platform node's codigoanden maps to metroData.paths[].id whose path[] holds the rail geometry.
+  // At line transfers the tramos are discontinuous — we start a fresh segment rather than skipping
+  // the first point (which would draw a diagonal across the city).
+  private buildPersonRailPath(nodes: string[]): { x: number; y: number }[] {
+    const points: { x: number; y: number }[] = [];
+    for (const node of nodes) {
+      if (!node.startsWith('Platform_')) continue;
+      const code = node.split('_').pop() ?? '';
+      const tramo = this.metroData.paths.find(p => p.id === code);
+      if (!tramo || tramo.path.length < 2) continue;
+      if (points.length === 0) {
+        points.push(...tramo.path);
+      } else {
+        const last = points[points.length - 1];
+        const first = tramo.path[0];
+        const gap = (last.x - first.x) ** 2 + (last.y - first.y) ** 2;
+        // gap < 25 px² means the tramos connect (same line); otherwise it's a transfer
+        if (gap < 25) {
+          points.push(...tramo.path.slice(1));
+        } else {
+          points.push(...tramo.path);
+        }
+      }
+    }
+    return points;
+  }
+
+  private resolveNodeToPos(nodeName: string): { x: number; y: number } | null {
+    if (nodeName.startsWith('Station_')) {
+      const parts = nodeName.replace('Station_', '').split('_');
+      const normalized = parts.slice(0, -1).join(' ');
+      const originalName = this.stationNormalizedMap.get(normalized);
+      const s = originalName ? this.metroData.stations.find(st => st.name === originalName) : null;
+      return s ? s.position : null;
+    }
+    if (nodeName.startsWith('Platform_')) {
+      const code = nodeName.split('_').pop() ?? '';
+      const seg = this.metroData.paths.find(p => p.id === code);
+      return seg ? seg.position : null;
+    }
+    return null;
+  }
+
+  private resolveLocToPos(): { x: number; y: number } | null {
+    const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
+    if (lt === 'platform') {
+      const seg = this.metroData.paths.find(p => p.id === lid);
+      return seg ? seg.position : null;
+    }
+    if (lt === 'station') {
+      const parts = lid.replace('Station_', '').split('_');
+      const normalized = parts.slice(0, -1).join(' ');
+      const originalName = this.stationNormalizedMap.get(normalized);
+      const s = originalName ? this.metroData.stations.find(st => st.name === originalName) : null;
+      return s ? s.position : null;
+    }
+    if (lt === 'train') {
+      const t = this.state.getTrain(lid);
+      return t ? { x: t.x, y: t.y } : null;
+    }
+    return null;
   }
 
   private buildStationLineMap(): void {
@@ -698,6 +830,62 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.fill();
       ctx.restore();
+    }
+
+    // Hover ring
+    if (this.hoveredTrainId && this.hoveredTrainId !== this.selectedTrainId) {
+      const ht = this.state.getTrain(this.hoveredTrainId);
+      if (ht) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(ht.x, ht.y, (WAGON_H * 1.8) / this.currentScale, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 1.5 / this.currentScale;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Selection ring (amber)
+    if (this.selectedTrainId) {
+      const st = this.state.getTrain(this.selectedTrainId);
+      if (st) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, (WAGON_H * 1.8) / this.currentScale, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(245,180,84,0.85)';
+        ctx.lineWidth = 2 / this.currentScale;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Tracked person: planned path (following rail geometry) + current position
+    if (this.state.trackedPersonId) {
+      const railPoints = this.buildPersonRailPath(this.state.trackedPersonNodes);
+      if (railPoints.length >= 2) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(railPoints[0].x, railPoints[0].y);
+        for (const p of railPoints.slice(1)) ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = 'rgba(239,68,68,0.75)';
+        ctx.lineWidth = 4 / this.currentScale;
+        ctx.setLineDash([7 / this.currentScale, 5 / this.currentScale]);
+        ctx.stroke();
+        ctx.restore();
+      }
+      const locPos = this.resolveLocToPos();
+      if (locPos) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(locPos.x, locPos.y, 5 / this.currentScale, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.2 / this.currentScale;
+        ctx.stroke();
+        ctx.restore();
+      }
     }
   }
 
@@ -1031,12 +1219,15 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const platforms   = platformEntries.map((pe, idx) => {
         const line = lines[idx] ?? '';
         const destination = this.metroData.lineDestinations.get(`${line}/${pe.sentido}`) ?? '';
-        return {
-          id: pe.id,
-          line,
-          destination,
-          total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0,
-        };
+        return { id: pe.id, line, sentido: pe.sentido, destination,
+                 total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0 };
+      });
+      // Disambiguate platforms sharing the same destination (circular lines like L6)
+      const destCount = new Map<string, number>();
+      platforms.forEach(p => destCount.set(p.destination, (destCount.get(p.destination) ?? 0) + 1));
+      platforms.forEach(p => {
+        if (p.destination && (destCount.get(p.destination) ?? 0) > 1)
+          p.destination += ` ·${p.sentido}`;
       });
       const transit = transitByName.get(s.name) ?? 0;
       const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);

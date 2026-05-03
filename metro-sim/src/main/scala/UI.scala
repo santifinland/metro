@@ -63,6 +63,25 @@ object UI {
             s"""{"message": "peopleInStation", "stationId": "$stationId", "people": $people}""")
           Behaviors.same
 
+        case PersonsInTrain(trainId, persons) =>
+          val arr = persons.map { case (id, dest) => s"""{"id":"$id","destination":"$dest"}""" }.mkString("[", ",", "]")
+          WebSocket.sendText(s"""{"message": "personsInTrain", "train": "$trainId", "persons": $arr}""")
+          Behaviors.same
+
+        case PersonsInPlatform(anderId, persons) =>
+          val arr = persons.map { case (id, dest) => s"""{"id":"$id","destination":"$dest"}""" }.mkString("[", ",", "]")
+          WebSocket.sendText(s"""{"message": "personsInPlatform", "anderId": "$anderId", "persons": $arr}""")
+          Behaviors.same
+
+        case PersonPlanPath(personId, nodes) =>
+          val arr = nodes.map(n => s""""$n"""").mkString("[", ",", "]")
+          WebSocket.sendText(s"""{"message": "personPath", "person": "$personId", "nodes": $arr}""")
+          Behaviors.same
+
+        case PersonTrackerUpdate(personId, locType, locId) =>
+          WebSocket.sendText(s"""{"message": "personLocation", "person": "$personId", "locType": "$locType", "locId": "$locId"}""")
+          Behaviors.same
+
         case PlatformOvercrowded(platformId, people) =>
           scribe.debug(s"There are $people people in platform $platformId")
           WebSocket.sendText(

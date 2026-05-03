@@ -15,6 +15,11 @@
     <div class="topbar-meta"><span>×</span><span class="v">{{ state.timeMultiplier.toFixed(2) }}</span></div>
   </div>
 
+  <nav class="topbar-nav">
+    <a routerLink="/"      routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">SIM</a>
+    <a routerLink="/debug" routerLinkActive="active">DEBUG</a>
+  </nav>
+
   <div class="topbar-right">
     @if (status$ | async; as s) {
       <div class="conn" [class]="s">

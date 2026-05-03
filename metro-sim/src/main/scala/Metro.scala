@@ -72,9 +72,10 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Doubl
     val stationWithTransfers: Iterable[Iterable[Path]] = lines
       .values
       .flatten
-      .groupBy(x => x.features.denominacion)
+      .filter(x => x.features.codigointercambiador.isDefined)
+      .groupBy(x => x.features.codigointercambiador.get)
       .values
-      .filter(x => x.size > 2)
+      .filter(xs => xs.map(_.features.codigoestacion).toSeq.distinct.size > 1)
     val transferPairs: Iterable[List[(MetroNode, MetroNode)]] = stationWithTransfers
       .map { case (x: Iterable[Path]) =>
         x.map { case (y: Path) =>

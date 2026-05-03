@@ -1,6 +1,6 @@
 .topbar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   height: 44px;
   background: var(--bg-2);
@@ -87,6 +87,29 @@
   color: var(--t-1);
   font-weight: 500;
   letter-spacing: 0.06em;
+}
+
+/* ── Nav links ────────────────────────────────────────── */
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.topbar-nav a {
+  text-decoration: none;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--t-3);
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  transition: color .12s, border-color .12s;
+}
+.topbar-nav a:hover { color: var(--t-1); }
+.topbar-nav a.active {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+  background: color-mix(in srgb, var(--amber) 6%, transparent);
 }
 
 /* ── Right ────────────────────────────────────────────── */

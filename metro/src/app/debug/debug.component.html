@@ -1,0 +1,81 @@
+<div class="debug-page">
+
+  <header class="debug-header">
+    <span class="debug-title">DEBUG · PATH QUERY</span>
+    <span class="debug-sub">Shortest weighted path between two metro stations</span>
+  </header>
+
+  <!-- ── Query form ─────────────────────────────────────────────────── -->
+  <section class="query-form">
+    <div class="field">
+      <label class="label" for="from-input">FROM</label>
+      <input
+        id="from-input"
+        class="input"
+        type="text"
+        placeholder="e.g. EMPALME"
+        [(ngModel)]="from"
+        (keydown.enter)="query()"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <div class="arrow">→</div>
+
+    <div class="field">
+      <label class="label" for="to-input">TO</label>
+      <input
+        id="to-input"
+        class="input"
+        type="text"
+        placeholder="e.g. BATAN"
+        [(ngModel)]="to"
+        (keydown.enter)="query()"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <button class="query-btn" (click)="query()" [disabled]="!from.trim() || !to.trim()">
+      QUERY
+    </button>
+  </section>
+
+  <!-- ── Result ─────────────────────────────────────────────────────── -->
+  @if (state.pathQueryResult; as r) {
+    <section class="result" [ngClass]="r.found ? 'found' : 'not-found'">
+
+      <!-- status bar -->
+      <div class="result-status">
+        <span class="status-badge" [ngClass]="r.found ? 'ok' : 'err'">
+          {{ r.found ? 'FOUND' : 'NOT FOUND' }}
+        </span>
+        <span class="result-summary">
+          @if (r.found) {
+            {{ r.from }} → {{ r.to }} · {{ r.nodes.length }} nodes · {{ stationLabels() }}
+          } @else {
+            {{ r.error }}
+          }
+        </span>
+      </div>
+
+      <!-- node list -->
+      @if (r.found) {
+        <ol class="node-list">
+          @for (node of r.nodes; track node.id; let i = $index) {
+            <li class="node-row" [ngClass]="node.kind">
+              <span class="node-index">{{ i + 1 }}</span>
+              <span class="node-kind">{{ node.kind === 'station' ? 'STA' : 'PLT' }}</span>
+              <span class="node-label">{{ node.label }}</span>
+              <span class="node-line">{{ node.line }}</span>
+              <span class="node-id">{{ node.id }}</span>
+            </li>
+          }
+        </ol>
+      }
+
+    </section>
+  }
+
+</div>

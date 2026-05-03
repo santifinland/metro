@@ -118,7 +118,7 @@ object Simulator {
               _ = startNode.setPartialPerson(floatPart)
               _ <- 1 to integerPart
               destinationNode = pickDestination(startNode, hourKey)
-              journey: Option[metroGraph.Path] = startNode shortestPathTo destinationNode
+              journey: Option[metroGraph.Path] = startNode.shortestPathTo(destinationNode, (e: metroGraph.EdgeT) => e.weight)
               path = journey.get.nodes
                 .map(x => stationActors.filter(y => y.path.name == x.name).head)
                 .toSeq

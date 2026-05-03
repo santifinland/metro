@@ -121,6 +121,15 @@ object Main {
         if (personId.nonEmpty) CommandBus.fireTrackPerson(personId)
       } else if (text.contains("\"untrackPerson\"")) {
         CommandBus.fireUntrackPerson()
+      } else if (text.contains("\"queryPath\"")) {
+        val from = text.split("\"from\"\\s*:\\s*\"").drop(1).headOption
+          .map(_.takeWhile(_ != '"')).getOrElse("")
+        val to = text.split("\"to\"\\s*:\\s*\"").drop(1).headOption
+          .map(_.takeWhile(_ != '"')).getOrElse("")
+        if (from.nonEmpty && to.nonEmpty) {
+          val result = PathDebugger.findPath(metroGraph, from, to)
+          WebSocket.sendStat("pathResult", result)
+        }
       }
     }
 

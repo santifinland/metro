@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { HeaderComponent } from './header.component';
@@ -19,6 +20,7 @@ describe('HeaderComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HeaderComponent],
       providers: [
+        provideRouter([]),
         { provide: WebSocketService, useValue: mockWs },
         SimulationStateService,
       ],

@@ -3,9 +3,6 @@
 export const CANVAS_WIDTH = 3400;
 export const CANVAS_HEIGHT = 2000;
 
-// How often (ms) the train canvas layer is redrawn
-export const REDRAW_PERIOD_MS = 2000;
-
 // Number of wagons per metro line (Madrid Metro)
 export const TRAIN_WAGONS: Record<string, number> = {
   '1': 6, '2': 6, '3': 6, '4': 4, '5': 6,

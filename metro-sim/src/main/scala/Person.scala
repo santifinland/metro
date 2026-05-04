@@ -29,8 +29,8 @@ object Person {
       def report(locType: String, locId: String): Unit =
         trackingUi.foreach(_ ! PersonTrackerUpdate(personName, locType, locId))
 
-      def platformId(ref: ActorRef[_]): String = ref.path.name.split("_").last
-      def stationId(ref: ActorRef[_]): String  = ref.path.name
+      def platformCode(ref: ActorRef[_]): String = ref.path.name.split("_").last
+      def stationId(ref: ActorRef[_]): String    = ref.path.name
 
       def isStation(ref: ActorRef[_]): Boolean = ref.path.name.startsWith(Metro.StationPrefix)
 
@@ -100,7 +100,7 @@ object Person {
 
           case AcceptedEnterPlatform(platform) =>
             currentStation ! ExitStation(personName)
-            report("platform", platformId(platform))
+            report("platform", platformCode(platform))
             scribe.debug(s"Person $personName entered platform ${platform.path.name}")
             inPlatform(platform, path(nextNodeIndex(platform)))
 
@@ -159,7 +159,7 @@ object Person {
           case TrackMe(ui) =>
             trackingUi = Some(ui)
             ui ! PersonPlanPath(personName, path.map(_.path.name).toList)
-            report("platform", platformId(currentPlatform))
+            report("platform", platformCode(currentPlatform))
             Behaviors.same
 
           case UntrackMe =>
@@ -182,7 +182,7 @@ object Person {
                 scribe.debug(s"Person $personName disembarking at ${platform.path.name}")
                 train ! ExitTrain(personName)
                 platform ! EnteredPlatformFromTrain(selfRef, destination)
-                report("platform", platformId(platform))
+                report("platform", platformCode(platform))
                 stationRef(path(idx)) ! RequestEnterStation(selfRef)
                 inPlatform(platform, path(idx))
               } else {

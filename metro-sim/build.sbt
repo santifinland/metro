@@ -15,9 +15,6 @@ lazy val root = (project in file(".")).
        "org.apache.pekko" %% "pekko-slf4j" % "1.1.3",
        "com.typesafe.play" %% "play-json" % "2.9.2",
        "org.geolatte" % "geolatte-geom" % "1.8.2",
-       "org.geolatte" %% "geolatte-geom-scala" % "1.7.0",
-       "io.circe" %% "circe-core" % "0.14.1",
-       "io.circe" %% "circe-generic" % "0.14.1",
-       "io.circe" %% "circe-parser" % "0.14.1"
+       "org.geolatte" %% "geolatte-geom-scala" % "1.7.0"
      )
    )

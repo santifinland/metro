@@ -618,7 +618,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const points: { x: number; y: number }[] = [];
     for (const node of nodes) {
       if (!node.startsWith('Platform_')) continue;
-      const code = node.split('_').pop() ?? '';
+      const code = node.split('_').pop()!;
       const tramo = this.metroData.paths.find(p => p.id === code);
       if (!tramo || tramo.path.length < 2) continue;
       if (points.length === 0) {
@@ -653,7 +653,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       return s ? s.position : null;
     }
     if (nodeName.startsWith('Platform_')) {
-      const code = nodeName.split('_').pop() ?? '';
+      const code = nodeName.split('_').pop()!;
       const seg = this.metroData.paths.find(p => p.id === code);
       return seg ? seg.position : null;
     }
@@ -687,7 +687,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     // appear as two entries — same as L6 which has distinct line IDs '6-1' / '6-2'.
     const seen = new Map<string, Set<string>>();
     for (const p of this.metroData.paths) {
-      const dirKey = p.line + '/' + (p.sentido ?? '');
+      const dirKey = p.line + '/' + p.sentido;
       if (!seen.has(p.name)) seen.set(p.name, new Set());
       if (!seen.get(p.name)!.has(dirKey)) {
         seen.get(p.name)!.add(dirKey);
@@ -695,7 +695,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         lines.push(p.line);
         this.stationLineMap.set(p.name, lines);
         const pids = this.stationPlatformIds.get(p.name) ?? [];
-        pids.push({ id: p.id, sentido: p.sentido ?? '' });
+        pids.push({ id: p.id, sentido: p.sentido });
         this.stationPlatformIds.set(p.name, pids);
       }
     }
@@ -995,7 +995,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         if (img?.complete && img.naturalWidth > 0) {
           ctx.drawImage(img, cx, cy, tw, th);
         } else if (!img) {
-          if (this.tileCache.size > 300) {
+          if (this.tileCache.size > 128) {
             // Evict oldest entry to bound memory
             this.tileCache.delete(this.tileCache.keys().next().value!);
           }

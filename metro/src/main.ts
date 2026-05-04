@@ -1,5 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 
@@ -14,6 +14,6 @@ bootstrapApplication(AppComponent, {
       { path: 'debug', component: DebugComponent },
     ]),
     provideHttpClient(),
-    provideAnimations(),
+    provideAnimationsAsync(),
   ],
 }).catch(err => console.error(err));

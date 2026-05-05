@@ -276,11 +276,11 @@ object Guardian {
       scheduleHourlyAdjustments()
 
       // Simulator
-      val allStationAndPlatformActors: List[ActorRef[_]] =
-        stationActors.values.toList ++ allPlatformActors.values.toList
+      val actorsByName: Map[String, ActorRef[_]] =
+        stationActors ++ allPlatformActors
 
       val simulatorRef = context.spawn(
-        Simulator(ui, allStationAndPlatformActors, metroGraph, stationIdsEntrance, odMatrix, districtData),
+        Simulator(ui, actorsByName, metroGraph, stationIdsEntrance, odMatrix, districtData),
         "simulator"
       )
 

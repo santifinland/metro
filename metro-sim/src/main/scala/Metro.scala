@@ -35,30 +35,32 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Doubl
       .flatMap { case (line: String, paths: Seq[Path]) => paths.map { x =>
         new PlatformNode(Metro.platformName(x.features.denominacion, x.features.codigoanden), Seq("L" + line))
       } }
+    val stationsByName: Map[String, MetroNode] = stations.map(s => s.name -> s).toMap
+    val platformsByName: Map[String, MetroNode] = platforms.map(p => p.name -> p).toMap
     val nodes: Iterable[MetroNode] = stations ++ platforms
     val lineEdges: Iterable[WDiEdge[MetroNode]] = sortedLinePaths
       .values
-      .flatMap(x => buildLineEdges(x, stations, platforms))
-    val interLineEdges: Iterable[WDiEdge[MetroNode]] = buildInterLineEdges(sortedLinePaths, stations, platforms)
+      .flatMap(x => buildLineEdges(x, stationsByName, platformsByName))
+    val interLineEdges: Iterable[WDiEdge[MetroNode]] = buildInterLineEdges(sortedLinePaths, stationsByName, platformsByName)
     Graph.from(nodes, lineEdges ++ interLineEdges)
   }
 
-  def buildLineEdges(linePaths: Seq[Path], stations: Iterable[MetroNode], platforms: Iterable[MetroNode])
+  def buildLineEdges(linePaths: Seq[Path], stationsByName: Map[String, MetroNode], platformsByName: Map[String, MetroNode])
   : Seq[WDiEdge[MetroNode]] = {
     (for {
       i <- linePaths.indices
       currentStationName: String = Metro.stationName(
         linePaths(i).features.denominacion, linePaths(i).features.codigoestacion)
-      currentStation: MetroNode = stations.filter(x => x.name == currentStationName).head
+      currentStation: MetroNode = stationsByName(currentStationName)
       weight: Double = linePaths(i).features.longitudtramoanterior
       currentPlatformName: String = Metro.platformName(
         linePaths(i).features.denominacion, linePaths(i).features.codigoanden)
-      currentPlatform: MetroNode = platforms.filter(x => x.name == currentPlatformName).head
+      currentPlatform: MetroNode = platformsByName(currentPlatformName)
       nextPath: Path = if (i + 1 < linePaths.length) linePaths(i + 1) else linePaths.head
       nextStationName: String = Metro.stationName(nextPath.features.denominacion, nextPath.features.codigoestacion)
-      nextStation: MetroNode = stations.filter(x => x.name == nextStationName).head
+      nextStation: MetroNode = stationsByName(nextStationName)
       nextPlatformName: String = Metro.platformName(nextPath.features.denominacion, nextPath.features.codigoanden)
-      nextPlatform: MetroNode = platforms.filter(x => x.name == nextPlatformName).head
+      nextPlatform: MetroNode = platformsByName(nextPlatformName)
       s1: WDiEdge[MetroNode] = WDiEdge(currentStation, currentPlatform)(weightStationPlatform)
       s1bis: WDiEdge[MetroNode] = WDiEdge(currentPlatform, currentStation)(weightStationPlatform)
       p: WDiEdge[MetroNode] = WDiEdge(currentPlatform, nextPlatform)(weight)
@@ -67,7 +69,7 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Doubl
     } yield List(s1, s1bis, p, s2, s2bis)).flatten
   }
 
-  def buildInterLineEdges(lines: Map[String, Seq[Path]], stations: Iterable[MetroNode], platforms: Iterable[MetroNode])
+  def buildInterLineEdges(lines: Map[String, Seq[Path]], stationsByName: Map[String, MetroNode], platformsByName: Map[String, MetroNode])
   : Iterable[WDiEdge[MetroNode]] = {
     val stationWithTransfers: Iterable[Iterable[Path]] = lines
       .values
@@ -80,7 +82,7 @@ class Metro(sortedLinePaths: Map[String, Seq[Path]], weightStationStation: Doubl
       .map { case (x: Iterable[Path]) =>
         x.map { case (y: Path) =>
           val stationWithTransferName: String = Metro.stationName(y.features.denominacion, y.features.codigoestacion)
-          stations.filter { case (z: StationNode) => z.name == stationWithTransferName }.head
+          stationsByName(stationWithTransferName)
         } }
       .map { case (x: Iterable[MetroNode]) => computePairs(x.toList) }
     transferPairs

@@ -18,7 +18,6 @@ object Platform {
   private def waitingForNext(line: ActorRef[LineMessage], ui: ActorRef[UIMessage], name: String): Behavior[PlatformMessage] =
     Behaviors.receiveMessage {
       case SetNextPlatform(next) =>
-        scribe.debug(s"Setting platform $name to empty mode. Next: ${next.path.name}")
         Behaviors.setup { context =>
           Behaviors.withTimers { timers =>
             timers.startTimerWithFixedDelay("stats-tick", PlatformStatsTick, 3.seconds, 3.seconds)
@@ -56,7 +55,6 @@ object Platform {
         if (people.size < MAX_CAPACITY) {
           people(person.path.name) = (person, true)
           destinations(person.path.name) = destination
-          scribe.debug(s"Platform $name with ${people.size} people")
           person ! AcceptedEnterPlatform(self)
         } else {
           scribe.warn(s"Platform $name over capacity")
@@ -65,7 +63,6 @@ object Platform {
         Behaviors.same
 
       case ReservePlatform(train) =>
-        scribe.debug(s"Platform $name reserved by ${train.path.name}!")
         train ! PlatformReserved(self)
         full(self, line, ui, name, anderId, next, people, destinations)
 
@@ -114,7 +111,6 @@ object Platform {
         if (people.size < MAX_CAPACITY) {
           people(person.path.name) = (person, true)
           destinations(person.path.name) = destination
-          scribe.debug(s"Platform $name with ${people.size} people")
           person ! AcceptedEnterPlatform(self)
         } else {
           scribe.warn(s"Platform $name over capacity")
@@ -123,12 +119,10 @@ object Platform {
         Behaviors.same
 
       case ReservePlatform(train) =>
-        scribe.debug(s"Platform $name is not free!")
         train ! FullPlatform(self)
         Behaviors.same
 
       case LeavingPlatform =>
-        scribe.debug(s"Platform $name freed!")
         empty(self, line, ui, name, anderId, next, people, destinations)
 
       case GetNextPlatform(train) =>
@@ -136,7 +130,6 @@ object Platform {
         Behaviors.same
 
       case ArrivedAtPlatform(train) =>
-        scribe.debug(s"Train ${train.path.name} arrived to platform $name")
         people.foreach { case (_, (p, waiting)) => if (waiting) p ! TrainInPlatform(train) }
         Behaviors.same
 

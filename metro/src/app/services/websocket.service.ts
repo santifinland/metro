@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, DestroyRef, inject } from '@angular/core';
 import { BehaviorSubject, Observable, timer } from 'rxjs';
-import { retry, tap } from 'rxjs/operators';
+import { retry, timeout } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { webSocket } from 'rxjs/webSocket';
 
 import { environment } from '../../environments/environment';
@@ -15,6 +16,7 @@ export class WebSocketService {
   readonly messages$: Observable<SimulationMessage>;
 
   private readonly socket$;
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     this.socket$ = webSocket<SimulationMessage>({
@@ -28,12 +30,15 @@ export class WebSocketService {
     });
 
     this.messages$ = this.socket$.pipe(
+      timeout({ each: 30_000 }),
       retry({
+        count: 30,
         delay: (_error, _count) => {
           this.connectionStatus$.next('reconnecting');
           return timer(2000);
         },
       }),
+      takeUntilDestroyed(this.destroyRef),
     );
   }
 

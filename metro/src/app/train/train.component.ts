@@ -93,8 +93,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   expandedTrainDest: string | null = null;
   expandedPlatformDest: string | null = null;
 
-  // Sparkline history
-  peopleHistory: number[] = Array(40).fill(0);
+  // Sparkline history (mutated in-place every 200 ms — no per-tick allocation)
+  readonly peopleHistory: number[] = Array(40).fill(0);
 
   private static readonly PATH_WIDTH_PX      = 6;
   private static readonly DOT_RADIUS_PX      = 5;
@@ -370,7 +370,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       if (timestamp - this.lastCdTick >= 200) {
         this.lastCdTick = timestamp;
-        this.peopleHistory = [...this.peopleHistory.slice(1), this.state.metroPeople];
+        this.peopleHistory.push(this.state.metroPeople);
+        this.peopleHistory.shift();
         this.ngZone.run(() => {});
       }
 

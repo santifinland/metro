@@ -1,7 +1,9 @@
 // Metro. SDMT
 
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Random, Success, Try}
+
+import play.api.libs.json._
 
 import org.apache.pekko.actor.typed.{ActorRef, ActorSystem, Behavior}
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
@@ -89,46 +91,38 @@ object Main {
 
     // Register command handler for messages from the browser
     WebSocket.setCommandHandler { text =>
-      if (text.contains("\"reset\"")) {
-        SimClock.reset()
-        WebSocket.resetSnapshot()
-        WebSocket.sendStat("simPaused", """{"message": "simPaused", "paused": true}""")
-        CommandBus.fireReset()
-      } else if (text.contains("\"setSpeed\"")) {
-        val factor = text.split("\"factor\"\\s*:\\s*").drop(1).headOption
-          .flatMap(_.trim.takeWhile(c => c.isDigit || c == '.').toDoubleOption)
-          .getOrElse(SimClock.speedFactor)
-        SimClock.setSpeed(factor)
-        val tm = 1.0 / SimClock.speedFactor
-        WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $tm}""")
-      } else if (text.contains("\"pause\"")) {
-        SimClock.pause()
-        broadcastPaused()
-      } else if (text.contains("\"resume\"")) {
-        SimClock.resume()
-        broadcastPaused()
-      } else if (text.contains("\"requestTrainPersons\"")) {
-        val trainId = text.split("\"trainId\"\\s*:\\s*\"").drop(1).headOption
-          .map(_.takeWhile(_ != '"')).getOrElse("")
-        if (trainId.nonEmpty) CommandBus.fireRequestTrainPersons(trainId)
-      } else if (text.contains("\"requestPlatformPersons\"")) {
-        val anderId = text.split("\"platformId\"\\s*:\\s*\"").drop(1).headOption
-          .map(_.takeWhile(_ != '"')).getOrElse("")
-        if (anderId.nonEmpty) CommandBus.fireRequestPlatformPersons(anderId)
-      } else if (text.contains("\"trackPerson\"")) {
-        val personId = text.split("\"personId\"\\s*:\\s*\"").drop(1).headOption
-          .map(_.takeWhile(_ != '"')).getOrElse("")
-        if (personId.nonEmpty) CommandBus.fireTrackPerson(personId)
-      } else if (text.contains("\"untrackPerson\"")) {
-        CommandBus.fireUntrackPerson()
-      } else if (text.contains("\"queryPath\"")) {
-        val from = text.split("\"from\"\\s*:\\s*\"").drop(1).headOption
-          .map(_.takeWhile(_ != '"')).getOrElse("")
-        val to = text.split("\"to\"\\s*:\\s*\"").drop(1).headOption
-          .map(_.takeWhile(_ != '"')).getOrElse("")
-        if (from.nonEmpty && to.nonEmpty) {
-          val result = PathDebugger.findPath(metroGraph, from, to)
-          WebSocket.sendStat("pathResult", result)
+      Try(Json.parse(text)).toOption.foreach { json =>
+        (json \ "message").asOpt[String] match {
+          case Some("reset") =>
+            SimClock.reset()
+            WebSocket.resetSnapshot()
+            WebSocket.sendStat("simPaused", """{"message": "simPaused", "paused": true}""")
+            CommandBus.fireReset()
+          case Some("setSpeed") =>
+            val factor = (json \ "factor").asOpt[Double].getOrElse(SimClock.speedFactor)
+            SimClock.setSpeed(factor)
+            val tm = 1.0 / SimClock.speedFactor
+            WebSocket.sendStat("timeMultiplier", s"""{"message": "timeMultiplier", "multiplier": $tm}""")
+          case Some("pause") =>
+            SimClock.pause()
+            broadcastPaused()
+          case Some("resume") =>
+            SimClock.resume()
+            broadcastPaused()
+          case Some("requestTrainPersons") =>
+            (json \ "trainId").asOpt[String].filter(_.nonEmpty).foreach(CommandBus.fireRequestTrainPersons)
+          case Some("requestPlatformPersons") =>
+            (json \ "platformId").asOpt[String].filter(_.nonEmpty).foreach(CommandBus.fireRequestPlatformPersons)
+          case Some("trackPerson") =>
+            (json \ "personId").asOpt[String].filter(_.nonEmpty).foreach(CommandBus.fireTrackPerson)
+          case Some("untrackPerson") =>
+            CommandBus.fireUntrackPerson()
+          case Some("queryPath") =>
+            for {
+              from <- (json \ "from").asOpt[String].filter(_.nonEmpty)
+              to   <- (json \ "to").asOpt[String].filter(_.nonEmpty)
+            } WebSocket.sendStat("pathResult", PathDebugger.findPath(metroGraph, from, to))
+          case _ => ()
         }
       }
     }
@@ -224,10 +218,14 @@ object Guardian {
 
       val random = new Random
 
+      val pathByName: Map[String, parser.Path] = allPaths.map { pp =>
+        Metro.platformName(pp.features.denominacion, pp.features.codigoanden) -> pp
+      }.toMap
+
       // Spawn a train at a specific platform
       def spawnTrainAt(start: ActorRef[PlatformMessage]): ActorRef[TrainMessage] = {
         val uuid  = java.util.UUID.randomUUID.toString
-        val train = context.spawn(Train(ui, allPaths), uuid)
+        val train = context.spawn(Train(ui, pathByName), uuid)
         train ! Move(start)
         train
       }

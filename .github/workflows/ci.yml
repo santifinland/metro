@@ -30,5 +30,13 @@ jobs:
       - name: Build
         run: npm run build -- --configuration=development
 
-      - name: Test
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+      - name: Test with coverage
+        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: metro/coverage/metro/
+          retention-days: 30

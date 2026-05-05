@@ -33,6 +33,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private _mouseContainerX    = -1;
   private _mouseContainerY    = -1;
   showAllPanels = false;
+  private stationsHidden = false;
 
   private ctxTiles!: CanvasRenderingContext2D;
   private ctxStations!: CanvasRenderingContext2D;
@@ -478,17 +479,25 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   toggleShowAllPanels(): void {
-    this.showAllPanels = !this.showAllPanels;
+    if (!this.showAllPanels) {
+      this.showAllPanels   = true;
+      this.stationsHidden  = false;
+    } else {
+      this.showAllPanels   = false;
+      this.stationsHidden  = true;
+    }
     this.applyOverlayClasses();
   }
 
   private applyOverlayClasses(): void {
     const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
     if (!el) return;
-    const fitMul = this.currentScale / this.fitScale;
-    el.classList.toggle('show-interchange', fitMul > 1.05 || this.showAllPanels);
-    el.classList.toggle('show-all',         fitMul > 1.7  || this.showAllPanels);
-    el.classList.toggle('show-panel',       fitMul > 15   || this.showAllPanels);
+    const fitMul    = this.currentScale / this.fitScale;
+    const forceShow = this.showAllPanels;
+    const forceHide = this.stationsHidden;
+    el.classList.toggle('show-interchange', !forceHide && (fitMul > 1.05 || forceShow));
+    el.classList.toggle('show-all',         !forceHide && (fitMul > 1.7  || forceShow));
+    el.classList.toggle('show-panel',       !forceHide && (fitMul > 15   || forceShow));
     el.classList.toggle('zoom-deep',        fitMul > 7);
   }
 

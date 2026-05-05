@@ -32,21 +32,3 @@ jobs:
 
       - name: Test
         run: npm test -- --watch=false --browsers=ChromeHeadless
-
-  server:
-    name: WebSocket Server
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: metro-server
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install

@@ -11,8 +11,8 @@ object WebSocket {
   // Sent in full to every new client that connects (page reload, reconnect, new tab).
   private val snapshot = scala.collection.mutable.Map[String, String]()
 
-  // Active connections: (id, queue). Cleaned up on disconnect via watchCompletion.
-  private var connections: List[(String, SourceQueueWithComplete[Message])] = List()
+  // Active connections keyed by id. Cleaned up on disconnect via watchCompletion.
+  private val connections = scala.collection.mutable.Map[String, SourceQueueWithComplete[Message]]()
 
   // Command handler set by Main — called for every message received from the browser.
   private var commandHandler: String => Unit = _ => ()
@@ -32,14 +32,10 @@ object WebSocket {
 
     Flow.fromSinkAndSourceMat(inbound, outbound) { (_, queue) =>
       queue.watchCompletion().foreach { _ =>
-        WebSocket.synchronized {
-          connections = connections.filterNot(_._1 == connId)
-        }
+        WebSocket.synchronized { connections.remove(connId) }
       }(scala.concurrent.ExecutionContext.global)
 
-      WebSocket.synchronized {
-        connections = (connId, queue) :: connections
-      }
+      WebSocket.synchronized { connections(connId) = queue }
 
       // Replay current state snapshot to this new client
       snapshot.values.foreach(json => queue.offer(TextMessage.Strict(json)))
@@ -84,8 +80,6 @@ object WebSocket {
 
   private def broadcast(json: String): Unit = {
     val msg = TextMessage.Strict(json)
-    WebSocket.synchronized { connections }.foreach { case (_, queue) =>
-      queue.offer(msg)
-    }
+    WebSocket.synchronized { connections.values.toList }.foreach(_.offer(msg))
   }
 }

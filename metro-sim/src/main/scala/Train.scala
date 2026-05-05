@@ -20,13 +20,9 @@ object Train {
   private val MaxDoorsMs  = 40_000L
   private val FullRetryMs = 30_000L
 
-  def apply(ui: ActorRef[UIMessage], allPaths: Seq[Path]): Behavior[TrainMessage] =
+  def apply(ui: ActorRef[UIMessage], pathByName: Map[String, Path]): Behavior[TrainMessage] =
     Behaviors.setup { context =>
       val rng = new Random
-
-      val pathByName: Map[String, Path] = allPaths.map { pp =>
-        Metro.platformName(pp.features.denominacion, pp.features.codigoanden) -> pp
-      }.toMap
 
       def travelMsForPath(p: Option[Path]): Long = p match {
         case Some(pp) if pp.features.velocidadtramoanterior > 0 && pp.features.longitudtramoanterior > 0 =>
@@ -68,14 +64,12 @@ object Train {
             Behaviors.same
 
           case Move(p) =>
-            scribe.debug(s"Train $trainName wants to move from ${p.path.name}")
             p ! ReservePlatform(selfRef)
             Behaviors.same
 
           case PlatformReserved(p) =>
             if (platform.isEmpty) {
               platform = Some(p)
-              scribe.debug(s"Train $trainName starting at ${p.path.name}")
               val pp = findPlatformPath(p)
               pp.foreach { path => x = path.x; y = path.y }
               val anden = pp.map(_.features.codigoanden).getOrElse(0)
@@ -84,7 +78,6 @@ object Train {
                 platform.foreach(_ ! GetNextPlatform(selfRef))
               }
             } else {
-              scribe.debug(s"Train $trainName departing from ${platform.get.path.name}")
               nextPlatform = Some(p)
               val nextPp = findPlatformPath(p)
               lastTravelSimMs = travelMsForPath(nextPp)
@@ -93,7 +86,6 @@ object Train {
             Behaviors.same
 
           case TrainArrivedAtPlatform =>
-            scribe.debug(s"Train $trainName arriving at ${nextPlatform.get.path.name}")
             val prevPlatform = platform
             platform = nextPlatform
             prevPlatform.get ! LeavingPlatform
@@ -122,12 +114,10 @@ object Train {
 
           case NextPlatformForTrain(p) =>
             nextPlatform = Some(p)
-            scribe.debug(s"Train $trainName knows next platform ${p.path.name}")
             p ! ReservePlatform(selfRef)
             Behaviors.same
 
           case FullPlatform(p) =>
-            scribe.debug(s"Train $trainName waiting — platform ${p.path.name} full")
             SimClock.scheduleIn(FullRetryMs) { () => p ! ReservePlatform(selfRef) }
             Behaviors.same
 
@@ -144,7 +134,6 @@ object Train {
             Behaviors.same
 
           case ExitTrain(personId) =>
-            scribe.debug(s"Person $personId exits train $trainName")
             people.remove(personId)
             Behaviors.same
 

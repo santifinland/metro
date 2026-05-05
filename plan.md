@@ -313,11 +313,8 @@ A2, A4, A5, A6, A8, A9, B3, B4, D6 ✓
 ### ~~Wave 2~~ — completada (branch `perf/sim-bottlenecks-backend`)
 C1, C2, C3, C4 ✓
 
-### Wave 3 — perf frontend (medio día)
-**Items:** C6, C7, C8
-**Resultado esperado:** 60 FPS estables con 100+ trenes. Reducción de Long Tasks en DevTools.
-**Branch sugerida:** `perf/frontend-render`
-**Validación:** Chrome DevTools Performance tab; medir FPS y CPU del worker.
+### ~~Wave 3~~ — completada (branch `perf/frontend-render`)
+C6, C7, C8 ✓
 
 ### Wave 4 — calidad / robustez (1 día)
 **Items:** A1, B1, B2, C5, C9, C10, D1, D2, D3, D4, D5, D7, D8

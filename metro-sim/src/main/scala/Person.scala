@@ -20,6 +20,7 @@ object Person {
       val selfRef    = context.self
 
       var trackingUi: Option[ActorRef[UIMessage]] = None
+      val pathIndexMap: Map[String, Int] = path.zipWithIndex.map { case (ref, idx) => ref.path.name -> idx }.toMap
 
       val destination: String = path.last.path.name
         .stripPrefix(Metro.StationPrefix)
@@ -40,7 +41,7 @@ object Person {
         ref.asInstanceOf[ActorRef[PlatformMessage]]
 
       def nextNodeIndex(currentRef: ActorRef[_]): Int =
-        path.indexWhere(_.path.name == currentRef.path.name) + 1
+        pathIndexMap.getOrElse(currentRef.path.name, -2) + 1
 
       // Start: request entry into first node (always a station)
       scribe.debug(s"Person $personName to ${path.last.path.name} wants to enter ${path.head.path.name}")
@@ -173,7 +174,7 @@ object Person {
         Behaviors.receiveMessage {
 
           case ArrivedAtPlatformToPeople(platform) =>
-            val platformIdx = path.indexWhere(_.path.name == platform.path.name)
+            val platformIdx = pathIndexMap.getOrElse(platform.path.name, -1)
             if (platformIdx < 0) {
               Behaviors.same  // not our stop
             } else {

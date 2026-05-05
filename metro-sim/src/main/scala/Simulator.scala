@@ -26,7 +26,7 @@ object Simulator {
 
   def apply(
     ui: ActorRef[UIMessage],
-    stationActors: List[ActorRef[_]],
+    actorsByName: Map[String, ActorRef[_]],
     metroGraph: Graph[MetroNode, WDiEdge],
     stationIdsEntrance: Map[StationIds, Option[Entrance]],
     odMatrix: ODMatrix,
@@ -37,6 +37,8 @@ object Simulator {
         timers.startTimerWithFixedDelay("stats-tick", SimulatorStatsTick, 3.seconds, 1.second)
 
         val people: scala.collection.mutable.Map[String, ActorRef[PersonMessage]] =
+          scala.collection.mutable.Map.empty
+        val pathCache: scala.collection.mutable.Map[(String, String), Seq[ActorRef[_]]] =
           scala.collection.mutable.Map.empty
         var simulationPeople: Int = 0
         var trackedPerson: Option[ActorRef[PersonMessage]] = None
@@ -118,10 +120,11 @@ object Simulator {
               _ = startNode.setPartialPerson(floatPart)
               _ <- 1 to integerPart
               destinationNode = pickDestination(startNode, hourKey)
-              journey: Option[metroGraph.Path] = startNode.shortestPathTo(destinationNode, (e: metroGraph.EdgeT) => e.weight)
-              path = journey.get.nodes
-                .map(x => stationActors.filter(y => y.path.name == x.name).head)
-                .toSeq
+              cacheKey = (startNode.value.name, destinationNode.value.name)
+              path = pathCache.getOrElseUpdate(cacheKey, {
+                val journey = startNode.shortestPathTo(destinationNode, (e: metroGraph.EdgeT) => e.weight)
+                journey.get.nodes.map(x => actorsByName(x.name)).toSeq
+              })
               uuid   = java.util.UUID.randomUUID.toString
               person = context.spawn(Person(selfRef, path), uuid)
               _ = people(person.path.name) = person

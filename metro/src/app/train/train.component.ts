@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,7 +14,8 @@ import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP 
   standalone: true,
   imports: [],
   templateUrl: './train.component.html',
-  styleUrls: ['./train.component.css']
+  styleUrls: ['./train.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
@@ -79,7 +80,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   resetTime = '06:05';
 
-  private labelVisible: boolean[] = [];
   private stationLineMap = new Map<string, string[]>();
   private stationPlatformIds = new Map<string, { id: string; sentido: string }[]>();
   private stationNormalizedMap = new Map<string, string>();
@@ -132,7 +132,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.ctxTrains   = this.canvasTrains.nativeElement.getContext('2d')!;
 
     this.computeFit();
-    this.computeLabelVisibility();
     this.setupEvents();
 
     this.needsStaticRedraw = true;
@@ -427,30 +426,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       ctx.strokeStyle = this.lineColors(segment.line);
       ctx.stroke();
     }
-  }
-
-  private computeLabelVisibility(): void {
-    const scale   = this.fitScale;
-    const fontSize = Math.round(TrainComponent.LABEL_SIZE_PX / scale);
-    this.ctxStations.font = `${fontSize}px 'JetBrains Mono', monospace`;
-    const r       = TrainComponent.DOT_RADIUS_PX / scale;
-    const padding = 2 / scale;
-    const placed: { x: number; y: number; w: number; h: number }[] = [];
-
-    this.labelVisible = this.metroData.stations.map(station => {
-      const { x, y } = station.position;
-      const lx = x + r + padding;
-      const ly = y + fontSize * 0.35;
-      const bw = this.ctxStations.measureText(station.name).width + padding * 2;
-      const bh = fontSize * 1.1;
-      const bx = lx - padding;
-      const by = ly - fontSize * 0.85;
-      const overlaps = placed.some(p =>
-        bx < p.x + p.w && bx + bw > p.x && by < p.y + p.h && by + bh > p.y,
-      );
-      if (!overlaps) placed.push({ x: bx, y: by, w: bw, h: bh });
-      return !overlaps;
-    });
   }
 
   private findNearestStation(cx: number, cy: number, hitPx = 14): number {
@@ -750,6 +725,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       // Prepended tramos give rear wagons geometry; appended tramo gives nose + arrow room.
       // Clamp keeps all wagons on-path when a tramo has no neighbours (e.g. Line R).
       let centerArc = 0;
+      let centerSegIdx = 1;
       if (hasPath) {
         const segStart  = train.pathSegStart;
         const segEnd    = train.pathSegEnd;
@@ -765,6 +741,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
         const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
         train.x = c.x; train.y = c.y; train.heading = c.heading;
+        centerSegIdx = c.segIdx;
       } else if (train.travelMs > 0) {
         const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
         const ease = t * t * (3 - 2 * t);
@@ -777,7 +754,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const arcOffset = (i - (wagons - 1) / 2) * effStride;
         let wx: number, wy: number, wh: number;
         if (hasPath) {
-          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset);
+          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset, centerSegIdx);
           wx = p.x; wy = p.y; wh = p.heading;
         } else {
           wx = train.x; wy = train.y; wh = train.heading;
@@ -816,7 +793,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
       let ax: number, ay: number, ah: number;
       if (hasPath) {
-        const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc);
+        const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc, centerSegIdx);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
         // Fallback: project nose in heading direction
@@ -1013,12 +990,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     pts:  { x: number; y: number }[],
     lens: number[],
     arc:  number,
-  ): { x: number; y: number; heading: number } {
+    hintIdx = 1,
+  ): { x: number; y: number; heading: number; segIdx: number } {
     const total   = lens[lens.length - 1];
     const clamped = Math.max(0, Math.min(total, arc));
 
-    let i = 1;
+    let i = Math.max(1, Math.min(hintIdx, lens.length - 1));
     while (i < lens.length - 1 && lens[i] < clamped) i++;
+    while (i > 1 && lens[i - 1] >= clamped) i--;
 
     const p0     = pts[i - 1];
     const p1     = pts[i];
@@ -1029,6 +1008,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       x:       p0.x + (p1.x - p0.x) * segT,
       y:       p0.y + (p1.y - p0.y) * segT,
       heading: Math.atan2(p1.y - p0.y, p1.x - p0.x),
+      segIdx:  i,
     };
   }
 

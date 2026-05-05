@@ -30,5 +30,39 @@ jobs:
       - name: Build
         run: npm run build -- --configuration=development
 
+      - name: Test with coverage
+        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: metro/coverage/metro/
+          retention-days: 30
+
+  simulator:
+    name: Scala Simulator
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: metro-sim
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: sbt
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Compile
+        run: sbt compile
+
       - name: Test
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+        run: sbt test

@@ -22,15 +22,12 @@ object Person {
       var trackingUi: Option[ActorRef[UIMessage]] = None
       val pathIndexMap: Map[String, Int] = path.zipWithIndex.map { case (ref, idx) => ref.path.name -> idx }.toMap
 
-      val destination: String = path.last.path.name
-        .stripPrefix(Metro.StationPrefix)
-        .split("_").dropRight(1)
-        .mkString(" ")
+      val destination: String = path.last.path.name.stripPrefix(Metro.StationPrefix)
 
       def report(locType: String, locId: String): Unit =
         trackingUi.foreach(_ ! PersonTrackerUpdate(personName, locType, locId))
 
-      def platformCode(ref: ActorRef[_]): String = ref.path.name.split("_").last
+      def platformCode(ref: ActorRef[_]): String = ref.path.name.stripPrefix(Metro.PlatformPrefix)
       def stationId(ref: ActorRef[_]): String    = ref.path.name
 
       def isStation(ref: ActorRef[_]): Boolean = ref.path.name.startsWith(Metro.StationPrefix)

@@ -46,20 +46,10 @@ case class LineFeatures(
     numeroorden: Int,
     tipoparada: String,
     denominacion: String,
-    codigomunicipio: String,
-    municipio: String,
-    coronatarifaria: String,
     longitudtramoanterior: Double,
     velocidadtramoanterior: Float,
-    modolinea: Int,
     modointercambiador: Option[Int],
     codigointercambiador: Option[String],
-    idftramo: String,
-    idflinea: String,
-    idfitinerario: String,
-    idfestacion: String,
-    idfposte: String,
-    idfanden: String
 )
 
-case class LineGeometry(geometryType: String, coordinates: Seq[Seq[Double]])
+case class LineGeometry(coordinates: Seq[Seq[Double]])

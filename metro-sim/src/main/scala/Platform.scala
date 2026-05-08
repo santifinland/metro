@@ -25,7 +25,7 @@ object Platform {
               scala.collection.mutable.Map.empty
             val destinations: scala.collection.mutable.Map[String, String] =
               scala.collection.mutable.Map.empty
-            val anderId = name.split("_").last
+            val anderId = name.stripPrefix(Metro.PlatformPrefix)
             PlatformRegistry.register(name, context.self)
             empty(context.self, line, ui, name, anderId, next, people, destinations)
           }

@@ -1,42 +1,30 @@
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scala.collection.immutable.SortedMap
 
 import parser.{EntranceParser, MetroParser, Path, StationParser}
-import utils.{Distribution, Position}
+import utils.Position
 
 
 class MetroSpec extends AnyFlatSpec with Matchers {
 
-  // ── Metro.stationName ────────────────────────────────────────────────────
+  // ── Metro.stationId ──────────────────────────────────────────────────────
 
-  "Metro.stationName" should "add Station_ prefix" in {
-    Metro.stationName("Sol", "1") should startWith(Metro.StationPrefix)
+  "Metro.stationId" should "add Station_ prefix" in {
+    Metro.stationId("1") should startWith(Metro.StationPrefix)
   }
 
-  it should "replace spaces with underscores" in {
-    Metro.stationName("Casa de Campo", "42") should include("Casa_de_Campo")
+  it should "be exactly Station_ + code" in {
+    Metro.stationId("42") shouldBe "Station_42"
   }
 
-  it should "strip diacritics" in {
-    val name = Metro.stationName("Príncipe Pío", "99")
-    name should not include "í"
-    name should include("Principe_Pio")
+  // ── Metro.platformId ─────────────────────────────────────────────────────
+
+  "Metro.platformId" should "add Platform_ prefix" in {
+    Metro.platformId(1) should startWith(Metro.PlatformPrefix)
   }
 
-  // ── Metro.platformName ───────────────────────────────────────────────────
-
-  "Metro.platformName" should "add Platform_ prefix" in {
-    Metro.platformName("Sol", 1) should startWith(Metro.PlatformPrefix)
-  }
-
-  it should "include the platform code" in {
-    Metro.platformName("Sol", 420) should endWith("420")
-  }
-
-  it should "strip diacritics" in {
-    val name = Metro.platformName("Príncipe Pío", 7)
-    name should not include "í"
+  it should "be exactly Platform_ + code" in {
+    Metro.platformId(420) shouldBe "Platform_420"
   }
 
   // ── Position ──────────────────────────────────────────────────────────────
@@ -57,24 +45,6 @@ class MetroSpec extends AnyFlatSpec with Matchers {
     val center = new Position(40.4202961, -3.718762)
     val east   = new Position(40.4202961, -3.6)
     east.x should be > center.x
-  }
-
-  // ── Distribution ─────────────────────────────────────────────────────────
-
-  "Distribution" should "return 0 when probability is at or below the lowest key" in {
-    val d = new Distribution(SortedMap(0.0 -> 1, 0.5 -> 2, 0.9 -> 3))
-    d.value(0.0) shouldBe 0
-  }
-
-  it should "return the correct bucket for a mid probability" in {
-    val d = new Distribution(SortedMap(0.0 -> 1, 0.5 -> 2, 0.9 -> 3))
-    d.value(0.3) shouldBe 1
-    d.value(0.7) shouldBe 2
-  }
-
-  it should "return the highest bucket for high probability" in {
-    val d = new Distribution(SortedMap(0.0 -> 1, 0.5 -> 2, 0.9 -> 3))
-    d.value(0.95) shouldBe 3
   }
 
   // ── EntranceParser ────────────────────────────────────────────────────────

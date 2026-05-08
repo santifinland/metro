@@ -83,7 +83,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private stationLineMap = new Map<string, string[]>();
   private stationPlatformIds = new Map<string, { id: string; sentido: string }[]>();
-  private stationNormalizedMap = new Map<string, string>();
 
   selectedTrainId: string | null = null;
   hoveredTrainId: string | null = null;
@@ -118,10 +117,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.buildStationLineMap();
-    for (const s of this.metroData.stations) {
-      const normalized = s.name.normalize('NFD').replace(/\p{Mn}/gu, '');
-      this.stationNormalizedMap.set(normalized, s.name);
-    }
   }
 
   ngAfterViewInit(): void {
@@ -631,15 +626,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private resolveNodeToPos(nodeName: string): { x: number; y: number } | null {
     if (nodeName.startsWith('Station_')) {
-      const parts = nodeName.replace('Station_', '').split('_');
-      const normalized = parts.slice(0, -1).join(' ');
-      const originalName = this.stationNormalizedMap.get(normalized);
-      const s = originalName ? this.metroData.stations.find(st => st.name === originalName) : null;
+      const s = this.metroData.stationsByCode.get(nodeName.slice('Station_'.length));
       return s ? s.position : null;
     }
     if (nodeName.startsWith('Platform_')) {
-      const code = nodeName.split('_').pop()!;
-      const seg = this.metroData.paths.find(p => p.id === code);
+      const seg = this.metroData.paths.find(p => p.id === nodeName.slice('Platform_'.length));
       return seg ? seg.position : null;
     }
     return null;
@@ -652,10 +643,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       return seg ? seg.position : null;
     }
     if (lt === 'station') {
-      const parts = lid.replace('Station_', '').split('_');
-      const normalized = parts.slice(0, -1).join(' ');
-      const originalName = this.stationNormalizedMap.get(normalized);
-      const s = originalName ? this.metroData.stations.find(st => st.name === originalName) : null;
+      const s = this.metroData.stationsByCode.get(lid.replace('Station_', ''));
       return s ? s.position : null;
     }
     if (lt === 'train') {
@@ -1199,14 +1187,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   get stationLabelItems() {
-    // Build transit map: original-station-name → total people in station hall
-    // Station actors send "Station_NOMBRE_CODE" keys; we match by normalized denominacion.
     const transitByName = new Map<string, number>();
     this.state.stationIdPeople.forEach((count, stationId) => {
-      const parts = stationId.replace(/^Station_/, '').split('_');
-      const normalized = parts.slice(0, -1).join(' ');
-      const originalName = this.stationNormalizedMap.get(normalized);
-      if (originalName) transitByName.set(originalName, (transitByName.get(originalName) ?? 0) + count);
+      const s = this.metroData.stationsByCode.get(stationId.replace(/^Station_/, ''));
+      if (s) transitByName.set(s.name, (transitByName.get(s.name) ?? 0) + count);
     });
 
     return this.metroData.stations.map(s => {

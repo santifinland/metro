@@ -11,8 +11,6 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json._
 
 
-case class Tramo(features: JsValue, geometries: JsValue)
-
 class MetroParser(metro: String) {
 
   def parseMetro(metro: String): Seq[Path] = {
@@ -52,25 +50,12 @@ class MetroParser(metro: String) {
       (JsPath \ "NUMEROORDEN").read[Int] and
       (JsPath \ "TIPOPARADA").read[String] and
       (JsPath \ "DENOMINACION").read[String] and
-      (JsPath \ "CODIGOMUNICIPIO").read[String] and
-      (JsPath \ "MUNICIPIO").read[String] and
-      (JsPath \ "CORONATARIFARIA").read[String] and
       (JsPath \ "LONGITUDTRAMOANTERIOR").read[Double] and
       (JsPath \ "VELOCIDADTRAMOANTERIOR").read[Float] and
-      (JsPath \ "MODOLINEA").read[Int] and
       (JsPath \ "MODOINTERCAMBIADOR").readNullable[Int] and
-      (JsPath \ "CODIGOINTERCAMBIADOR").readNullable[String] and
-      (JsPath \ "IDFTRAMO").read[String] and
-      (JsPath \ "IDFLINEA").read[String] and
-      (JsPath \ "IDFITINERARIO").read[String] and
-      (JsPath \ "IDFESTACION").read[String] and
-      (JsPath \ "IDFPOSTE").read[String] and
-      (JsPath \ "IDFANDEN").read[String]
+      (JsPath \ "CODIGOINTERCAMBIADOR").readNullable[String]
   )(LineFeatures.apply _)
 
-
-  implicit val geometryReads: Reads[LineGeometry] = (
-    (JsPath \ "type").read[String] and
-      (JsPath \ "coordinates").read[Seq[Seq[Double]]]
-    )(LineGeometry.apply _)
+  implicit val geometryReads: Reads[LineGeometry] =
+    (JsPath \ "coordinates").read[Seq[Seq[Double]]].map(LineGeometry.apply)
 }

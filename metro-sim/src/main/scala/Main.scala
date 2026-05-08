@@ -219,7 +219,7 @@ object Guardian {
       val random = new Random
 
       val pathByName: Map[String, parser.Path] = allPaths.map { pp =>
-        Metro.platformName(pp.features.denominacion, pp.features.codigoanden) -> pp
+        Metro.platformId(pp.features.codigoanden) -> pp
       }.toMap
 
       // Spawn a train at a specific platform
@@ -239,8 +239,7 @@ object Guardian {
         val sorted = sortedLinePaths
           .getOrElse(lineKey, Seq.empty)
           .flatMap { p =>
-            val name = Metro.platformName(p.features.denominacion, p.features.codigoanden)
-            linePlatforms.get(name)
+            linePlatforms.get(Metro.platformId(p.features.codigoanden))
           }
         if (sorted.nonEmpty) sorted else linePlatforms.values.toSeq
       }

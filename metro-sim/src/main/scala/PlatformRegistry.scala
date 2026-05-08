@@ -10,9 +10,7 @@ object PlatformRegistry {
     platforms.synchronized { platforms(name) = ref }
 
   def sendByAnden(codigoanden: String, msg: PlatformMessage): Unit = {
-    val ref = platforms.synchronized {
-      platforms.find { case (k, _) => k.split("_").last == codigoanden }.map(_._2)
-    }
+    val ref = platforms.synchronized { platforms.get(Metro.PlatformPrefix + codigoanden) }
     ref.foreach(_ ! msg)
   }
 }

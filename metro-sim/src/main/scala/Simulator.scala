@@ -50,10 +50,8 @@ object Simulator {
           .filter(_.value.name.startsWith(Metro.StationPrefix))
           .toList
 
-        // empresa code → station node (empresa is the last '_'-delimited segment of the name)
-        val empresaToNode: Map[String, metroGraph.NodeT] = stations.flatMap { node =>
-          val parts = node.value.name.split("_")
-          if (parts.length >= 2) Some(parts.last -> node) else None
+        val empresaToNode: Map[String, metroGraph.NodeT] = stations.map { node =>
+          node.value.name.stripPrefix(Metro.StationPrefix) -> node
         }.toMap
 
         // Weighted random sample from normalised weight map
@@ -69,8 +67,7 @@ object Simulator {
 
         // OD-based destination selection; falls back to uniform random when data is missing
         def pickDestination(startNode: metroGraph.NodeT, hour: Int): metroGraph.NodeT = {
-          val startParts   = startNode.value.name.split("_")
-          val startEmpresa = if (startParts.length >= 2) startParts.last else ""
+          val startEmpresa = startNode.value.name.stripPrefix(Metro.StationPrefix)
 
           val odResult: Option[metroGraph.NodeT] = for {
             origDistrict <- districtData.empresaToDistrict.get(startEmpresa)
@@ -108,7 +105,7 @@ object Simulator {
 
             for {
               startNode <- stations
-              nodeCode = startNode.value.name.split("_").last
+              nodeCode = startNode.value.name.stripPrefix(Metro.StationPrefix)
               startStationId <- stationIdsEntrance
                 .filter { case (k, _) => k.id == nodeCode }
                 .values.flatten

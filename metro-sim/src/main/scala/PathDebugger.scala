@@ -37,8 +37,8 @@ object PathDebugger {
     // Station nodes only (not platforms) — we route station-to-station
     val stationNodes = graph.nodes.filter(_.value.name.startsWith(Metro.StationPrefix))
 
-    val fromNode = stationNodes.find(n => n.value.name.toUpperCase.contains(fromUp))
-    val toNode   = stationNodes.find(n => n.value.name.toUpperCase.contains(toUp))
+    val fromNode = stationNodes.find(n => n.value.label.toUpperCase.contains(fromUp))
+    val toNode   = stationNodes.find(n => n.value.label.toUpperCase.contains(toUp))
 
     (fromNode, toNode) match {
       case (None, _) =>
@@ -60,7 +60,8 @@ object PathDebugger {
             val nodesJson = p.nodes.map { n =>
               val isStation = n.value.name.startsWith(Metro.StationPrefix)
               val kind      = if (isStation) "station" else "platform"
-              val label     = humanLabel(n.value.name)
+              val label     = if (n.value.name.startsWith(Metro.StationPrefix)) n.value.label
+                              else s"${n.value.label} (andén ${n.value.name.stripPrefix(Metro.PlatformPrefix)})"
               val lines     = n.value.lines.mkString(", ")
               s"""{"kind":"$kind","id":"${n.value.name}","label":"$label","line":"$lines"}"""
             }.mkString("[", ",", "]")
@@ -75,25 +76,4 @@ object PathDebugger {
   private def errorJson(from: String, to: String, reason: String): String =
     s"""{"message":"pathResult","from":"$from","to":"$to","found":false,"error":"$reason","nodes":[]}"""
 
-  /**
-   * Converts an internal node name to a readable label.
-   *
-   * Examples:
-   *   "Station_EMPALME_101"          → "EMPALME"
-   *   "Station_CASA_DE_CAMPO_201"    → "CASA DE CAMPO"
-   *   "Platform_CASA_DE_CAMPO_420"   → "CASA DE CAMPO (andén 420)"
-   *   "Platform_BATAN_418"           → "BATAN (andén 418)"
-   */
-  private def humanLabel(nodeName: String): String = {
-    val parts = nodeName.split("_").toSeq
-    if (nodeName.startsWith(Metro.StationPrefix)) {
-      // Drop "Station" prefix and trailing station-code segment
-      parts.drop(1).dropRight(1).mkString(" ")
-    } else {
-      // Drop "Platform" prefix; last segment is the andén code
-      val anden       = parts.last
-      val stationName = parts.drop(1).dropRight(1).mkString(" ")
-      s"$stationName (andén $anden)"
-    }
-  }
 }

@@ -9,6 +9,7 @@ export class Madrid {
   height: number;
   stations: Station[];
   paths: Station[];
+  stationsByCode: Map<string, Station> = new Map();
 
 
   constructor(width: number, height: number) {
@@ -35,15 +36,20 @@ export class Madrid {
       this.paths.push(station)
     }
 
-    // Build stations
+    // Build stations (deduplicated by name)
     for (let s of rawStations.features) {
       if (this.stations.filter(x => x.name === s.properties.DENOMINACION).length == 0) {
         const position = new Position(width, height, s.geometry.coordinates[1], s.geometry.coordinates[0]);
-        const path: Position[] = []
-        const slots: Slot[] = []
-        const station = new Station("", s.properties.DENOMINACION, "", position, path,
-          "", slots)
+        const station = new Station("", s.properties.DENOMINACION, "", position, [], "", [])
         this.stations.push(station)
+      }
+    }
+    // Map every CODIGOESTACION code → its deduplicated Station object
+    for (let s of rawStations.features) {
+      const code = s.properties.CODIGOESTACION?.toString();
+      if (code) {
+        const station = this.stations.find(x => x.name === s.properties.DENOMINACION);
+        if (station) this.stationsByCode.set(code, station);
       }
     }
   }

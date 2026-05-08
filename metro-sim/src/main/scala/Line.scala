@@ -27,7 +27,7 @@ object Line {
         case PeopleInPlatform(platformId, people) =>
           if (people > 100) ui ! PlatformOvercrowded(platformId, people)
           platforms(platformId) = people
-          platformId.split("_").last.toIntOption.foreach { anden =>
+          platformId.stripPrefix(Metro.PlatformPrefix).toIntOption.foreach { anden =>
             ui ! PeopleInSpecificPlatform(anden, people)
           }
           Behaviors.same

@@ -10,12 +10,14 @@ export class MetroDataService {
 
   readonly stations: Station[];
   readonly paths: Station[];
+  readonly stationsByCode: Map<string, Station>;
   readonly lineDestinations: Map<string, string>;
 
   constructor() {
     const madrid = new Madrid(CANVAS_WIDTH, CANVAS_HEIGHT);
     this.stations = madrid.stations;
     this.paths = madrid.paths;
+    this.stationsByCode = madrid.stationsByCode;
 
     // Build map: "line/sentido" → terminal station name (highest NUMEROORDEN)
     const maxOrder = new Map<string, { order: number; name: string }>();

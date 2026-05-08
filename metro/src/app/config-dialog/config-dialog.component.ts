@@ -14,8 +14,6 @@ import { SimulationConfigService } from '../services/simulation-config.service';
 export class ConfigDialogComponent {
 
   readonly form = this.fb.group({
-    wagonCapacity:        [this.cfg.config.wagonCapacity,        [Validators.required, Validators.min(1), Validators.max(500)]],
-    wagonsPerTrain:       [this.cfg.config.wagonsPerTrain,       [Validators.required, Validators.min(1), Validators.max(20)]],
     trainsPerQuarterHour: [this.cfg.config.trainsPerQuarterHour, [Validators.required, Validators.min(1), Validators.max(30)]],
   });
 
@@ -25,13 +23,9 @@ export class ConfigDialogComponent {
     private readonly dialogRef: MatDialogRef<ConfigDialogComponent>,
   ) {}
 
-  get trainCapacity(): number {
-    return (this.form.value.wagonCapacity ?? 0) * (this.form.value.wagonsPerTrain ?? 0);
-  }
-
   apply(): void {
     if (this.form.invalid) return;
-    this.cfg.save(this.form.value as any);
+    this.cfg.save({ ...this.cfg.config, ...this.form.value as any });
     this.dialogRef.close(true);
   }
 

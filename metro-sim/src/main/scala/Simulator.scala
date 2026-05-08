@@ -108,8 +108,9 @@ object Simulator {
 
             for {
               startNode <- stations
+              nodeCode = startNode.value.name.split("_").last
               startStationId <- stationIdsEntrance
-                .filter { case (k, _) => startNode.value.name.contains(k.name) }
+                .filter { case (k, _) => k.id == nodeCode }
                 .values.flatten
               dailyEntrance: Double  = startStationId.entrance / 30.0
               hourMultiplier: Double = HourDistribution.getOrElse(hourKey, 0.0)

@@ -15,32 +15,6 @@
 
     <div class="field">
       <div class="field-head">
-        <label class="field-label" for="wagonCap">WAGON CAPACITY</label>
-        <span class="field-range">1 – 500 PAX</span>
-      </div>
-      <div class="field-input">
-        <input type="range" id="wagonCap" min="1" max="500" step="5"
-               formControlName="wagonCapacity">
-        <input type="number" min="1" max="500" step="5"
-               formControlName="wagonCapacity">
-      </div>
-    </div>
-
-    <div class="field">
-      <div class="field-head">
-        <label class="field-label" for="wagons">WAGONS PER TRAIN</label>
-        <span class="field-range">1 – 20 UNITS</span>
-      </div>
-      <div class="field-input">
-        <input type="range" id="wagons" min="1" max="20" step="1"
-               formControlName="wagonsPerTrain">
-        <input type="number" min="1" max="20" step="1"
-               formControlName="wagonsPerTrain">
-      </div>
-    </div>
-
-    <div class="field">
-      <div class="field-head">
         <label class="field-label" for="trains">TRAINS / QUARTER HOUR</label>
         <span class="field-range">1 – 30 PER LINE</span>
       </div>
@@ -50,14 +24,6 @@
         <input type="number" min="1" max="30" step="1"
                formControlName="trainsPerQuarterHour">
       </div>
-    </div>
-
-    <div class="summary">
-      <div>
-        <div class="k">EFFECTIVE TRAIN CAPACITY</div>
-        <div class="summary-formula">{{ form.value.wagonCapacity }} × {{ form.value.wagonsPerTrain }}</div>
-      </div>
-      <div class="v">{{ trainCapacity }}<span class="unit">PAX</span></div>
     </div>
 
   </div>

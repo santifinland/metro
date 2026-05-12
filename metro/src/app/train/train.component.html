@@ -84,67 +84,19 @@
     </div>
   </div>
 
-  <!-- Train panel (matches station panel style) -->
+  <!-- Train panel -->
   @if (selectedTrain) {
-    <div class="train-panel" [style.left.px]="trainPanelX" [style.top.px]="trainPanelY">
-      <div class="train-panel-head">
-        <span class="line-chip" [style.background]="lineColors(selectedTrain.line)"
-              [style.color]="selectedTrain.line === 'R' ? '#000' : '#fff'">{{ selectedTrain.line }}</span>
-        <span class="train-panel-title">TREN</span>
-        <button class="train-panel-close" (mousedown)="$event.stopPropagation()" (click)="selectedTrainId = null; inspectMode = false; stopTracking()">✕</button>
-      </div>
-      <div class="stn-panel-row">
-        <span class="k">OCUPACIÓN</span>
-        <span class="v">{{ inspectMode ? state.personsInTrain.length : selectedTrain.people }} / {{ selectedTrain.capacity }}</span>
-      </div>
-      <div class="train-occ-bar">
-        <div class="train-occ-fill"
-             [style.width.%]="selectedTrain.capacity > 0 ? (selectedTrain.people / selectedTrain.capacity * 100) : 0"
-             [class.warn]="selectedTrain.people / selectedTrain.capacity > 0.5"
-             [class.over]="selectedTrain.people / selectedTrain.capacity > 0.8">
-        </div>
-      </div>
+    <app-train-panel
+      [train]="selectedTrain"
+      [panelX]="trainPanelX"
+      [panelY]="trainPanelY"
+      (close)="selectedTrainId = null"
+      (selectPerson)="selectPerson($event)" />
+  }
 
-      @if (trackedPerson) {
-        <div class="stn-panel-sep"><span>SIGUIENDO</span></div>
-        <div class="stn-panel-row stn-transit">
-          <span class="k">ID</span>
-          <span class="v">{{ trackedPerson.slice(0, 8) }}</span>
-        </div>
-        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="stopTracking()">
-          DEJAR DE SEGUIR
-        </button>
-      } @else if (inspectMode) {
-        <div class="stn-panel-sep">
-          <span>PASAJEROS · {{ state.personsInTrain.length }}</span>
-        </div>
-        <div class="train-persons-list">
-          @for (group of groupByDest(state.personsInTrain); track group.destination) {
-            <button class="train-dest-btn"
-                    (mousedown)="$event.stopPropagation()"
-                    (click)="expandedTrainDest = expandedTrainDest === group.destination ? null : group.destination">
-              <span class="train-dest-label">→ {{ group.destination || '?' }}</span>
-              <span class="train-dest-count">{{ group.ids.length }}</span>
-              <span class="train-dest-arrow">{{ expandedTrainDest === group.destination ? '▴' : '▾' }}</span>
-            </button>
-            @if (expandedTrainDest === group.destination) {
-              @for (pid of group.ids; track pid) {
-                <button class="train-person-btn" (mousedown)="$event.stopPropagation()" (click)="selectPerson(pid)">
-                  {{ pid.slice(0, 8) }}
-                </button>
-              }
-            }
-          }
-        </div>
-        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="cancelInspect()">
-          CANCELAR
-        </button>
-      } @else {
-        <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="inspectTrain()">
-          INSPECCIONAR
-        </button>
-      }
-    </div>
+  <!-- Person tracker -->
+  @if (state.trackedPersonId) {
+    <app-person-tracker />
   }
 
   <!-- Corner brackets -->
@@ -158,277 +110,30 @@
   <!-- Scope crosshair -->
   <div class="scope" aria-hidden="true"></div>
 
-  <!-- ── Left panel: CONTROL · INPUT ── -->
-  <aside class="panel panel-left" [class.panel--collapsed]="leftCollapsed">
-    @if (!leftCollapsed) {
-      <div class="panel-head">
-        <span class="panel-head-title">CONTROL · INPUT</span>
-        <span class="panel-head-id">CH·01</span>
-        <button class="panel-toggle" (click)="leftCollapsed = true">
-          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="7.5,2.5 4,6 7.5,9.5"/>
-          </svg>
-        </button>
-      </div>
-    } @else {
-      <button class="panel-toggle panel-toggle--solo" (click)="leftCollapsed = false">
-        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="4.5,2.5 8,6 4.5,9.5"/>
-        </svg>
-      </button>
-    }
+  <!-- Left panel -->
+  <app-control-panel
+    [clockDisplay]="displayClock()"
+    [dayProgress]="dayProgress"
+    [speed]="localSpeed"
+    [speedPresets]="speedPresets"
+    [speedIdx]="speedIdx_"
+    [resetTime]="resetTime"
+    [showSatellite]="showSatellite"
+    [zoomReadout]="zoomReadout"
+    (speedIdxChange)="onSpeedChange($event)"
+    (resetTimeChange)="resetTime = $event"
+    (satelliteToggle)="toggleSatellite()"
+    (zoomIn)="zoomIn()"
+    (zoomOut)="zoomOut()"
+    (zoomReset)="zoomReset()"
+    (resetSim)="resetSimulation()" />
 
-    <div class="panel-body">
-
-      <!-- SIM CLOCK -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">SIM · CLOCK</span>
-          <span class="section-meta">UTC</span>
-        </div>
-        <div class="clock">{{ displayClock() }}</div>
-        <div class="tape" [style.--progress]="(dayProgress * 100).toFixed(2) + '%'"></div>
-        <div class="clock-meta">
-          <span>×{{ localSpeed }} SPEED</span>
-          <span>DAY <span class="v">{{ (dayProgress * 100).toFixed(1) }}%</span></span>
-        </div>
-      </div>
-
-      <!-- FLEET CONFIG -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">FLEET · CONFIG</span>
-          <span class="section-meta">ROLLING STOCK</span>
-        </div>
-        <div class="cfg-row">
-          <label class="cfg-label">WAGON CAP.</label>
-          <div class="stepper">
-            <button class="stepper-btn" (click)="stepConfig('wagonCapacity', -5)">−</button>
-            <div class="stepper-val">{{ cfg.config.wagonCapacity }}</div>
-            <button class="stepper-btn" (click)="stepConfig('wagonCapacity', 5)">+</button>
-          </div>
-        </div>
-        <div class="cfg-row">
-          <label class="cfg-label">WAGONS / TRAIN</label>
-          <div class="stepper">
-            <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', -1)">−</button>
-            <div class="stepper-val">{{ cfg.config.wagonsPerTrain }}</div>
-            <button class="stepper-btn" (click)="stepConfig('wagonsPerTrain', 1)">+</button>
-          </div>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">CAPACITY</span>
-          <span class="row-val ok">{{ cfg.trainCapacity }}<span class="unit">PAX</span></span>
-        </div>
-      </div>
-
-      <!-- SPEED MULTIPLIER -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">TIME · MULTIPLIER</span>
-          <span class="section-meta">×{{ localSpeed }}</span>
-        </div>
-        <div class="speed-row">
-          @for (s of speedPresets; track s; let i = $index) {
-            <button class="speed-btn" [class.active]="i === speedIdx_" (click)="setSpeedIdx(i)">×{{ s }}</button>
-          }
-        </div>
-      </div>
-
-      <!-- SIMULATION CONTROLS -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">SIMULATION</span>
-          <span class="section-meta">{{ state.paused ? 'PAUSED' : 'RUNNING' }}</span>
-        </div>
-        <div class="sim-controls">
-          <button class="btn-play" [class.paused]="state.paused" (click)="playPause()">
-            @if (state.paused) {
-              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 2 L10 6 L3 10 Z"/></svg>
-            } @else {
-              <svg viewBox="0 0 12 12" fill="currentColor">
-                <rect x="3" y="2" width="2.5" height="8"/>
-                <rect x="6.5" y="2" width="2.5" height="8"/>
-              </svg>
-            }
-          </button>
-          <input class="time-input" type="time"
-                 [value]="resetTime"
-                 (change)="resetTime = $any($event.target).value">
-          <button class="btn-reset" (click)="resetSimulation()" title="Reset">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 8a6 6 0 1 0 1.5-3.97"/>
-              <polyline points="2,2 2,5 5,5"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- VIEWPORT (zoom + recenter + satellite) -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">VIEWPORT</span>
-          <span class="section-meta">{{ zoomReadout }}</span>
-        </div>
-        <div class="viewport-row">
-          <button class="viewport-btn" [class.active]="showSatellite" (click)="toggleSatellite()" title="Satellite map">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="8" cy="8" r="2.5"/>
-              <path d="M5.5 5.5 L2 2M10.5 5.5 L14 2M5.5 10.5 L2 14M10.5 10.5 L14 14"/>
-              <path d="M8 1v2M8 13v2M1 8h2M13 8h2"/>
-            </svg>
-            <span>SAT</span>
-          </button>
-          <button class="viewport-btn" (click)="zoomOut()" title="Zoom out">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-              <path d="M2 6h8"/>
-            </svg>
-          </button>
-          <button class="viewport-btn" (click)="zoomIn()" title="Zoom in">
-            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-              <path d="M6 2v8M2 6h8"/>
-            </svg>
-          </button>
-          <button class="viewport-btn" (click)="zoomReset()" title="Recenter">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3">
-              <circle cx="8" cy="8" r="3"/>
-              <path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- SYSTEM LOAD -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">SYSTEM · LOAD</span>
-          <span class="section-meta">CPU</span>
-        </div>
-        <div class="gauge">
-          <div class="gauge-bars">
-            @for (cls of gaugeCells(); track $index) {
-              <div class="gauge-bar" [class]="cls"></div>
-            }
-          </div>
-          <div class="gauge-val" [class.warn]="state.simLoad > 0.7 && state.simLoad <= 0.85"
-                                 [class.crit]="state.simLoad > 0.85">
-            {{ (state.simLoad * 100).toFixed(0) }}<span class="gauge-pct">%</span>
-          </div>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">EVENTS / TICK</span>
-          <span class="row-val">{{ state.eventsPerTick }}</span>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">QUEUE</span>
-          <span class="row-val">{{ state.queueSize }}</span>
-        </div>
-      </div>
-
-    </div>
-  </aside>
-
-  <!-- ── Right panel: OUTPUT · TELEMETRY ── -->
-  <aside class="panel panel-right" [class.panel--collapsed]="rightCollapsed">
-    @if (!rightCollapsed) {
-      <div class="panel-head">
-        <button class="panel-toggle panel-toggle--left" (click)="rightCollapsed = true">
-          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="7.5,2.5 4,6 7.5,9.5"/>
-          </svg>
-        </button>
-        <span class="panel-head-title">OUTPUT · TELEMETRY</span>
-        <span class="panel-head-id">CH·02</span>
-      </div>
-    } @else {
-      <button class="panel-toggle panel-toggle--solo" (click)="rightCollapsed = false">
-        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="4.5,2.5 8,6 4.5,9.5"/>
-        </svg>
-      </button>
-    }
-
-    <div class="panel-body">
-
-      <!-- POPULATION KPI -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">SIM · POPULATION</span>
-          <span class="section-meta">{{ peakLabel }}</span>
-        </div>
-        <div class="kpi">
-          <div class="kpi-val amber">{{ formatCount(state.simulationPeople) }}<span class="unit">PAX</span></div>
-          <div class="kpi-sub">
-            <span>IN METRO <span class="kpi-sub-v">{{ formatCount(state.metroPeople) }}</span></span>
-            <span>· EXT <span class="kpi-sub-v">{{ formatCount(state.simulationPeople - state.metroPeople) }}</span></span>
-          </div>
-        </div>
-        <div class="sparkline-wrap">
-          <svg width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none">
-            <polyline [attr.points]="sparklinePoints(peopleHistory)"
-                      fill="none" stroke="#f5b454" stroke-width="1" opacity="0.9"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- DISTRIBUTION -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">DISTRIBUTION</span>
-          <span class="section-meta">PAX</span>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">IN TRAINS</span>
-          <span class="row-val" style="color:var(--cyan)">{{ formatCount(state.trainsPeople) }}</span>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">PLATFORMS</span>
-          <span class="row-val">{{ formatCount(allPeople(state.platformsPeople)) }}</span>
-        </div>
-        <div class="stat-row">
-          <span class="row-name">STATION HALL</span>
-          <span class="row-val">{{ formatCount(allPeople(state.stationsPeople)) }}</span>
-        </div>
-      </div>
-
-      <!-- STATION PANELS TOGGLE -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">STATION · PANELS</span>
-        </div>
-        <button class="panels-toggle-btn" [class.active]="showAllPanels" (click)="toggleShowAllPanels()">
-          <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
-            <rect x="1" y="1" width="4" height="4" rx="0.5"/>
-            <rect x="7" y="1" width="4" height="4" rx="0.5"/>
-            <rect x="1" y="7" width="4" height="4" rx="0.5"/>
-            <rect x="7" y="7" width="4" height="4" rx="0.5"/>
-          </svg>
-          <span>{{ showAllPanels ? 'OCULTAR TODOS' : 'MOSTRAR TODOS' }}</span>
-        </button>
-      </div>
-
-      <!-- BY LINE -->
-      <div class="section">
-        <div class="section-head">
-          <span class="section-title">SATURATION · BY LINE</span>
-          <span class="section-meta">{{ linePeople().length }} CH</span>
-        </div>
-        @for (line of linePeople(); track line[0]) {
-          <div class="line-row">
-            <div class="line-chip" [style.background]="lineColors(line[0])">{{ line[0] }}</div>
-            <div class="line-bar-bg">
-              <div class="line-bar-fill"
-                   [style.width.%]="linePercent(line[1])"
-                   [style.background]="lineColors(line[0])">
-              </div>
-            </div>
-            <span class="line-count">{{ formatCount(line[1]) }}</span>
-          </div>
-        }
-      </div>
-
-    </div>
-  </aside>
+  <!-- Right panel -->
+  <app-telemetry-panel
+    [peakLabel]="peakLabel"
+    [peopleHistory]="peopleHistory"
+    [showAllPanels]="showAllPanels"
+    (toggleShowAllPanels)="toggleShowAllPanels()" />
 
   <!-- Bottom telemetry strip -->
   <div class="telemetry" [style.--p]="((dayProgress) * 100).toFixed(1) + '%'">

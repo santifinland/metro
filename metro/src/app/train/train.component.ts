@@ -9,10 +9,15 @@ import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
 import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
 
+import { PersonTrackerComponent } from './person-tracker/person-tracker.component';
+import { TrainPanelComponent } from './train-panel/train-panel.component';
+import { TelemetryPanelComponent } from './telemetry-panel/telemetry-panel.component';
+import { ControlPanelComponent } from './control-panel/control-panel.component';
+
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [],
+  imports: [PersonTrackerComponent, TrainPanelComponent, TelemetryPanelComponent, ControlPanelComponent],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,14 +50,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // Projection constants matching Position.ts
   private readonly LAMBDA0 =  -3.718762;
-  private readonly PHI0    =  40.4202961;   // degrees — used in y formula
+  private readonly PHI0    =  40.4202961;
   private readonly RADIUS  =  6371;
-  private readonly COS_P1  = Math.cos(40.4202961); // phi1 treated as radians in Position.ts
+  private readonly COS_P1  = Math.cos(40.4202961);
   private readonly CW      = 3400;
   private readonly CH      = 2000;
-
-  leftCollapsed  = false;
-  rightCollapsed = false;
 
   currentScale = 1;
   protected fitScale  = 1;
@@ -88,12 +90,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   hoveredTrainId: string | null = null;
   trainPanelX = 0;
   trainPanelY = 0;
-  inspectMode = false;
   inspectedPlatformId: string | null = null;
-  expandedTrainDest: string | null = null;
   expandedPlatformDest: string | null = null;
 
-  // Sparkline history (mutated in-place every 200 ms — no per-tick allocation)
   readonly peopleHistory: number[] = Array(40).fill(0);
 
   private static readonly PATH_WIDTH_PX      = 6;
@@ -152,7 +151,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
           this.state.reset();
         }
         this.state.process(msg);
-        // Resolve track geometry for path-following animation
         if ((msg.message === 'newTrain' || msg.message === 'moveTrain') && msg.anden != null) {
           const train = this.state.getTrain(msg.train);
           if (train) {
@@ -269,7 +267,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       container.style.cursor = 'grabbing';
     });
     container.addEventListener('mousemove', (e: MouseEvent) => {
-      // Track container-relative mouse position for hover detection in RAF
       const rect = container.getBoundingClientRect();
       this._mouseContainerX = e.clientX - rect.left;
       this._mouseContainerY = e.clientY - rect.top;
@@ -282,7 +279,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         return;
       }
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
-      if (dx * dx + dy * dy > 64) mouseMoved = true;  // 8px threshold
+      if (dx * dx + dy * dy > 64) mouseMoved = true;
       this.panX += dx;
       this.panY += dy;
       lastX = e.clientX; lastY = e.clientY;
@@ -400,7 +397,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     ctx.lineCap  = 'round';
     ctx.lineJoin = 'round';
 
-    // Glow pass
     ctx.globalAlpha = 0.18;
     for (const segment of this.metroData.paths) {
       if (segment.path.length < 2) continue;
@@ -413,7 +409,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
     ctx.globalAlpha = 1;
 
-    // Main stroke
     ctx.lineWidth = TrainComponent.PATH_WIDTH_PX / this.currentScale;
     for (const segment of this.metroData.paths) {
       if (segment.path.length < 2) continue;
@@ -449,11 +444,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   get selectedTrain() { return this.selectedTrainId ? this.state.getTrain(this.selectedTrainId) : undefined; }
-  get trackedPerson() { return this.state.trackedPersonId; }
-
-  onStationLabelClick(idx: number): void {
-    this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
-  }
 
   private handleMapClick(clientX: number, clientY: number): void {
     const rect = (this.canvasContainer.nativeElement as HTMLElement).getBoundingClientRect();
@@ -462,7 +452,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
     const nearTrain = this.findNearestTrain(mx, my, 40);
     if (nearTrain) {
-      if (nearTrain !== this.selectedTrainId) this.inspectMode = false;
       this.selectedTrainId = nearTrain === this.selectedTrainId ? null : nearTrain;
       this.selectedStationIdx = -1;
       return;
@@ -513,13 +502,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         this._overlayElements[i].style.left = (st.position.x * s + px) + 'px';
         this._overlayElements[i].style.top  = (st.position.y * s + py) + 'px';
       }
-      // Sync selected class only when it changes
       if (this.selectedStationIdx !== this._lastSelectedIdx) {
         if (this._lastSelectedIdx >= 0) this._overlayElements[this._lastSelectedIdx]?.classList.remove('is-selected');
         if (this.selectedStationIdx >= 0) this._overlayElements[this.selectedStationIdx]?.classList.add('is-selected');
         this._lastSelectedIdx = this.selectedStationIdx;
       }
-      // Sync hover class
       const hoverIdx = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
       if (hoverIdx !== this._lastHoveredIdx) {
         if (this._lastHoveredIdx >= 0) this._overlayElements[this._lastHoveredIdx]?.classList.remove('is-hover');
@@ -534,16 +521,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.hoveredTrainId = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY, 40);
     if (!this.selectedTrainId) return;
     const t = this.state.getTrain(this.selectedTrainId);
-    if (!t) { this.selectedTrainId = null; this.inspectMode = false; return; }
+    if (!t) { this.selectedTrainId = null; return; }
     this.trainPanelX = t.x * this.currentScale + this.panX;
     this.trainPanelY = t.y * this.currentScale + this.panY;
-  }
-
-  inspectTrain(): void {
-    if (!this.selectedTrainId) return;
-    this.wsService.send({ message: 'pause' });
-    this.wsService.send({ message: 'requestTrainPersons', trainId: this.selectedTrainId } as any);
-    this.inspectMode = true;
   }
 
   selectPerson(personId: string): void {
@@ -553,28 +533,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.state.trackedPersonLocId = '';
     this.wsService.send({ message: 'trackPerson', personId } as any);
     this.wsService.send({ message: 'resume' });
-    this.inspectMode = false;
-  }
-
-  stopTracking(): void {
-    this.state.trackedPersonId = null;
-    this.wsService.send({ message: 'untrackPerson' } as any);
-  }
-
-  cancelInspect(): void {
-    this.inspectMode = false;
-    this.wsService.send({ message: 'resume' });
-  }
-
-  groupByDest(persons: Array<{ id: string; destination: string }>): Array<{ destination: string; ids: string[] }> {
-    const map = new Map<string, string[]>();
-    for (const p of persons) {
-      if (!map.has(p.destination)) map.set(p.destination, []);
-      map.get(p.destination)!.push(p.id);
-    }
-    return Array.from(map.entries())
-      .map(([destination, ids]) => ({ destination, ids }))
-      .sort((a, b) => b.ids.length - a.ids.length);
   }
 
   togglePlatformInspect(anderId: string): void {
@@ -590,10 +548,15 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.wsService.send({ message: 'requestPlatformPersons', platformId: anderId } as any);
   }
 
+  onStationLabelClick(idx: number): void {
+    this.selectedStationIdx = idx === this.selectedStationIdx ? -1 : idx;
+  }
+
   // Build a polyline following actual rail geometry for the person's planned path.
-  // Each Platform node's codigoanden maps to metroData.paths[].id whose path[] holds the rail geometry.
-  // At line transfers the tramos are discontinuous — we start a fresh segment rather than skipping
-  // the first point (which would draw a diagonal across the city).
+  // The first platform node's tramo goes FROM the origin station TO the next station —
+  // push all its points so the path starts at the boarding station.
+  // At line transfers the tramos are discontinuous — we add only the boarding point
+  // (endpoint of the incoming tramo) so the next tramo can extend the path from there.
   private buildPersonRailPath(nodes: string[]): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     for (const node of nodes) {
@@ -602,18 +565,16 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const tramo = this.metroData.paths.find(p => p.id === code);
       if (!tramo || tramo.path.length < 2) continue;
       if (points.length === 0) {
+        // First tramo goes FROM origin — push all points to start the path at origin.
         points.push(...tramo.path);
       } else {
         const last = points[points.length - 1];
         const first = tramo.path[0];
         const gap = (last.x - first.x) ** 2 + (last.y - first.y) ** 2;
         // gap < 25 px² means the tramos connect (same line); otherwise it's a transfer.
-        // On a gap (transfer or boarding after line change), the tramo's geometry
-        // represents the INCOMING segment on the new line — e.g. Platform_420's
-        // geometry runs ColoniaJardín → CasaDeCampo, but the person boards at
-        // CasaDeCampo. Adding the full tramo would draw through stations never visited.
-        // Instead, add only the boarding point (end of the tramo) so the next
-        // tramo can extend the path from there.
+        // On a gap (transfer or line change), the tramo's geometry represents the
+        // INCOMING segment on the new line — add only the boarding point (end of tramo)
+        // so the next tramo can extend the path from there.
         if (gap < 25) {
           points.push(...tramo.path.slice(1));
         } else {
@@ -646,18 +607,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const s = this.metroData.stationsByCode.get(lid.replace('Station_', ''));
       return s ? s.position : null;
     }
-    if (lt === 'train') {
-      const t = this.state.getTrain(lid);
-      return t ? { x: t.x, y: t.y } : null;
-    }
     return null;
   }
 
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
     this.stationPlatformIds.clear();
-    // Deduplicate by line+sentido so bidirectional lines (e.g. L5 with sentido 1 & 2)
-    // appear as two entries — same as L6 which has distinct line IDs '6-1' / '6-2'.
     const seen = new Map<string, Set<string>>();
     for (const p of this.metroData.paths) {
       const dirKey = p.line + '/' + p.sentido;
@@ -699,7 +654,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.clearCtx(ctx);
     this.applyTransform(ctx);
 
-    // Scale wagons up at low zoom, capped at the size they have at fitMul=3.11 (empirically clean).
     const capRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.fitScale * 3.11);
     const rawRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale);
     const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
@@ -718,10 +672,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
 
-      // centerArc: arc position of the train's CENTRE on the composite path.
-      // At rest the centre sits on the platform endpoint → train is centred on station.
-      // Prepended tramos give rear wagons geometry; appended tramo gives nose + arrow room.
-      // Clamp keeps all wagons on-path when a tramo has no neighbours (e.g. Line R).
       let centerArc = 0;
       let centerSegIdx = 1;
       if (hasPath) {
@@ -735,7 +685,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         } else {
           centerArc = segEnd;
         }
-        // Clamp so rear wagon >= 0 and nose <= lensTotal
         centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
         const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
         train.x = c.x; train.y = c.y; train.heading = c.heading;
@@ -747,7 +696,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         train.y = train.fromY + (train.targetY - train.fromY) * ease;
       }
 
-      // Draw each wagon independently at its arc position (articulated through curves)
       for (let i = wagons - 1; i >= 0; i--) {
         const arcOffset = (i - (wagons - 1) / 2) * effStride;
         let wx: number, wy: number, wh: number;
@@ -786,7 +734,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         ctx.restore();
       }
 
-      // Direction arrow just ahead of the nose (nose = centerArc + effHalf)
       const arrowH   = WAGON_H * 0.8;
       const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
       let ax: number, ay: number, ah: number;
@@ -794,7 +741,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc, centerSegIdx);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
-        // Fallback: project nose in heading direction
         ax = train.x + Math.cos(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
         ay = train.y + Math.sin(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
         ah = train.heading;
@@ -813,7 +759,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       ctx.restore();
     }
 
-    // Hover ring
     if (this.hoveredTrainId && this.hoveredTrainId !== this.selectedTrainId) {
       const ht = this.state.getTrain(this.hoveredTrainId);
       if (ht) {
@@ -827,7 +772,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     }
 
-    // Selection ring (amber)
     if (this.selectedTrainId) {
       const st = this.state.getTrain(this.selectedTrainId);
       if (st) {
@@ -841,7 +785,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     }
 
-    // Tracked person: planned path (following rail geometry) + current position
     if (this.state.trackedPersonId) {
       const railPoints = this.buildPersonRailPath(this.state.trackedPersonNodes);
       if (railPoints.length >= 2) {
@@ -870,7 +813,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  // Pre-compute cumulative arc lengths for a path (call once when path changes)
   private computeArcLens(pts: { x: number; y: number }[]): number[] {
     const lens: number[] = [0];
     for (let i = 1; i < pts.length; i++) {
@@ -881,8 +823,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return lens;
   }
 
-  // Return position + heading at a given arc-length along a path (clamps at endpoints).
-  // With composite paths (prev + current tramo) clamping is rarely triggered.
   // ── Satellite tile map ───────────────────────────────────────
 
   toggleSatellite(): void {
@@ -899,21 +839,18 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return 16;
   }
 
-  // Canvas (x,y) → geographic (lon, lat)
   private canvasToLonLat(cx: number, cy: number): [number, number] {
     const lon = this.LAMBDA0 - (cx - this.CW / 2) / (this.RADIUS * this.COS_P1);
     const lat = this.PHI0   - (cy - this.CH / 2) / this.RADIUS;
     return [lon, lat];
   }
 
-  // Geographic (lon, lat) → canvas (x, y)
   private lonLatToCanvas(lon: number, lat: number): [number, number] {
     const x = -this.RADIUS * (lon - this.LAMBDA0) * this.COS_P1 + this.CW / 2;
     const y = -this.RADIUS * (lat - this.PHI0)                   + this.CH / 2;
     return [x, y];
   }
 
-  // Slippy-map tile top-left corner → geographic (lon, lat)
   private tileToLonLat(tx: number, ty: number, z: number): [number, number] {
     const n   = 2 ** z;
     const lon = tx / n * 360 - 180;
@@ -921,7 +858,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return [lon, lat];
   }
 
-  // Geographic (lon, lat) → slippy-map tile index
   private lonLatToTile(lon: number, lat: number, z: number): [number, number] {
     const n      = 2 ** z;
     const tx     = Math.floor((lon + 180) / 360 * n);
@@ -941,19 +877,18 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const cw = ctx.canvas.width  / this.dpr;
     const ch = ctx.canvas.height / this.dpr;
 
-    // Visible canvas-coordinate corners (inverse of applyTransform)
     const toCanvas = (sx: number, sy: number): [number, number] => [
       (sx - this.panX) / this.currentScale,
       (sy - this.panY) / this.currentScale,
     ];
-    const [cx0, cy0] = toCanvas(0,  0);   // top-left  → high lat, small lon
-    const [cx1, cy1] = toCanvas(cw, ch);  // bot-right → low lat,  large lon
+    const [cx0, cy0] = toCanvas(0,  0);
+    const [cx1, cy1] = toCanvas(cw, ch);
 
     const [lon0, lat0] = this.canvasToLonLat(cx0, cy0);
     const [lon1, lat1] = this.canvasToLonLat(cx1, cy1);
 
-    const [txMin, tyMin] = this.lonLatToTile(lon0, lat0, z);  // NW corner → small ty
-    const [txMax, tyMax] = this.lonLatToTile(lon1, lat1, z);  // SE corner → large ty
+    const [txMin, tyMin] = this.lonLatToTile(lon0, lat0, z);
+    const [txMax, tyMax] = this.lonLatToTile(lon1, lat1, z);
 
     for (let ty = tyMin; ty <= tyMax + 1; ty++) {
       for (let tx = txMin; tx <= txMax + 1; tx++) {
@@ -971,7 +906,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
           ctx.drawImage(img, cx, cy, tw, th);
         } else if (!img) {
           if (this.tileCache.size > 128) {
-            // Evict oldest entry to bound memory
             this.tileCache.delete(this.tileCache.keys().next().value!);
           }
           const image        = new Image();
@@ -1010,16 +944,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     };
   }
 
-  // Build a composite path: up to 2 previous tramos + current tramo + 1 next tramo.
-  // Returns the path and the arc positions of the current tramo's start and end,
-  // so drawTrains can anchor the train nose at segEnd without clamping issues.
   private buildCompositePath(
     seg: { id: string; line: string; sentido: string; path: { x: number; y: number }[] },
   ): { path: { x: number; y: number }[]; segStart: number; segEnd: number } {
-    const CONNECT_SQ = 4;  // ≈ 2 canvas-unit junction tolerance
+    const CONNECT_SQ = 4;
     const usedIds = new Set<string>([seg.id]);
 
-    // ── Prepend up to 2 previous tramos (rear-wagon room) ──────────────────
     let prepended: { x: number; y: number }[] = [];
     let searchFrom = seg.path[0];
     for (let k = 0; k < 2; k++) {
@@ -1037,10 +967,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       usedIds.add(prev.id);
     }
 
-    // ── Append 1 next tramo (nose + arrow room) ─────────────────────────────
     let appended: { x: number; y: number }[] = [];
     const segTail = seg.path[seg.path.length - 1];
-    { // block for scoping
+    {
       let best = CONNECT_SQ, next: typeof seg | null = null;
       for (const s of this.metroData.paths) {
         if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
@@ -1052,8 +981,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
 
     const path = [...prepended, ...seg.path, ...appended];
-
-    // Compute segStart and segEnd arc positions within the composite path
     const lens    = this.computeArcLens(path);
     const segStart = lens[prepended.length];
     const segEnd   = lens[prepended.length + seg.path.length - 1];
@@ -1091,32 +1018,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return (this.time % 86_400_000) / 86_400_000;
   }
 
-  // ── Config steppers ──────────────────────────────────────────
-
-  stepConfig(field: keyof typeof this.cfg.config, delta: number): void {
-    const next = this.cfg.config[field] + delta;
-    this.cfg.save({ ...this.cfg.config, [field]: next });
-  }
-
   // ── Speed ────────────────────────────────────────────────────
 
-  setSpeedIdx(i: number): void {
-    this.speedIdx = i;
+  onSpeedChange(idx: number): void {
+    this.speedIdx = idx;
     this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
   }
 
-  speedDown(): void { this.setSpeedIdx(Math.max(0, this.speedIdx - 1)); }
-  speedUp():   void { this.setSpeedIdx(Math.min(TrainComponent.SPEED_PRESETS.length - 1, this.speedIdx + 1)); }
-
   // ── Simulation controls ───────────────────────────────────────
-
-  playPause(): void {
-    if (this.state.paused) {
-      this.wsService.send({ message: 'resume' });
-    } else {
-      this.wsService.send({ message: 'pause' });
-    }
-  }
 
   resetSimulation(): void {
     const [h, m] = this.resetTime.split(':').map(Number);
@@ -1126,65 +1035,44 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.cd.markForCheck();
   }
 
-  // ── Load gauge ────────────────────────────────────────────────
-
-  readonly gaugeCount = 16;
-  gaugeCells(): string[] {
-    const filled = Math.round(this.state.simLoad * this.gaugeCount);
-    return Array.from({ length: this.gaugeCount }, (_, i) => {
-      if (i >= filled) return '';
-      if (i >= 14) return 'over';
-      if (i >= 11) return 'warn';
-      return 'on';
-    });
-  }
-
   // ── Formatting helpers ────────────────────────────────────────
-
-  formatCount(n: number): string {
-    if (n >= 100_000) return `${Math.round(n / 1000)}k`;
-    if (n >= 10_000)  return `${(n / 1000).toFixed(1)}k`;
-    if (n >= 1_000)   return `${(n / 1000).toFixed(2)}k`;
-    return String(n);
-  }
-
-  sparklinePoints(values: number[]): string {
-    const w = 100, h = 22;
-    const max = Math.max(...values, 1);
-    return values.map((v, i) => `${(i / (values.length - 1)) * w},${h - (v / max) * h}`).join(' ');
-  }
-
-  // ── Stats helpers ─────────────────────────────────────────────
-
-  linePeople(): [string, number][] {
-    return Array.from(this.state.platformsPeople.entries())
-      .sort((a, b) => a[0].localeCompare(b[0], 'es', { numeric: true }));
-  }
-
-  allPeople(recipient: Map<string, number>): number {
-    const values = Array.from(recipient.values());
-    return values.length === 0 ? 0 : values.reduce((p, c) => p + c);
-  }
-
-  linePercent(count: number): number {
-    const max = Math.max(...Array.from(this.state.platformsPeople.values()), 1);
-    return Math.round((count / max) * 100);
-  }
 
   lineColors(line: string): string {
     return LINE_COLORS[line] ?? '#6b7488';
   }
 
-  // ── Telemetry strip ───────────────────────────────────────────
+  fmtCount(n: number): string {
+    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
+    if (n >= 1000)  return (n / 1000).toFixed(2) + 'k';
+    return String(n);
+  }
+
+  private resolveDestLabel(code: string): string {
+    return this.metroData.stationsByCode.get(code)?.name ?? code;
+  }
+
+  groupByDest(persons: Array<{ id: string; destination: string }>): Array<{ destination: string; ids: string[] }> {
+    const map = new Map<string, string[]>();
+    for (const p of persons) {
+      const label = this.resolveDestLabel(p.destination);
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(p.id);
+    }
+    return Array.from(map.entries())
+      .map(([destination, ids]) => ({ destination, ids }))
+      .sort((a, b) => b.ids.length - a.ids.length);
+  }
+
+  // ── Stats helpers ─────────────────────────────────────────────
+
+  get zoomReadout(): string {
+    return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
+  }
 
   get telemetryTrains(): number   { return this.state.trains.length; }
   get telemetrySegments(): number { return this.metroData.paths.length; }
   get telemetryStations(): number { return this.metroData.stations.length; }
   get telemetryUptime(): number   { return Math.floor(this.time / 60_000) % 999; }
-
-  get zoomReadout(): string {
-    return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
-  }
 
   get stationLabelItems() {
     const transitByName = new Map<string, number>();
@@ -1202,7 +1090,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         return { id: pe.id, line, sentido: pe.sentido, destination,
                  total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0 };
       });
-      // Disambiguate platforms sharing the same destination (circular lines like L6)
       const destCount = new Map<string, number>();
       platforms.forEach(p => destCount.set(p.destination, (destCount.get(p.destination) ?? 0) + 1));
       platforms.forEach(p => {
@@ -1213,12 +1100,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const total   = transit + platforms.reduce((sum, p) => sum + p.total, 0);
       return { name: s.name, x: s.position.x, y: s.position.y, lines, platforms, total, transit };
     });
-  }
-
-  fmtCount(n: number): string {
-    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
-    if (n >= 1000)  return (n / 1000).toFixed(2) + 'k';
-    return String(n);
   }
 
   get peakLabel(): string {

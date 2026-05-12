@@ -58,419 +58,6 @@
 .scope::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-0.5px); }
 .scope::after  { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-0.5px); }
 
-/* ── Panels ───────────────────────────────────────────────── */
-.panel {
-  position: absolute;
-  top: 12px;
-  width: 280px;
-  background: rgba(12, 14, 17, 0.92);
-  border: 1px solid var(--line-2);
-  backdrop-filter: blur(12px) saturate(140%);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - 100px);
-}
-.panel-left  { left: 12px; }
-.panel-right { right: 12px; }
-
-.panel--collapsed { width: 32px; }
-.panel--collapsed .panel-body { display: none; }
-
-.panel-head {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  height: 30px;
-  padding: 0 0 0 12px;
-  border-bottom: 1px solid var(--line-2);
-  background: var(--bg-2);
-  gap: 8px;
-  flex-shrink: 0;
-}
-/* right panel: toggle is first column */
-.panel-head:has(.panel-toggle--left) {
-  grid-template-columns: auto auto 1fr auto;
-  padding: 0;
-}
-
-.panel-head-title {
-  font-size: 9px;
-  letter-spacing: 0.32em;
-  color: var(--amber);
-  font-weight: 600;
-}
-.panel-head-id {
-  font-size: 9px;
-  color: var(--t-4);
-  letter-spacing: 0.16em;
-  text-align: right;
-  padding-right: 8px;
-}
-
-.panel-toggle {
-  background: none;
-  border: none;
-  border-left: 1px solid var(--line-2);
-  color: var(--t-3);
-  width: 30px; height: 30px;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.panel-toggle--left {
-  border-left: none;
-  border-right: 1px solid var(--line-2);
-}
-.panel-toggle--solo {
-  border: none;
-  border-bottom: 1px solid var(--line-2);
-  width: 100%;
-  height: 32px;
-}
-.panel-toggle:hover, .panel-toggle--left:hover, .panel-toggle--solo:hover {
-  color: var(--amber);
-  background: var(--bg-3);
-}
-.panel-toggle svg, .panel-toggle--solo svg { width: 12px; height: 12px; }
-
-.panel-body {
-  padding: 0;
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* ── Sections ─────────────────────────────────────────────── */
-.section {
-  border-bottom: 1px solid var(--line-1);
-  padding: 10px 14px 12px;
-}
-.section:last-child { border-bottom: none; }
-
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.section-title {
-  font-size: 9px;
-  letter-spacing: 0.28em;
-  color: var(--t-3);
-  font-weight: 600;
-}
-.section-meta {
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  color: var(--t-4);
-}
-
-/* ── Clock ────────────────────────────────────────────────── */
-.clock {
-  font-family: var(--sans);
-  font-size: 36px;
-  font-weight: 500;
-  color: var(--amber);
-  letter-spacing: 0.04em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 18px rgba(245, 180, 84, 0.18);
-}
-.tape {
-  position: relative;
-  height: 14px;
-  margin: 8px 0 4px;
-  border-top: 1px solid var(--line-2);
-  border-bottom: 1px solid var(--line-2);
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0, transparent 19px,
-    var(--line-2) 19px, var(--line-2) 20px
-  );
-  overflow: hidden;
-}
-.tape::after {
-  content: '';
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 2px;
-  background: var(--amber);
-  box-shadow: 0 0 8px var(--amber);
-  left: var(--progress, 0%);
-}
-.clock-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--t-3);
-  letter-spacing: 0.12em;
-}
-.clock-meta .v { color: var(--t-1); }
-
-/* ── KPI (right panel population) ────────────────────────── */
-.kpi { display: flex; flex-direction: column; gap: 2px; }
-.kpi-val {
-  font-family: var(--sans);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--t-1);
-}
-.kpi-val.amber { color: var(--amber); }
-.kpi-val .unit {
-  font-size: 11px;
-  color: var(--t-3);
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  margin-left: 6px;
-}
-.kpi-sub {
-  display: flex;
-  gap: 10px;
-  font-size: 10px;
-  color: var(--t-3);
-  letter-spacing: 0.08em;
-  margin-top: 2px;
-}
-.kpi-sub-v { color: var(--t-1); }
-
-.sparkline-wrap { margin-top: 8px; }
-
-/* ── Stat rows ────────────────────────────────────────────── */
-.stat-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: baseline;
-  padding: 4px 0;
-  gap: 12px;
-}
-.stat-row + .stat-row { border-top: 1px dashed var(--line-1); }
-
-.row-name {
-  font-size: 10px;
-  color: var(--t-2);
-  letter-spacing: 0.08em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.row-name::before {
-  content: '';
-  width: 4px; height: 4px;
-  background: var(--t-4);
-  flex-shrink: 0;
-}
-.row-val {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--t-1);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-}
-.row-val.ok   { color: var(--ok); }
-.row-val.warn { color: var(--warn); }
-.row-val.crit { color: var(--crit); }
-.row-val .unit { color: var(--t-3); margin-left: 4px; font-size: 10px; }
-
-/* ── Stepper ──────────────────────────────────────────────── */
-.cfg-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 0;
-}
-.cfg-label {
-  font-size: 10px;
-  color: var(--t-2);
-  letter-spacing: 0.06em;
-}
-.stepper {
-  display: grid;
-  grid-template-columns: 22px 50px 22px;
-  border: 1px solid var(--line-2);
-  height: 24px;
-  background: var(--bg-1);
-}
-.stepper-btn {
-  background: none;
-  border: none;
-  color: var(--t-3);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  transition: color .12s, background .12s;
-}
-.stepper-btn:hover { color: var(--amber); background: var(--bg-3); }
-.stepper-val {
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  color: var(--t-1);
-  font-weight: 500;
-  border-left: 1px solid var(--line-2);
-  border-right: 1px solid var(--line-2);
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Speed presets ────────────────────────────────────────── */
-.speed-row {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-.speed-btn {
-  flex: 1;
-  min-width: 32px;
-  background: var(--bg-1);
-  border: 1px solid var(--line-2);
-  color: var(--t-3);
-  height: 24px;
-  font-size: 10px;
-  font-family: var(--mono);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  transition: color .12s, border-color .12s, background .12s;
-}
-.speed-btn:hover { color: var(--t-1); border-color: var(--line-3); }
-.speed-btn.active {
-  color: var(--amber);
-  border-color: var(--amber-dim);
-  background: rgba(245, 180, 84, 0.06);
-}
-
-/* ── Sim controls ─────────────────────────────────────────── */
-.sim-controls {
-  display: grid;
-  grid-template-columns: 36px 1fr 28px;
-  gap: 6px;
-  align-items: center;
-}
-.btn-play {
-  background: var(--bg-1);
-  border: 1px solid var(--amber-dim);
-  color: var(--amber);
-  height: 32px;
-  display: grid;
-  place-items: center;
-  transition: background .12s, color .12s, border-color .12s;
-}
-.btn-play:hover { background: var(--amber); color: var(--bg-0); }
-.btn-play.paused { color: var(--ok); border-color: var(--ok); }
-.btn-play.paused:hover { background: var(--ok); color: var(--bg-0); }
-.btn-play svg { width: 12px; height: 12px; }
-
-.time-input {
-  background: var(--bg-1);
-  border: 1px solid var(--line-2);
-  color: var(--t-1);
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  height: 32px;
-  padding: 0 10px;
-  text-align: center;
-  font-weight: 500;
-  color-scheme: dark;
-  font-variant-numeric: tabular-nums;
-  width: 100%;
-}
-.time-input:focus { outline: none; border-color: var(--amber-dim); }
-
-.btn-reset {
-  background: var(--bg-1);
-  border: 1px solid var(--line-2);
-  color: var(--t-3);
-  width: 28px; height: 32px;
-  display: grid;
-  place-items: center;
-  transition: color .12s, border-color .12s;
-}
-.btn-reset:hover { color: var(--crit); border-color: var(--crit); }
-.btn-reset svg { width: 12px; height: 12px; }
-
-/* ── Load gauge ───────────────────────────────────────────── */
-.gauge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.gauge-bars {
-  flex: 1;
-  display: flex;
-  gap: 2px;
-  height: 16px;
-}
-.gauge-bar {
-  flex: 1;
-  background: var(--line-1);
-  transition: background .2s;
-}
-.gauge-bar.on   { background: var(--ok); }
-.gauge-bar.warn { background: var(--warn); }
-.gauge-bar.over { background: var(--crit); }
-
-.gauge-val {
-  font-family: var(--sans);
-  font-size: 18px;
-  color: var(--t-1);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  width: 52px;
-  text-align: right;
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-}
-.gauge-val.warn { color: var(--warn); }
-.gauge-val.crit { color: var(--crit); }
-.gauge-pct { font-size: 10px; color: var(--t-3); }
-
-/* ── Line rows (right panel) ──────────────────────────────── */
-.line-row {
-  display: grid;
-  grid-template-columns: 18px 1fr 46px;
-  align-items: center;
-  gap: 8px;
-  padding: 3px 0;
-}
-.line-chip {
-  width: 18px; height: 16px;
-  display: grid;
-  place-items: center;
-  font-size: 8px;
-  font-weight: 700;
-  color: white;
-  font-family: var(--sans);
-  border-radius: 2px;
-  flex-shrink: 0;
-  letter-spacing: 0;
-}
-.line-bar-bg {
-  position: relative;
-  height: 6px;
-  background: var(--line-1);
-  overflow: hidden;
-}
-.line-bar-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  transition: width .4s ease;
-  min-width: 1px;
-}
-.line-count {
-  font-size: 11px;
-  color: var(--t-1);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  letter-spacing: 0.04em;
-}
-
 /* ── Telemetry strip ──────────────────────────────────────── */
 .telemetry {
   position: absolute;
@@ -509,31 +96,6 @@
 .telemetry-stat .k { color: var(--t-3); }
 .telemetry-stat .v { color: var(--t-1); margin-left: 5px; font-variant-numeric: tabular-nums; }
 
-/* ── Viewport controls (integrated into left panel) ──────── */
-.viewport-row {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 4px;
-}
-.viewport-btn {
-  height: 28px;
-  background: var(--bg-1);
-  border: 1px solid var(--line-2);
-  color: var(--t-2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-size: 9px;
-  font-family: var(--mono);
-  letter-spacing: 0.10em;
-  font-weight: 500;
-  transition: color .12s, border-color .12s, background .12s;
-}
-.viewport-btn:hover  { color: var(--t-1); border-color: var(--line-3); background: var(--bg-3); }
-.viewport-btn.active { color: var(--cyan); border-color: var(--cyan-dim); background: rgba(106,217,217,0.06); }
-.viewport-btn svg    { width: 12px; height: 12px; }
-
 /* ── Station labels overlay ───────────────────────────────── */
 .station-labels {
   position: absolute;
@@ -552,7 +114,7 @@
 .station-labels.show-all         .stn-label-wrap                { display: block; }
 .station-labels.show-panel       .stn-panel                     { display: flex; }
 
-/* ── Name — texto con halo cartográfico, sin caja negra ─── */
+/* ── Name ─────────────────────────────────────────────────── */
 .stn-label {
   display: flex;
   flex-direction: column;
@@ -590,7 +152,7 @@
 }
 .stn-text { line-height: 1; }
 
-/* ── Numeric panel — slate, no longer a black slab ──────── */
+/* ── Station panel ────────────────────────────────────────── */
 .stn-panel {
   align-self: flex-start;
   min-width: 138px;
@@ -623,19 +185,8 @@
   gap: 10px;
   height: 13px;
 }
-.stn-panel-row .k {
-  font-size: 8.5px;
-  color: var(--t-3);
-  letter-spacing: 0.14em;
-  font-weight: 500;
-}
-.stn-panel-row .v {
-  font-size: 12px;
-  color: var(--t-1);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-}
+.stn-panel-row .k { font-size: 8.5px; color: var(--t-3); letter-spacing: 0.14em; font-weight: 500; }
+.stn-panel-row .v { font-size: 12px; color: var(--t-1); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .stn-panel-row.stn-total .v   { color: var(--amber); font-size: 13px; }
 .stn-panel-row.stn-transit .v { color: var(--cyan); }
 
@@ -658,7 +209,7 @@
   margin-left: 6px;
 }
 
-/* ── Per-platform row ────────────────────────────────────── */
+/* ── Per-platform row ─────────────────────────────────────── */
 .stn-platform {
   display: grid;
   grid-template-columns: 18px 1fr auto;
@@ -694,83 +245,7 @@
   padding-right: 4px;
 }
 
-/* ── Panels toggle button ────────────────────────────────── */
-.panels-toggle-btn {
-  display: flex; align-items: center; gap: 7px;
-  width: 100%; padding: 6px 10px;
-  background: none; border: 1px solid var(--line-2);
-  color: var(--t-3); font-size: 9px; letter-spacing: 0.12em;
-  transition: color .12s, border-color .12s, background .12s;
-}
-.panels-toggle-btn svg { width: 10px; height: 10px; flex-shrink: 0; }
-.panels-toggle-btn:hover { color: var(--t-1); border-color: var(--line-3); background: var(--bg-3); }
-.panels-toggle-btn.active { color: var(--amber); border-color: var(--amber-dim); }
-
-/* ── Hovered station — cursor affordance ────────────────────── */
-.stn-label-wrap.is-hover .stn-name  { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
-.stn-label-wrap.is-hover .stn-tick  { background: var(--amber); box-shadow: 0 0 0 1.5px rgba(14,19,28,0.9), 0 0 10px rgba(245,180,84,0.8); }
-
-/* ── Selected station — always visible with panel + amber accent ── */
-.stn-label-wrap.is-selected                       { display: block; z-index: 10; }
-.stn-label-wrap.is-selected .stn-panel            { display: flex; }
-.stn-label-wrap.is-selected .stn-label            { filter: drop-shadow(0 4px 12px rgba(245,180,84,0.28)); }
-.stn-label-wrap.is-selected .stn-name             { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
-.stn-label-wrap.is-selected .stn-tick             { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
-.stn-label-wrap.is-selected .stn-panel::before    { background: var(--amber); opacity: 1; box-shadow: 0 0 6px var(--amber); }
-
-/* ── Train panel (station-panel style) ──────────────────────── */
-.train-panel {
-  position: absolute;
-  transform: translate(-50%, calc(-100% - 18px));
-  z-index: 20;
-  pointer-events: all;
-  background: rgba(12,14,17,0.95);
-  border: 1px solid var(--line-2);
-  backdrop-filter: blur(10px) saturate(140%);
-  min-width: 140px;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
-}
-.train-panel-head {
-  display: grid;
-  grid-template-columns: 20px 1fr auto;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--line-2);
-}
-.train-panel-title {
-  font-size: 9px;
-  letter-spacing: 0.28em;
-  color: var(--t-3);
-  font-weight: 600;
-}
-.train-panel-close {
-  background: none; border: none;
-  color: var(--t-3); font-size: 15px;
-  cursor: pointer; padding: 0 4px;
-  line-height: 1;
-  width: 24px; height: 24px;
-  display: grid; place-items: center;
-}
-.train-panel-close:hover { color: var(--t-1); }
-
-.train-occ-bar {
-  height: 3px;
-  background: var(--bg-3);
-  margin: 0 8px 4px;
-}
-.train-occ-fill {
-  height: 100%;
-  background: #4ade80;
-  transition: width 0.3s;
-}
-.train-occ-fill.warn { background: #fbbf24; }
-.train-occ-fill.over { background: #f87171; }
-
+/* ── Inspect buttons (shared with TrainPanel via stn-panel scope) */
 .train-inspect-btn {
   margin: 4px 8px 6px;
   padding: 4px 0;
@@ -785,29 +260,23 @@
 }
 .train-inspect-btn:hover { color: var(--amber); border-color: var(--amber-dim); background: var(--bg-3); }
 
-.train-persons-list {
+/* ── Platform inspect panel ───────────────────────────────── */
+.platform-inspect {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 0 8px;
-  max-height: 150px;
-  overflow-y: auto;
+  gap: 1px;
+  margin: 2px 0 4px 20px;
+  border-left: 1px solid var(--line-2);
+  padding-left: 6px;
 }
-.train-person-btn {
-  background: var(--bg-3);
-  border: 1px solid var(--line-2);
-  color: var(--t-2);
+.platform-inspect-loading {
   font-size: 9px;
-  font-family: var(--mono, monospace);
-  letter-spacing: 0.06em;
-  padding: 3px 6px;
-  text-align: left;
-  cursor: pointer;
-  transition: color .1s, background .1s, border-color .1s;
+  color: var(--t-4);
+  padding: 4px 6px;
+  font-style: italic;
 }
-.train-person-btn:hover { color: var(--cyan); border-color: var(--cyan); background: var(--bg-2); }
 
-/* ── Destination groups (train + platform inspect) ──────────── */
+/* ── Destination groups ───────────────────────────────────── */
 .train-dest-btn {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -830,18 +299,27 @@
 .train-dest-count { color: var(--cyan); font-weight: 600; }
 .train-dest-arrow { color: var(--t-4); font-size: 7px; }
 
-/* ── Platform inspect panel ─────────────────────────────────── */
-.platform-inspect {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  margin: 2px 0 4px 20px;
-  border-left: 1px solid var(--line-2);
-  padding-left: 6px;
-}
-.platform-inspect-loading {
+.train-person-btn {
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
   font-size: 9px;
-  color: var(--t-4);
-  padding: 4px 6px;
-  font-style: italic;
+  font-family: var(--mono, monospace);
+  letter-spacing: 0.06em;
+  padding: 3px 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: color .1s, background .1s, border-color .1s;
 }
+.train-person-btn:hover { color: var(--cyan); border-color: var(--cyan); background: var(--bg-2); }
+
+/* ── Hover / selected states ──────────────────────────────── */
+.stn-label-wrap.is-hover .stn-name { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
+.stn-label-wrap.is-hover .stn-tick { background: var(--amber); box-shadow: 0 0 0 1.5px rgba(14,19,28,0.9), 0 0 10px rgba(245,180,84,0.8); }
+
+.stn-label-wrap.is-selected                    { display: block; z-index: 10; }
+.stn-label-wrap.is-selected .stn-panel         { display: flex; }
+.stn-label-wrap.is-selected .stn-label         { filter: drop-shadow(0 4px 12px rgba(245,180,84,0.28)); }
+.stn-label-wrap.is-selected .stn-name          { color: var(--amber); -webkit-text-stroke-color: rgba(20,15,5,0.92); }
+.stn-label-wrap.is-selected .stn-tick          { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.stn-label-wrap.is-selected .stn-panel::before { background: var(--amber); opacity: 1; box-shadow: 0 0 6px var(--amber); }

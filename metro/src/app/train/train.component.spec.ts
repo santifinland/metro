@@ -3,6 +3,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { TrainComponent } from './train.component';
+import { TelemetryPanelComponent } from './telemetry-panel/telemetry-panel.component';
 import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
@@ -126,24 +127,6 @@ describe('TrainComponent', () => {
     expect(component.fmtCount(25600)).toBe('25.6k');
   });
 
-  // ── sparklinePoints ──────────────────────────────────────────────────────
-
-  it('sparklinePoints should return a non-empty string', () => {
-    const result = component.sparklinePoints([10, 20, 30, 20, 10]);
-    expect(typeof result).toBe('string');
-    expect(result.length).toBeGreaterThan(0);
-  });
-
-  it('sparklinePoints should handle all-zero values without throwing', () => {
-    expect(() => component.sparklinePoints(Array(40).fill(0))).not.toThrow();
-  });
-
-  it('sparklinePoints point count matches input length', () => {
-    const values = [1, 2, 3, 4, 5];
-    const points = component.sparklinePoints(values).split(' ');
-    expect(points.length).toBe(5);
-  });
-
   // ── lineColors ───────────────────────────────────────────────────────────
 
   it('lineColors should return a color string for known lines', () => {
@@ -152,37 +135,6 @@ describe('TrainComponent', () => {
 
   it('lineColors should return a fallback color for unknown lines', () => {
     expect(component.lineColors('999')).toBeTruthy();
-  });
-
-  // ── linePeople / allPeople ───────────────────────────────────────────────
-
-  it('linePeople should return entries sorted by line name', () => {
-    mockSimulationStateService.platformsPeople.set('2', 30);
-    mockSimulationStateService.platformsPeople.set('1', 10);
-    const result = component.linePeople();
-    expect(result[0][0]).toBe('1');
-    expect(result[1][0]).toBe('2');
-  });
-
-  it('allPeople should sum map values', () => {
-    expect(component.allPeople(new Map([['a', 5], ['b', 3]]))).toBe(8);
-  });
-
-  it('allPeople should return 0 for empty map', () => {
-    expect(component.allPeople(new Map())).toBe(0);
-  });
-
-  // ── linePercent ──────────────────────────────────────────────────────────
-
-  it('linePercent should return 100 for the maximum value', () => {
-    mockSimulationStateService.platformsPeople.clear();
-    mockSimulationStateService.platformsPeople.set('1', 50);
-    expect(component.linePercent(50)).toBe(100);
-  });
-
-  it('linePercent should return 0 when count is 0', () => {
-    mockSimulationStateService.platformsPeople.clear();
-    expect(component.linePercent(0)).toBe(0);
   });
 
   // ── telemetry getters ────────────────────────────────────────────────────
@@ -224,5 +176,79 @@ describe('TrainComponent', () => {
     component.toggleShowAllPanels();
     expect(component.showAllPanels).toBeTrue();
     expect((component as any).stationsHidden).toBeFalse();
+  });
+});
+
+describe('TelemetryPanelComponent helpers', () => {
+  let panel: TelemetryPanelComponent;
+
+  const mockSimulationStateService = {
+    platformsPeople: new Map<string, number>(),
+    stationsPeople: new Map<string, number>(),
+    simulationPeople: 0,
+    metroPeople: 0,
+    trainsPeople: 0,
+  };
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TelemetryPanelComponent],
+      providers: [
+        { provide: SimulationStateService, useValue: mockSimulationStateService },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(TelemetryPanelComponent);
+    panel = fixture.componentInstance;
+  });
+
+  // ── sparklinePoints ──────────────────────────────────────────────────────
+
+  it('sparklinePoints should return a non-empty string', () => {
+    const result = panel.sparklinePoints([10, 20, 30, 20, 10]);
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('sparklinePoints should handle all-zero values without throwing', () => {
+    expect(() => panel.sparklinePoints(Array(40).fill(0))).not.toThrow();
+  });
+
+  it('sparklinePoints point count matches input length', () => {
+    const values = [1, 2, 3, 4, 5];
+    const points = panel.sparklinePoints(values).split(' ');
+    expect(points.length).toBe(5);
+  });
+
+  // ── linePeople / allPeople ───────────────────────────────────────────────
+
+  it('linePeople should return entries sorted by line name', () => {
+    mockSimulationStateService.platformsPeople.set('2', 30);
+    mockSimulationStateService.platformsPeople.set('1', 10);
+    const result = panel.linePeople();
+    expect(result[0][0]).toBe('1');
+    expect(result[1][0]).toBe('2');
+  });
+
+  it('allPeople should sum map values', () => {
+    expect(panel.allPeople(new Map([['a', 5], ['b', 3]]))).toBe(8);
+  });
+
+  it('allPeople should return 0 for empty map', () => {
+    expect(panel.allPeople(new Map())).toBe(0);
+  });
+
+  // ── linePercent ──────────────────────────────────────────────────────────
+
+  it('linePercent should return 100 for the maximum value', () => {
+    mockSimulationStateService.platformsPeople.clear();
+    mockSimulationStateService.platformsPeople.set('1', 50);
+    expect(panel.linePercent(50)).toBe(100);
+  });
+
+  it('linePercent should return 0 when count is 0', () => {
+    mockSimulationStateService.platformsPeople.clear();
+    expect(panel.linePercent(0)).toBe(0);
   });
 });

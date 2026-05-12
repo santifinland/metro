@@ -1,0 +1,50 @@
+@if (train(); as t) {
+  <div class="train-panel-head">
+    <span class="line-chip" [style.background]="lineColors(t.line)"
+          [style.color]="t.line === 'R' ? '#000' : '#fff'">{{ t.line }}</span>
+    <span class="train-panel-title">TREN</span>
+    <button class="train-panel-close" (mousedown)="$event.stopPropagation()" (click)="onClose()">✕</button>
+  </div>
+  <div class="stn-panel-row">
+    <span class="k">OCUPACIÓN</span>
+    <span class="v">{{ inspectMode ? state.personsInTrain.length : t.people }} / {{ t.capacity }}</span>
+  </div>
+  <div class="train-occ-bar">
+    <div class="train-occ-fill"
+         [style.width.%]="t.capacity > 0 ? (t.people / t.capacity * 100) : 0"
+         [class.warn]="t.people / t.capacity > 0.5"
+         [class.over]="t.people / t.capacity > 0.8">
+    </div>
+  </div>
+
+  @if (inspectMode) {
+    <div class="stn-panel-sep">
+      <span>PASAJEROS · {{ state.personsInTrain.length }}</span>
+    </div>
+    <div class="train-persons-list">
+      @for (group of groupByDest(state.personsInTrain); track group.destination) {
+        <button class="train-dest-btn"
+                (mousedown)="$event.stopPropagation()"
+                (click)="expandedTrainDest = expandedTrainDest === group.destination ? null : group.destination">
+          <span class="train-dest-label">→ {{ group.destination || '?' }}</span>
+          <span class="train-dest-count">{{ group.ids.length }}</span>
+          <span class="train-dest-arrow">{{ expandedTrainDest === group.destination ? '▴' : '▾' }}</span>
+        </button>
+        @if (expandedTrainDest === group.destination) {
+          @for (pid of group.ids; track pid) {
+            <button class="train-person-btn" (mousedown)="$event.stopPropagation()" (click)="onSelectPerson(pid)">
+              {{ pid.slice(0, 8) }}
+            </button>
+          }
+        }
+      }
+    </div>
+    <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="cancelInspect()">
+      CANCELAR
+    </button>
+  } @else {
+    <button class="train-inspect-btn" (mousedown)="$event.stopPropagation()" (click)="inspectTrain()">
+      INSPECCIONAR
+    </button>
+  }
+}

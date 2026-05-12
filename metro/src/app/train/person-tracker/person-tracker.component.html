@@ -1,0 +1,27 @@
+<div class="person-tracker-brackets">
+  <span class="ptb tl"></span><span class="ptb tr"></span>
+  <span class="ptb bl"></span><span class="ptb br"></span>
+</div>
+<div class="person-tracker-head">
+  <span class="person-tracker-live"></span>
+  <span class="person-tracker-title">TRACKING</span>
+  <button class="person-tracker-close" (click)="stopTracking()">✕</button>
+</div>
+<div class="person-tracker-id">
+  <span class="person-tracker-hash">#</span>{{ state.trackedPersonId!.slice(0, 8) }}
+</div>
+@if (locationLabel) {
+  <div class="person-tracker-loc">
+    <span class="person-tracker-badge" [class]="'ptbadge-' + state.trackedPersonLocType">
+      {{ state.trackedPersonLocType | uppercase }}
+    </span>
+    <span class="person-tracker-locname">{{ locationLabel }}</span>
+  </div>
+}
+<div class="person-tracker-progress">
+  <div class="person-tracker-progress-track">
+    <div class="person-tracker-progress-fill" [style.width.%]="progress"></div>
+  </div>
+  <span class="person-tracker-progress-pct">{{ progress }}%</span>
+</div>
+<button class="person-tracker-btn" (click)="stopTracking()">LIBERAR OBJETIVO</button>

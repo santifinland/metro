@@ -63,7 +63,7 @@ describe('TrainComponent', () => {
   });
 
   it('should initialize with a valid fit scale', () => {
-    expect(component.currentScale).toBeGreaterThan(0);
+    expect(component.viewport.scale()).toBeGreaterThan(0);
   });
 
   // ── displayClock ─────────────────────────────────────────────────────────
@@ -73,39 +73,39 @@ describe('TrainComponent', () => {
   });
 
   it('displayClock should format midnight correctly', () => {
-    (component as any).time = 0;
+    component.clock['_ms'].set(0);
     expect(component.displayClock()).toBe('00:00:00');
   });
 
   it('displayClock should format noon correctly', () => {
-    (component as any).time = 12 * 3600 * 1000;
+    component.clock.resetTo('12:00');
     expect(component.displayClock()).toBe('12:00:00');
   });
 
   it('displayClock should format 23:59:59 correctly', () => {
-    (component as any).time = (23 * 3600 + 59 * 60 + 59) * 1000;
+    component.clock['_ms'].set((23 * 3600 + 59 * 60 + 59) * 1000);
     expect(component.displayClock()).toBe('23:59:59');
   });
 
   // ── peakLabel ────────────────────────────────────────────────────────────
 
   it('peakLabel should return PEAK·AM during morning rush', () => {
-    (component as any).time = 8 * 3600 * 1000;
+    component.clock.resetTo('08:00');
     expect(component.peakLabel).toBe('PEAK · AM');
   });
 
   it('peakLabel should return PEAK·PM during evening rush', () => {
-    (component as any).time = 18 * 3600 * 1000;
+    component.clock.resetTo('18:00');
     expect(component.peakLabel).toBe('PEAK · PM');
   });
 
   it('peakLabel should return NIGHT after midnight', () => {
-    (component as any).time = 2 * 3600 * 1000;
+    component.clock.resetTo('02:00');
     expect(component.peakLabel).toBe('NIGHT');
   });
 
   it('peakLabel should return OFF·PEAK at midday', () => {
-    (component as any).time = 13 * 3600 * 1000;
+    component.clock.resetTo('13:00');
     expect(component.peakLabel).toBe('OFF · PEAK');
   });
 

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 import { LINE_COLORS } from '../../constants';
 import { Train } from '../../train';
@@ -8,7 +8,6 @@ import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-train-panel',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './train-panel.component.html',
   styleUrls: ['./train-panel.component.css'],
   host: {

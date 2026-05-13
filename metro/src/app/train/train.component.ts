@@ -162,6 +162,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
               train.pathSegStart  = segStart;
               train.pathSegEnd    = segEnd;
               train.line = seg.line;
+              train.capacity = (TRAIN_WAGONS[seg.line] ?? DEFAULT_WAGONS) * this.cfg.config.wagonCapacity;
               const last = path[path.length - 1];
               const prev = path[path.length - 2];
               train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
@@ -800,13 +801,20 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       }
       const locPos = this.resolveLocToPos();
       if (locPos) {
+        const r = 7 / this.currentScale;
         ctx.save();
-        ctx.beginPath();
-        ctx.arc(locPos.x, locPos.y, 5 / this.currentScale, 0, Math.PI * 2);
-        ctx.fillStyle = '#ef4444';
-        ctx.fill();
+        ctx.fillStyle   = '#ef4444';
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1.2 / this.currentScale;
+        ctx.lineWidth   = 1.2 / this.currentScale;
+        // head
+        ctx.beginPath();
+        ctx.arc(locPos.x, locPos.y - r * 1.05, r * 0.52, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        // body (shoulder arc)
+        ctx.beginPath();
+        ctx.arc(locPos.x, locPos.y + r * 0.75, r, Math.PI, 0);
+        ctx.fill();
         ctx.stroke();
         ctx.restore();
       }
@@ -1021,8 +1029,20 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   // ── Speed ────────────────────────────────────────────────────
 
   onSpeedChange(idx: number): void {
+    const oldSpeed = this.localSpeed;
     this.speedIdx = idx;
-    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+    const newSpeed = this.localSpeed;
+    const now = performance.now();
+    const ratio = oldSpeed / newSpeed;
+    for (const train of this.state.trains) {
+      if (train.travelMs > 0) {
+        const elapsed = now - train.departedAt;
+        if (elapsed < train.travelMs) {
+          train.travelMs = elapsed + (train.travelMs - elapsed) * ratio;
+        }
+      }
+    }
+    this.wsService.send({ message: 'setSpeed', factor: newSpeed });
   }
 
   // ── Simulation controls ───────────────────────────────────────

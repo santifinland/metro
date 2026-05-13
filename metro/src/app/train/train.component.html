@@ -1,7 +1,12 @@
 <div class="map-root">
 
   <!-- Canvas layers -->
-  <div class="canvas-container" #canvasContainer>
+  <div class="canvas-container" #canvasContainer appMapInteraction
+    (mapZoom)="onMapZoom($event)"
+    (mapPan)="onMapPan($event)"
+    (mapMove)="onMapMove($event)"
+    (mapClick)="onMapClick($event)"
+    (mapLeave)="onMapLeave()">
     <canvas #canvas_tiles    class="canvas-layer"></canvas>
     <canvas #canvas_paths    class="canvas-layer"></canvas>
     <canvas #canvas_stations class="canvas-layer"></canvas>

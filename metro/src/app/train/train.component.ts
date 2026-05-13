@@ -7,23 +7,30 @@ import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
+import { CanvasViewportService } from '../services/canvas-viewport.service';
+import { PathGeometryService } from '../services/path-geometry.service';
+import { MetroRendererService } from '../services/metro-renderer.service';
+import { SimulationClockService } from '../services/simulation-clock.service';
+import { TileService } from '../services/tile.service';
 import { TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
 import { lineColor, fmtCount, groupByDest } from '../utils/format';
-import { canvasToLonLat, lonLatToCanvas, tileToLonLat, lonLatToTile } from '../utils/projection';
 import { NodeId } from '../utils/node-id';
+import { computeArcLens } from '../utils/path-geometry';
 
 import { PersonTrackerComponent } from './person-tracker/person-tracker.component';
 import { TrainPanelComponent } from './train-panel/train-panel.component';
 import { TelemetryPanelComponent } from './telemetry-panel/telemetry-panel.component';
 import { ControlPanelComponent } from './control-panel/control-panel.component';
+import { MapInteractionDirective } from './map-interaction.directive';
 
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [PersonTrackerComponent, TrainPanelComponent, TelemetryPanelComponent, ControlPanelComponent],
+  imports: [PersonTrackerComponent, TrainPanelComponent, TelemetryPanelComponent, ControlPanelComponent, MapInteractionDirective],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CanvasViewportService, MetroRendererService],
 })
 export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
@@ -49,19 +56,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private ctxTrains!: CanvasRenderingContext2D;
 
   showSatellite = false;
-  private readonly tileCache = new Map<string, HTMLImageElement>();
-
-  currentScale = 1;
-  protected fitScale  = 1;
   readonly isDev = !environment.production;
-
-  private panX = 0;
-  private panY = 0;
 
   private readonly dpr = window.devicePixelRatio || 1;
 
-  private time = 6 * 3600 * 1000;
-  private clockSynced = false;
   private lastRafTimestamp = 0;
   private lastCdTick = 0;
   private rafId = 0;
@@ -104,6 +102,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
     readonly cfg: SimulationConfigService,
+    readonly viewport: CanvasViewportService,
+    readonly clock: SimulationClockService,
+    private readonly pathGeo: PathGeometryService,
+    private readonly renderer: MetroRendererService,
+    private readonly tileService: TileService,
   ) {
     const lines = new Set(this.metroData.paths.map(p => p.line));
     this.state.initLines(Array.from(lines));
@@ -121,8 +124,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.ctxPaths    = this.canvasPaths.nativeElement.getContext('2d')!;
     this.ctxTrains   = this.canvasTrains.nativeElement.getContext('2d')!;
 
+    this.viewport.init(this.dpr);
     this.computeFit();
-    this.setupEvents();
 
     this.needsStaticRedraw = true;
     this.needsTrainRedraw  = true;
@@ -133,16 +136,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(msg => {
         if (msg.message === 'simTime') {
-          const drift = Math.abs(this.time - msg.ms);
-          if (!this.clockSynced || drift > 5_000) {
-            this.time = msg.ms;
-            this.clockSynced = true;
-          }
+          this.clock.syncFromBackend(msg.ms);
         }
         if (msg.message === 'reset') {
-          const [h, m] = this.resetTime.split(':').map(Number);
-          this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
-          this.clockSynced = false;
+          this.clock.resetTo(this.resetTime);
           this.state.reset();
         }
         this.state.process(msg);
@@ -151,9 +148,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
           if (train) {
             const seg = this.metroData.paths.find(s => s.id === String(msg.anden));
             if (seg && seg.path.length >= 2) {
-              const { path, segStart, segEnd } = this.buildCompositePath(seg);
+              const { path, segStart, segEnd } = this.pathGeo.buildCompositePath(seg);
               train.pathPoints    = path;
-              train.pathArcLens   = this.computeArcLens(path);
+              train.pathArcLens   = computeArcLens(path);
               train.pathSegStart  = segStart;
               train.pathSegEnd    = segEnd;
               train.line = seg.line;
@@ -196,9 +193,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private computeFit(): void {
     const container = this.canvasContainer.nativeElement as HTMLElement;
-    const vW = container.clientWidth;
-    const vH = container.clientHeight;
-
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const s of this.metroData.paths) {
       for (const p of s.path) {
@@ -208,107 +202,57 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         if (p.y > maxY) maxY = p.y;
       }
     }
-
-    const margin = 40;
-    const netW   = maxX - minX;
-    const netH   = maxY - minY;
-    this.fitScale    = Math.min((vW - margin * 2) / netW, (vH - margin * 2) / netH);
-    this.currentScale = this.fitScale;
-    this.panX = (vW - netW * this.fitScale) / 2 - minX * this.fitScale;
-    this.panY = (vH - netH * this.fitScale) / 2 - minY * this.fitScale;
-  }
-
-  // ── Transform helpers ────────────────────────────────────────
-
-  private applyTransform(ctx: CanvasRenderingContext2D): void {
-    ctx.setTransform(
-      this.currentScale * this.dpr, 0,
-      0, this.currentScale * this.dpr,
-      this.panX * this.dpr,
-      this.panY * this.dpr,
+    this.viewport.computeFit(
+      { minX, minY, maxX, maxY },
+      container.clientWidth,
+      container.clientHeight,
     );
   }
 
-  private clearCtx(ctx: CanvasRenderingContext2D): void {
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // ── Events (handled via MapInteractionDirective outputs) ──────
+
+  onMapZoom(e: { factor: number; anchorX: number; anchorY: number }): void {
+    this.viewport.zoomAt(e.factor, e.anchorX, e.anchorY);
+    this.needsStaticRedraw = true;
+    this.needsTrainRedraw  = true;
   }
 
-  // ── Events ───────────────────────────────────────────────────
+  onMapPan(e: { dx: number; dy: number }): void {
+    this.viewport.pan(e.dx, e.dy);
+    this.needsStaticRedraw = true;
+    this.needsTrainRedraw  = true;
+  }
 
-  private setupEvents(): void {
+  onMapMove(e: { x: number; y: number }): void {
+    this._mouseContainerX = e.x;
+    this._mouseContainerY = e.y;
     const container = this.canvasContainer.nativeElement as HTMLElement;
+    const nearTrain = this.findNearestTrain(e.x, e.y, 40);
+    if (nearTrain) { container.style.cursor = 'pointer'; return; }
+    const near = this.findNearestStation(e.x, e.y, 14);
+    container.style.cursor = near >= 0 ? 'pointer' : 'grab';
+  }
 
-    container.addEventListener('wheel', (e: WheelEvent) => {
-      e.preventDefault();
-      const factor    = e.deltaY < 0 ? 1.12 : 1 / 1.12;
-      const newScale  = Math.max(
-        this.fitScale * 0.5,
-        Math.min(this.fitScale * 50, this.currentScale * factor),
-      );
-      const actual = newScale / this.currentScale;
-      this.panX = e.clientX + (this.panX - e.clientX) * actual;
-      this.panY = e.clientY + (this.panY - e.clientY) * actual;
-      this.currentScale = newScale;
-      this.needsStaticRedraw = true;
-      this.needsTrainRedraw  = true;
-    }, { passive: false });
+  onMapClick(e: { x: number; y: number }): void {
+    this.handleMapClick(e.x, e.y);
+  }
 
-    let dragging = false;
-    let mouseMoved = false;
-    let lastX = 0, lastY = 0;
-    container.addEventListener('mousedown', (e: MouseEvent) => {
-      dragging = true; mouseMoved = false;
-      lastX = e.clientX; lastY = e.clientY;
-      container.style.cursor = 'grabbing';
-    });
-    container.addEventListener('mousemove', (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      this._mouseContainerX = e.clientX - rect.left;
-      this._mouseContainerY = e.clientY - rect.top;
+  onMapLeave(): void {
+    this._mouseContainerX = -1;
+    this._mouseContainerY = -1;
+    (this.canvasContainer.nativeElement as HTMLElement).style.cursor = 'grab';
+  }
 
-      if (!dragging) {
-        const nearTrain = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY, 40);
-        if (nearTrain) { container.style.cursor = 'pointer'; return; }
-        const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
-        container.style.cursor = near >= 0 ? 'pointer' : 'grab';
-        return;
-      }
-      const dx = e.clientX - lastX, dy = e.clientY - lastY;
-      if (dx * dx + dy * dy > 64) mouseMoved = true;
-      this.panX += dx;
-      this.panY += dy;
-      lastX = e.clientX; lastY = e.clientY;
-      this.needsStaticRedraw = true;
-      this.needsTrainRedraw  = true;
-    });
-    const endDrag = () => {
-      dragging = false;
-      const near = this.findNearestStation(this._mouseContainerX, this._mouseContainerY, 14);
-      container.style.cursor = near >= 0 ? 'pointer' : 'grab';
-    };
-    container.addEventListener('mouseup', (e: MouseEvent) => {
-      if (dragging && !mouseMoved) this.handleMapClick(e.clientX, e.clientY);
-      endDrag();
-    });
-    container.addEventListener('mouseleave', () => {
-      dragging = false;
-      this._mouseContainerX = -1;
-      this._mouseContainerY = -1;
-      container.style.cursor = 'grab';
-    });
-
-    window.addEventListener('resize', () => {
-      this.resizeCanvases();
-      this.needsStaticRedraw = true;
-      this.needsTrainRedraw  = true;
-    });
+  onMapResize(): void {
+    this.resizeCanvases();
+    this.needsStaticRedraw = true;
+    this.needsTrainRedraw  = true;
   }
 
   // ── Zoom controls ────────────────────────────────────────────
 
-  zoomIn(): void  { this.zoomAroundCenter(1.3); }
-  zoomOut(): void { this.zoomAroundCenter(1 / 1.3); }
+  zoomIn(): void  { this.viewport.zoomAt(1.3,       this.canvasContainer.nativeElement.clientWidth / 2, this.canvasContainer.nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
+  zoomOut(): void { this.viewport.zoomAt(1 / 1.3,   this.canvasContainer.nativeElement.clientWidth / 2, this.canvasContainer.nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
 
   zoomReset(): void {
     this.computeFit();
@@ -316,21 +260,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.needsTrainRedraw  = true;
   }
 
-  private zoomAroundCenter(factor: number): void {
-    const el = this.canvasContainer.nativeElement as HTMLElement;
-    const cx = el.clientWidth  / 2;
-    const cy = el.clientHeight / 2;
-    const newScale = Math.max(
-      this.fitScale * 0.5,
-      Math.min(this.fitScale * 50, this.currentScale * factor),
-    );
-    const actual = newScale / this.currentScale;
-    this.panX = cx + (this.panX - cx) * actual;
-    this.panY = cy + (this.panY - cy) * actual;
-    this.currentScale = newScale;
-    this.needsStaticRedraw = true;
-    this.needsTrainRedraw  = true;
-  }
 
   // ── Render loop ──────────────────────────────────────────────
 
@@ -341,13 +270,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
       this.lastRafTimestamp = timestamp;
       if (!this.state.paused()) {
-        this.time += dt * this.localSpeed;
+        this.clock.advance(dt, this.localSpeed);
       }
 
       if (this.needsStaticRedraw) {
         this.drawTiles();
-        this.drawPaths();
-        this.drawStations();
+        this.renderer.drawPaths(this.ctxPaths);
+        this.renderer.drawStations(this.ctxStations);
         this.needsStaticRedraw = false;
       }
 
@@ -373,7 +302,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private static readonly LABEL_ZOOM_HIGH = 5.0;
 
   private labelTargetPx(): number {
-    const mul  = this.currentScale / this.fitScale;
+    const mul  = this.viewport.scale() / this.viewport.fitScale();
     const low  = TrainComponent.LABEL_SHOW_ALL_MUL;
     const high = TrainComponent.LABEL_ZOOM_HIGH;
     if (mul <= low)  return TrainComponent.LABEL_SIZE_PX;
@@ -384,42 +313,35 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // ── Drawing ──────────────────────────────────────────────────
 
-  private drawPaths(): void {
-    const ctx = this.ctxPaths;
-    this.clearCtx(ctx);
-    this.applyTransform(ctx);
-
-    ctx.lineCap  = 'round';
-    ctx.lineJoin = 'round';
-
-    ctx.globalAlpha = 0.18;
-    for (const segment of this.metroData.paths) {
-      if (segment.path.length < 2) continue;
-      ctx.beginPath();
-      ctx.moveTo(segment.path[0].x, segment.path[0].y);
-      for (const p of segment.path.slice(1)) ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = this.lineColors(segment.line);
-      ctx.lineWidth = (TrainComponent.PATH_WIDTH_PX * 2) / this.currentScale;
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-
-    ctx.lineWidth = TrainComponent.PATH_WIDTH_PX / this.currentScale;
-    for (const segment of this.metroData.paths) {
-      if (segment.path.length < 2) continue;
-      ctx.beginPath();
-      ctx.moveTo(segment.path[0].x, segment.path[0].y);
-      for (const p of segment.path.slice(1)) ctx.lineTo(p.x, p.y);
-      ctx.strokeStyle = this.lineColors(segment.line);
-      ctx.stroke();
-    }
+  toggleSatellite(): void {
+    this.showSatellite = !this.showSatellite;
+    this.needsStaticRedraw = true;
   }
 
+  private drawTiles(): void {
+    this.viewport.clearCtx(this.ctxTiles);
+    if (!this.showSatellite) return;
+    this.viewport.applyTransform(this.ctxTiles);
+    this.tileService.drawTiles(
+      this.ctxTiles,
+      this.viewport.scale(),
+      this.viewport.panX(),
+      this.viewport.panY(),
+      this.dpr,
+      () => { this.needsStaticRedraw = true; },
+    );
+  }
+
+  private drawPaths(): void { this.renderer.drawPaths(this.ctxPaths); }
+
   private findNearestStation(cx: number, cy: number, hitPx = 14): number {
+    const scale = this.viewport.scale();
+    const panX  = this.viewport.panX();
+    const panY  = this.viewport.panY();
     let bestIdx = -1, bestDist = hitPx * hitPx;
     this.metroData.stations.forEach((s, i) => {
-      const sx = s.position.x * this.currentScale + this.panX;
-      const sy = s.position.y * this.currentScale + this.panY;
+      const sx = s.position.x * scale + panX;
+      const sy = s.position.y * scale + panY;
       const d2 = (cx - sx) ** 2 + (cy - sy) ** 2;
       if (d2 < bestDist) { bestDist = d2; bestIdx = i; }
     });
@@ -427,11 +349,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private findNearestTrain(cx: number, cy: number, hitPx = 24): string | null {
+    const scale = this.viewport.scale();
+    const panX  = this.viewport.panX();
+    const panY  = this.viewport.panY();
     let best: string | null = null;
     let bestDist = hitPx * hitPx;
     for (const t of this.state.trains()) {
-      const tx = t.x * this.currentScale + this.panX;
-      const ty = t.y * this.currentScale + this.panY;
+      const tx = t.x * scale + panX;
+      const ty = t.y * scale + panY;
       const d2 = (cx - tx) ** 2 + (cy - ty) ** 2;
       if (d2 < bestDist) { bestDist = d2; best = t.id; }
     }
@@ -471,7 +396,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private applyOverlayClasses(): void {
     const el = this.stationsOverlay?.nativeElement as HTMLElement | undefined;
     if (!el) return;
-    const fitMul    = this.currentScale / this.fitScale;
+    const fitMul    = this.viewport.scale() / this.viewport.fitScale();
     const forceShow = this.showAllPanels;
     const forceHide = this.stationsHidden;
     el.classList.toggle('show-interchange', !forceHide && (fitMul > 1.05 || forceShow));
@@ -490,7 +415,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
     if (this._overlayElements) {
       const stations = this.metroData.stations;
-      const s = this.currentScale, px = this.panX, py = this.panY;
+      const s = this.viewport.scale(), px = this.viewport.panX(), py = this.viewport.panY();
       for (let i = 0; i < this._overlayElements.length; i++) {
         const st = stations[i];
         if (!st) continue;
@@ -517,8 +442,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     if (!this.selectedTrainId) return;
     const t = this.state.getTrain(this.selectedTrainId);
     if (!t) { this.selectedTrainId = null; return; }
-    this.trainPanelX = t.x * this.currentScale + this.panX;
-    this.trainPanelY = t.y * this.currentScale + this.panY;
+    this.trainPanelX = t.x * this.viewport.scale() + this.viewport.panX();
+    this.trainPanelY = t.y * this.viewport.scale() + this.viewport.panY();
   }
 
   selectPerson(personId: string): void {
@@ -546,63 +471,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // Build a polyline following actual rail geometry for the person's planned path.
   // The first platform node's tramo goes FROM the origin station TO the next station —
-  // push all its points so the path starts at the boarding station.
-  // At line transfers the tramos are discontinuous — we add only the boarding point
-  // (endpoint of the incoming tramo) so the next tramo can extend the path from there.
-  private buildPersonRailPath(nodes: string[]): { x: number; y: number }[] {
-    const points: { x: number; y: number }[] = [];
-    for (const node of nodes) {
-      if (!NodeId.isPlatform(node)) continue;
-      const code = NodeId.parse(node)!.code;
-      const tramo = this.metroData.paths.find(p => p.id === code);
-      if (!tramo || tramo.path.length < 2) continue;
-      if (points.length === 0) {
-        // First tramo goes FROM origin — push all points to start the path at origin.
-        points.push(...tramo.path);
-      } else {
-        const last = points[points.length - 1];
-        const first = tramo.path[0];
-        const gap = (last.x - first.x) ** 2 + (last.y - first.y) ** 2;
-        // gap < 25 px² means the tramos connect (same line); otherwise it's a transfer.
-        // On a gap (transfer or line change), the tramo's geometry represents the
-        // INCOMING segment on the new line — add only the boarding point (end of tramo)
-        // so the next tramo can extend the path from there.
-        if (gap < 25) {
-          points.push(...tramo.path.slice(1));
-        } else {
-          points.push(tramo.path[tramo.path.length - 1]);
-        }
-      }
-    }
-    return points;
-  }
-
-  private resolveNodeToPos(nodeName: string): { x: number; y: number } | null {
-    const parsed = NodeId.parse(nodeName);
-    if (parsed?.kind === 'station') {
-      const s = this.metroData.stationsByCode.get(parsed.code);
-      return s ? s.position : null;
-    }
-    if (parsed?.kind === 'platform') {
-      const seg = this.metroData.paths.find(p => p.id === parsed.code);
-      return seg ? seg.position : null;
-    }
-    return null;
-  }
-
-  private resolveLocToPos(): { x: number; y: number } | null {
-    const loc = this.state.tracked()?.loc;
-    if (!loc) return null;
-    if (loc.type === 'platform') {
-      const seg = this.metroData.paths.find(p => p.id === loc.id);
-      return seg ? seg.position : null;
-    }
-    if (loc.type === 'station') {
-      const s = this.metroData.stationsByCode.get(NodeId.parse(loc.id)?.code ?? loc.id);
-      return s ? s.position : null;
-    }
-    return null;
-  }
 
   private buildStationLineMap(): void {
     this.stationLineMap.clear();
@@ -623,395 +491,23 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     }
   }
 
-  private drawStations(): void {
-    const ctx   = this.ctxStations;
-    const scale = this.currentScale;
-    this.clearCtx(ctx);
-    this.applyTransform(ctx);
-    const r  = TrainComponent.DOT_RADIUS_PX / scale;
-    const lw = TrainComponent.DOT_STROKE_PX / scale;
-    ctx.lineWidth = lw;
-    this.metroData.stations.forEach(station => {
-      const { x, y } = station.position;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fillStyle   = '#0c0e11';
-      ctx.fill();
-      ctx.strokeStyle = '#e6ebf2';
-      ctx.stroke();
-      ctx.closePath();
-    });
-  }
+  private drawStations(): void { this.renderer.drawStations(this.ctxStations); }
 
   private drawTrains(now: number): void {
-    const ctx = this.ctxTrains;
-    this.clearCtx(ctx);
-    this.applyTransform(ctx);
-
-    const capRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.fitScale * 3.11);
-    const rawRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale);
-    const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
-
-    for (const train of this.state.trains()) {
-      const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
-      const stride    = WAGON_W + WAGON_GAP;
-      const halfLen   = (wagons - 1) / 2 * stride;
-      const effStride = stride  * trainSizeRatio;
-      const effHalf   = halfLen * trainSizeRatio;
-      const occ       = train.capacity > 0 ? Math.min(1, train.people / train.capacity) : 0;
-      const fillClr   = occ < 0.5 ? '#4ade80' : occ < 0.8 ? '#fbbf24' : '#f87171';
-      const lineClr   = this.lineColors(train.line);
-      const r         = WAGON_H * 0.3;
-      const inset     = 0.25;
-
-      const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
-
-      let centerArc = 0;
-      let centerSegIdx = 1;
-      if (hasPath) {
-        const segStart  = train.pathSegStart;
-        const segEnd    = train.pathSegEnd;
-        const lensTotal = train.pathArcLens[train.pathArcLens.length - 1];
-        if (train.travelMs > 0) {
-          const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
-          const ease = t * t * (3 - 2 * t);
-          centerArc = segStart + ease * (segEnd - segStart);
-        } else {
-          centerArc = segEnd;
-        }
-        centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
-        const c = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
-        train.x = c.x; train.y = c.y; train.heading = c.heading;
-        centerSegIdx = c.segIdx;
-      } else if (train.travelMs > 0) {
-        const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
-        const ease = t * t * (3 - 2 * t);
-        train.x = train.fromX + (train.targetX - train.fromX) * ease;
-        train.y = train.fromY + (train.targetY - train.fromY) * ease;
-      }
-
-      for (let i = wagons - 1; i >= 0; i--) {
-        const arcOffset = (i - (wagons - 1) / 2) * effStride;
-        let wx: number, wy: number, wh: number;
-        if (hasPath) {
-          const p = this.positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset, centerSegIdx);
-          wx = p.x; wy = p.y; wh = p.heading;
-        } else {
-          wx = train.x; wy = train.y; wh = train.heading;
-        }
-
-        ctx.save();
-        ctx.translate(wx, wy);
-        ctx.rotate(wh);
-        ctx.scale(trainSizeRatio, trainSizeRatio);
-
-        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
-        ctx.fillStyle = '#11141a';
-        ctx.fill();
-
-        this.roundedRect(ctx,
-          -WAGON_W / 2 + inset, -WAGON_H / 2 + inset,
-          WAGON_W - inset * 2,   WAGON_H - inset * 2, r * 0.5);
-        ctx.fillStyle = fillClr;
-        ctx.fill();
-
-        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth   = 0.60;
-        ctx.stroke();
-
-        this.roundedRect(ctx, -WAGON_W / 2, -WAGON_H / 2, WAGON_W, WAGON_H, r);
-        ctx.strokeStyle = lineClr;
-        ctx.lineWidth   = 0.25;
-        ctx.stroke();
-
-        ctx.restore();
-      }
-
-      const arrowH   = WAGON_H * 0.8;
-      const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
-      let ax: number, ay: number, ah: number;
-      if (hasPath) {
-        const ap = this.positionAtArc(train.pathPoints, train.pathArcLens, arrowArc, centerSegIdx);
-        ax = ap.x; ay = ap.y; ah = ap.heading;
-      } else {
-        ax = train.x + Math.cos(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
-        ay = train.y + Math.sin(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
-        ah = train.heading;
-      }
-      ctx.save();
-      ctx.translate(ax, ay);
-      ctx.rotate(ah);
-      ctx.scale(trainSizeRatio, trainSizeRatio);
-      ctx.beginPath();
-      ctx.moveTo(arrowH,  0);
-      ctx.lineTo(0,      -arrowH * 0.6);
-      ctx.lineTo(0,       arrowH * 0.6);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.fill();
-      ctx.restore();
-    }
-
-    if (this.hoveredTrainId && this.hoveredTrainId !== this.selectedTrainId) {
-      const ht = this.state.getTrain(this.hoveredTrainId);
-      if (ht) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(ht.x, ht.y, (WAGON_H * 1.8) / this.currentScale, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-        ctx.lineWidth = 1.5 / this.currentScale;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    if (this.selectedTrainId) {
-      const st = this.state.getTrain(this.selectedTrainId);
-      if (st) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(st.x, st.y, (WAGON_H * 1.8) / this.currentScale, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(245,180,84,0.85)';
-        ctx.lineWidth = 2 / this.currentScale;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-
-    const _tracked = this.state.tracked();
-    if (_tracked?.id) {
-      const railPoints = this.buildPersonRailPath(_tracked.nodes);
-      if (railPoints.length >= 2) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(railPoints[0].x, railPoints[0].y);
-        for (const p of railPoints.slice(1)) ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = 'rgba(239,68,68,0.75)';
-        ctx.lineWidth = 4 / this.currentScale;
-        ctx.setLineDash([7 / this.currentScale, 5 / this.currentScale]);
-        ctx.stroke();
-        ctx.restore();
-      }
-      const locPos = this.resolveLocToPos();
-      if (locPos) {
-        const r = 7 / this.currentScale;
-        ctx.save();
-        ctx.fillStyle   = '#ef4444';
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth   = 1.2 / this.currentScale;
-        // head
-        ctx.beginPath();
-        ctx.arc(locPos.x, locPos.y - r * 1.05, r * 0.52, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        // body (shoulder arc)
-        ctx.beginPath();
-        ctx.arc(locPos.x, locPos.y + r * 0.75, r, Math.PI, 0);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  }
-
-  private computeArcLens(pts: { x: number; y: number }[]): number[] {
-    const lens: number[] = [0];
-    for (let i = 1; i < pts.length; i++) {
-      const dx = pts[i].x - pts[i - 1].x;
-      const dy = pts[i].y - pts[i - 1].y;
-      lens.push(lens[i - 1] + Math.sqrt(dx * dx + dy * dy));
-    }
-    return lens;
-  }
-
-  // ── Satellite tile map ───────────────────────────────────────
-
-  toggleSatellite(): void {
-    this.showSatellite = !this.showSatellite;
-    this.needsStaticRedraw = true;
-  }
-
-  private tileZoom(): number {
-    const s = this.currentScale;
-    if (s < 0.3) return 12;
-    if (s < 0.7) return 13;
-    if (s < 1.5) return 14;
-    if (s < 3.0) return 15;
-    return 16;
-  }
-
-  private canvasToLonLat(cx: number, cy: number): [number, number] {
-    const { lon, lat } = canvasToLonLat(cx, cy);
-    return [lon, lat];
-  }
-
-  private lonLatToCanvas(lon: number, lat: number): [number, number] {
-    const { x, y } = lonLatToCanvas(lon, lat);
-    return [x, y];
-  }
-
-  private tileToLonLat(tx: number, ty: number, z: number): [number, number] {
-    const { lon, lat } = tileToLonLat(tx, ty, z);
-    return [lon, lat];
-  }
-
-  private lonLatToTile(lon: number, lat: number, z: number): [number, number] {
-    const { tx, ty } = lonLatToTile(lon, lat, z);
-    return [tx, ty];
-  }
-
-  private drawTiles(): void {
-    this.clearCtx(this.ctxTiles);
-    if (!this.showSatellite) return;
-
-    const ctx = this.ctxTiles;
-    this.applyTransform(ctx);
-
-    const z  = this.tileZoom();
-    const cw = ctx.canvas.width  / this.dpr;
-    const ch = ctx.canvas.height / this.dpr;
-
-    const toCanvas = (sx: number, sy: number): [number, number] => [
-      (sx - this.panX) / this.currentScale,
-      (sy - this.panY) / this.currentScale,
-    ];
-    const [cx0, cy0] = toCanvas(0,  0);
-    const [cx1, cy1] = toCanvas(cw, ch);
-
-    const [lon0, lat0] = this.canvasToLonLat(cx0, cy0);
-    const [lon1, lat1] = this.canvasToLonLat(cx1, cy1);
-
-    const [txMin, tyMin] = this.lonLatToTile(lon0, lat0, z);
-    const [txMax, tyMax] = this.lonLatToTile(lon1, lat1, z);
-
-    for (let ty = tyMin; ty <= tyMax + 1; ty++) {
-      for (let tx = txMin; tx <= txMax + 1; tx++) {
-        const [lonTL, latTL] = this.tileToLonLat(tx,     ty,     z);
-        const [lonBR, latBR] = this.tileToLonLat(tx + 1, ty + 1, z);
-        const [cx,  cy ]     = this.lonLatToCanvas(lonTL, latTL);
-        const [cxe, cye]     = this.lonLatToCanvas(lonBR, latBR);
-        const tw = cxe - cx;
-        const th = cye - cy;
-        if (tw <= 0 || th <= 0) continue;
-
-        const key = `${z}/${ty}/${tx}`;
-        const img = this.tileCache.get(key);
-        if (img?.complete && img.naturalWidth > 0) {
-          ctx.drawImage(img, cx, cy, tw, th);
-        } else if (!img) {
-          if (this.tileCache.size > 128) {
-            this.tileCache.delete(this.tileCache.keys().next().value!);
-          }
-          const image        = new Image();
-          image.crossOrigin  = 'anonymous';
-          image.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${tx}`;
-          image.onload = () => { this.needsStaticRedraw = true; };
-          this.tileCache.set(key, image);
-        }
-      }
-    }
-  }
-
-  private positionAtArc(
-    pts:  { x: number; y: number }[],
-    lens: number[],
-    arc:  number,
-    hintIdx = 1,
-  ): { x: number; y: number; heading: number; segIdx: number } {
-    const total   = lens[lens.length - 1];
-    const clamped = Math.max(0, Math.min(total, arc));
-
-    let i = Math.max(1, Math.min(hintIdx, lens.length - 1));
-    while (i < lens.length - 1 && lens[i] < clamped) i++;
-    while (i > 1 && lens[i - 1] >= clamped) i--;
-
-    const p0     = pts[i - 1];
-    const p1     = pts[i];
-    const segLen = lens[i] - lens[i - 1];
-    const segT   = segLen > 0 ? (clamped - lens[i - 1]) / segLen : 0;
-
-    return {
-      x:       p0.x + (p1.x - p0.x) * segT,
-      y:       p0.y + (p1.y - p0.y) * segT,
-      heading: Math.atan2(p1.y - p0.y, p1.x - p0.x),
-      segIdx:  i,
-    };
-  }
-
-  private buildCompositePath(
-    seg: { id: string; line: string; sentido: string; path: { x: number; y: number }[] },
-  ): { path: { x: number; y: number }[]; segStart: number; segEnd: number } {
-    const CONNECT_SQ = 4;
-    const usedIds = new Set<string>([seg.id]);
-
-    let prepended: { x: number; y: number }[] = [];
-    let searchFrom = seg.path[0];
-    for (let k = 0; k < 2; k++) {
-      let best = CONNECT_SQ, prev: typeof seg | null = null;
-      for (const s of this.metroData.paths) {
-        if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
-        if (usedIds.has(s.id) || s.path.length < 2) continue;
-        const e = s.path[s.path.length - 1];
-        const d = (e.x - searchFrom.x) ** 2 + (e.y - searchFrom.y) ** 2;
-        if (d < best) { best = d; prev = s; }
-      }
-      if (!prev) break;
-      prepended  = [...prev.path.slice(0, -1), ...prepended];
-      searchFrom = prev.path[0];
-      usedIds.add(prev.id);
-    }
-
-    let appended: { x: number; y: number }[] = [];
-    const segTail = seg.path[seg.path.length - 1];
-    {
-      let best = CONNECT_SQ, next: typeof seg | null = null;
-      for (const s of this.metroData.paths) {
-        if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
-        if (usedIds.has(s.id) || s.path.length < 2) continue;
-        const d = (s.path[0].x - segTail.x) ** 2 + (s.path[0].y - segTail.y) ** 2;
-        if (d < best) { best = d; next = s; }
-      }
-      if (next) { appended = next.path.slice(1); usedIds.add(next.id); }
-    }
-
-    const path = [...prepended, ...seg.path, ...appended];
-    const lens    = this.computeArcLens(path);
-    const segStart = lens[prepended.length];
-    const segEnd   = lens[prepended.length + seg.path.length - 1];
-
-    return { path, segStart, segEnd };
-  }
-
-  private roundedRect(
-    ctx: CanvasRenderingContext2D,
-    x: number, y: number, w: number, h: number, r: number,
-  ): void {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.arcTo(x + w, y,     x + w, y + r,     r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-    ctx.lineTo(x + r, y + h);
-    ctx.arcTo(x,     y + h, x,     y + h - r, r);
-    ctx.lineTo(x,     y + r);
-    ctx.arcTo(x,     y,     x + r, y,         r);
-    ctx.closePath();
+    this.renderer.drawTrains(
+      this.ctxTrains,
+      this.state.trains(),
+      now,
+      this.hoveredTrainId,
+      this.selectedTrainId,
+      this.state.tracked(),
+    );
   }
 
   // ── Clock & time ─────────────────────────────────────────────
 
-  displayClock(): string {
-    return new Date(this.time).toLocaleTimeString('en-GB', {
-      timeZone: 'Etc/UTC', hour12: false,
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-    });
-  }
-
-  get dayProgress(): number {
-    return (this.time % 86_400_000) / 86_400_000;
-  }
+  displayClock = this.clock.displayClock;
+  get dayProgress(): number { return this.clock.dayProgress(); }
 
   // ── Speed ────────────────────────────────────────────────────
 
@@ -1035,8 +531,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   // ── Simulation controls ───────────────────────────────────────
 
   resetSimulation(): void {
-    const [h, m] = this.resetTime.split(':').map(Number);
-    this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
+    this.clock.resetTo(this.resetTime);
     this.state.reset();
     this.wsService.reset();
     this.cd.markForCheck();
@@ -1057,14 +552,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // ── Stats helpers ─────────────────────────────────────────────
 
-  get zoomReadout(): string {
-    return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
-  }
+  get zoomReadout(): string { return this.viewport.zoomReadout(); }
 
   get telemetryTrains(): number   { return this.state.trains().length; }
+
   get telemetrySegments(): number { return this.metroData.paths.length; }
   get telemetryStations(): number { return this.metroData.stations.length; }
-  get telemetryUptime(): number   { return Math.floor(this.time / 60_000) % 999; }
+  get telemetryUptime(): number   { return this.clock.uptime(); }
 
   get stationLabelItems() {
     const transitByName = new Map<string, number>();
@@ -1094,11 +588,5 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  get peakLabel(): string {
-    const h = (this.time / 3_600_000) % 24;
-    if (h >= 7.5 && h < 9.5)  return 'PEAK · AM';
-    if (h >= 17  && h < 19.5) return 'PEAK · PM';
-    if (h < 6 || h > 23)      return 'NIGHT';
-    return 'OFF · PEAK';
-  }
+  get peakLabel(): string { return this.clock.peakLabel(); }
 }

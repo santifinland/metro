@@ -237,10 +237,10 @@ describe('SimulationStateService', () => {
     expect(summary).toContain('EMPALME');
   });
 
-  it('queryPath should send a queryPath message via ws', () => {
-    const wsSpy = { send: jasmine.createSpy('send') };
+  it('queryPath should call queryPath on ws with from/to', () => {
+    const wsSpy = { queryPath: jasmine.createSpy('queryPath') };
     service.queryPath(wsSpy, 'EMPALME', 'BATAN');
-    expect(wsSpy.send).toHaveBeenCalledWith({ message: 'queryPath', from: 'EMPALME', to: 'BATAN' });
+    expect(wsSpy.queryPath).toHaveBeenCalledWith('EMPALME', 'BATAN');
   });
 
   // ── overcrowding ──────────────────────────────────────────────────────────

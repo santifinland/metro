@@ -1,10 +1,10 @@
 import { Component, input, output } from '@angular/core';
 
-import { LINE_COLORS } from '../../constants';
 import { Train } from '../../train';
 import { SimulationStateService } from '../../services/simulation-state.service';
 import { MetroDataService } from '../../services/metro-data.service';
 import { WebSocketService } from '../../services/websocket.service';
+import { lineColor, groupByDest } from '../../utils/format';
 
 @Component({
   selector: 'app-train-panel',
@@ -33,37 +33,23 @@ export class TrainPanelComponent {
     private readonly wsService: WebSocketService,
   ) {}
 
-  lineColors(line: string): string {
-    return LINE_COLORS[line] ?? '#6b7488';
-  }
-
-  private resolveDestLabel(code: string): string {
-    return this.metroData.stationsByCode.get(code)?.name ?? code;
-  }
+  lineColors(line: string): string { return lineColor(line); }
 
   groupByDest(persons: Array<{ id: string; destination: string }>): Array<{ destination: string; ids: string[] }> {
-    const map = new Map<string, string[]>();
-    for (const p of persons) {
-      const label = this.resolveDestLabel(p.destination);
-      if (!map.has(label)) map.set(label, []);
-      map.get(label)!.push(p.id);
-    }
-    return Array.from(map.entries())
-      .map(([destination, ids]) => ({ destination, ids }))
-      .sort((a, b) => b.ids.length - a.ids.length);
+    return groupByDest(persons, code => this.metroData.stationsByCode.get(code)?.name ?? code);
   }
 
   inspectTrain(): void {
     const t = this.train();
     if (!t) return;
-    this.wsService.send({ message: 'pause' });
-    this.wsService.send({ message: 'requestTrainPersons', trainId: t.id } as any);
+    this.wsService.pause();
+    this.wsService.requestTrainPersons(t.id);
     this.inspectMode = true;
   }
 
   cancelInspect(): void {
     this.inspectMode = false;
-    this.wsService.send({ message: 'resume' });
+    this.wsService.resume();
   }
 
   onSelectPerson(personId: string): void {

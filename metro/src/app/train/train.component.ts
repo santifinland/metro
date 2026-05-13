@@ -7,7 +7,10 @@ import { WebSocketService } from '../services/websocket.service';
 import { MetroDataService } from '../services/metro-data.service';
 import { SimulationStateService } from '../services/simulation-state.service';
 import { SimulationConfigService } from '../services/simulation-config.service';
-import { LINE_COLORS, TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
+import { TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
+import { lineColor, fmtCount, groupByDest } from '../utils/format';
+import { canvasToLonLat, lonLatToCanvas, tileToLonLat, lonLatToTile } from '../utils/projection';
+import { NodeId } from '../utils/node-id';
 
 import { PersonTrackerComponent } from './person-tracker/person-tracker.component';
 import { TrainPanelComponent } from './train-panel/train-panel.component';
@@ -47,14 +50,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   showSatellite = false;
   private readonly tileCache = new Map<string, HTMLImageElement>();
-
-  // Projection constants matching Position.ts
-  private readonly LAMBDA0 =  -3.718762;
-  private readonly PHI0    =  40.4202961;
-  private readonly RADIUS  =  6371;
-  private readonly COS_P1  = Math.cos(40.4202961);
-  private readonly CW      = 3400;
-  private readonly CH      = 2000;
 
   currentScale = 1;
   protected fitScale  = 1;
@@ -132,7 +127,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.needsStaticRedraw = true;
     this.needsTrainRedraw  = true;
 
-    this.wsService.send({ message: 'setSpeed', factor: this.localSpeed });
+    this.wsService.setSpeed(this.localSpeed);
 
     this.wsService.messages$
       .pipe(takeUntil(this.destroy$))
@@ -532,21 +527,21 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.state.trackedPersonNodes = [];
     this.state.trackedPersonLocType = '';
     this.state.trackedPersonLocId = '';
-    this.wsService.send({ message: 'trackPerson', personId } as any);
-    this.wsService.send({ message: 'resume' });
+    this.wsService.trackPerson(personId);
+    this.wsService.resume();
   }
 
   togglePlatformInspect(anderId: string): void {
     if (this.inspectedPlatformId === anderId) {
       this.inspectedPlatformId = null;
       this.expandedPlatformDest = null;
-      this.wsService.send({ message: 'resume' });
+      this.wsService.resume();
       return;
     }
     this.inspectedPlatformId = anderId;
     this.expandedPlatformDest = null;
-    this.wsService.send({ message: 'pause' });
-    this.wsService.send({ message: 'requestPlatformPersons', platformId: anderId } as any);
+    this.wsService.pause();
+    this.wsService.requestPlatformPersons(anderId);
   }
 
   onStationLabelClick(idx: number): void {
@@ -561,8 +556,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private buildPersonRailPath(nodes: string[]): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     for (const node of nodes) {
-      if (!node.startsWith('Platform_')) continue;
-      const code = node.split('_').pop()!;
+      if (!NodeId.isPlatform(node)) continue;
+      const code = NodeId.parse(node)!.code;
       const tramo = this.metroData.paths.find(p => p.id === code);
       if (!tramo || tramo.path.length < 2) continue;
       if (points.length === 0) {
@@ -587,12 +582,13 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private resolveNodeToPos(nodeName: string): { x: number; y: number } | null {
-    if (nodeName.startsWith('Station_')) {
-      const s = this.metroData.stationsByCode.get(nodeName.slice('Station_'.length));
+    const parsed = NodeId.parse(nodeName);
+    if (parsed?.kind === 'station') {
+      const s = this.metroData.stationsByCode.get(parsed.code);
       return s ? s.position : null;
     }
-    if (nodeName.startsWith('Platform_')) {
-      const seg = this.metroData.paths.find(p => p.id === nodeName.slice('Platform_'.length));
+    if (parsed?.kind === 'platform') {
+      const seg = this.metroData.paths.find(p => p.id === parsed.code);
       return seg ? seg.position : null;
     }
     return null;
@@ -605,7 +601,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       return seg ? seg.position : null;
     }
     if (lt === 'station') {
-      const s = this.metroData.stationsByCode.get(lid.replace('Station_', ''));
+      const s = this.metroData.stationsByCode.get(NodeId.parse(lid)?.code ?? lid);
       return s ? s.position : null;
     }
     return null;
@@ -848,29 +844,22 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private canvasToLonLat(cx: number, cy: number): [number, number] {
-    const lon = this.LAMBDA0 - (cx - this.CW / 2) / (this.RADIUS * this.COS_P1);
-    const lat = this.PHI0   - (cy - this.CH / 2) / this.RADIUS;
+    const { lon, lat } = canvasToLonLat(cx, cy);
     return [lon, lat];
   }
 
   private lonLatToCanvas(lon: number, lat: number): [number, number] {
-    const x = -this.RADIUS * (lon - this.LAMBDA0) * this.COS_P1 + this.CW / 2;
-    const y = -this.RADIUS * (lat - this.PHI0)                   + this.CH / 2;
+    const { x, y } = lonLatToCanvas(lon, lat);
     return [x, y];
   }
 
   private tileToLonLat(tx: number, ty: number, z: number): [number, number] {
-    const n   = 2 ** z;
-    const lon = tx / n * 360 - 180;
-    const lat = Math.atan(Math.sinh(Math.PI * (1 - 2 * ty / n))) * 180 / Math.PI;
+    const { lon, lat } = tileToLonLat(tx, ty, z);
     return [lon, lat];
   }
 
   private lonLatToTile(lon: number, lat: number, z: number): [number, number] {
-    const n      = 2 ** z;
-    const tx     = Math.floor((lon + 180) / 360 * n);
-    const latRad = lat * Math.PI / 180;
-    const ty     = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+    const { tx, ty } = lonLatToTile(lon, lat, z);
     return [tx, ty];
   }
 
@@ -1042,7 +1031,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         }
       }
     }
-    this.wsService.send({ message: 'setSpeed', factor: newSpeed });
+    this.wsService.setSpeed(newSpeed);
   }
 
   // ── Simulation controls ───────────────────────────────────────
@@ -1051,36 +1040,21 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const [h, m] = this.resetTime.split(':').map(Number);
     this.time = ((h || 6) * 3600 + (m || 0)) * 1000;
     this.state.reset();
-    this.wsService.send({ message: 'reset' });
+    this.wsService.reset();
     this.cd.markForCheck();
   }
 
   // ── Formatting helpers ────────────────────────────────────────
 
-  lineColors(line: string): string {
-    return LINE_COLORS[line] ?? '#6b7488';
-  }
-
-  fmtCount(n: number): string {
-    if (n >= 10000) return (n / 1000).toFixed(1) + 'k';
-    if (n >= 1000)  return (n / 1000).toFixed(2) + 'k';
-    return String(n);
-  }
+  lineColors(line: string): string { return lineColor(line); }
+  fmtCount(n: number): string { return fmtCount(n); }
 
   private resolveDestLabel(code: string): string {
     return this.metroData.stationsByCode.get(code)?.name ?? code;
   }
 
   groupByDest(persons: Array<{ id: string; destination: string }>): Array<{ destination: string; ids: string[] }> {
-    const map = new Map<string, string[]>();
-    for (const p of persons) {
-      const label = this.resolveDestLabel(p.destination);
-      if (!map.has(label)) map.set(label, []);
-      map.get(label)!.push(p.id);
-    }
-    return Array.from(map.entries())
-      .map(([destination, ids]) => ({ destination, ids }))
-      .sort((a, b) => b.ids.length - a.ids.length);
+    return groupByDest(persons, code => this.resolveDestLabel(code));
   }
 
   // ── Stats helpers ─────────────────────────────────────────────
@@ -1097,7 +1071,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   get stationLabelItems() {
     const transitByName = new Map<string, number>();
     this.state.stationIdPeople.forEach((count, stationId) => {
-      const s = this.metroData.stationsByCode.get(stationId.replace(/^Station_/, ''));
+      const s = this.metroData.stationsByCode.get(NodeId.parse(stationId)?.code ?? stationId);
       if (s) transitByName.set(s.name, (transitByName.get(s.name) ?? 0) + count);
     });
 

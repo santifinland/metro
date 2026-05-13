@@ -19,8 +19,8 @@ describe('MetroDataService', () => {
   });
 
   it('should load paths', () => {
-    expect(service.paths).toBeDefined();
-    expect(service.paths.length).toBeGreaterThan(0);
+    expect(service.segments).toBeDefined();
+    expect(service.segments.length).toBeGreaterThan(0);
   });
 
   it('stations should have name and position', () => {
@@ -32,7 +32,7 @@ describe('MetroDataService', () => {
   });
 
   it('paths should have line and path coordinates', () => {
-    const path = service.paths[0];
+    const path = service.segments[0];
     expect(path.line).toBeDefined();
     expect(path.path).toBeDefined();
     expect(path.path.length).toBeGreaterThan(0);

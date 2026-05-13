@@ -69,7 +69,7 @@ describe('SimulationStateService', () => {
     service.process({ message: 'newTrain', train: 'T1', x: 0, y: 0 });
     service.process({ message: 'newTrain', train: 'T1', x: 100, y: 200 });
     expect(service.trains().length).toBe(1);
-    expect(service.getTrain('T1')!.targetX).toBe(100);
+    expect(service.getTrainView('T1')!.targetX).toBe(100);
   });
 
   it('getTrain should return train after newTrain', () => {
@@ -83,8 +83,8 @@ describe('SimulationStateService', () => {
   it('process moveTrain should update target position', () => {
     service.process({ message: 'newTrain', train: 'T1', x: 0, y: 0 });
     service.process({ message: 'moveTrain', train: 'T1', x: 50, y: 75 });
-    expect(service.trains()[0].targetX).toBe(50);
-    expect(service.trains()[0].targetY).toBe(75);
+    expect(service.getTrainView(service.trains()[0].id)!.targetX).toBe(50);
+    expect(service.getTrainView(service.trains()[0].id)!.targetY).toBe(75);
   });
 
   it('process moveTrain for unknown train should not add it', () => {

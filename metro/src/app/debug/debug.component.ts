@@ -22,16 +22,14 @@ export class DebugComponent {
     readonly state: SimulationStateService,
   ) {}
 
-  /** Send a queryPath request to the backend. */
   query(): void {
     if (this.from.trim() && this.to.trim()) {
-      this.state.queryPath(this.ws, this.from.trim(), this.to.trim());
+      this.ws.queryPath(this.from.trim(), this.to.trim());
     }
   }
 
-  /** Separate the returned nodes into station-only rows for the summary line. */
   stationLabels(): string {
-    const r = this.state.pathQueryResult;
+    const r = this.state.pathQueryResult();
     if (!r?.found) return '';
     return r.nodes
       .filter((n: PathNode) => n.kind === 'station')

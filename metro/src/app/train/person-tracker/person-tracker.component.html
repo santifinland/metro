@@ -8,12 +8,12 @@
   <button class="person-tracker-close" (click)="stopTracking()">✕</button>
 </div>
 <div class="person-tracker-id">
-  <span class="person-tracker-hash">#</span>{{ state.trackedPersonId!.slice(0, 8) }}
+  <span class="person-tracker-hash">#</span>{{ state.tracked()!.id!.slice(0, 8) }}
 </div>
 @if (locationLabel) {
   <div class="person-tracker-loc">
-    <span class="person-tracker-badge" [class]="'ptbadge-' + state.trackedPersonLocType">
-      {{ state.trackedPersonLocType | uppercase }}
+    <span class="person-tracker-badge" [class]="'ptbadge-' + state.tracked()?.loc?.type">
+      {{ state.tracked()?.loc?.type | uppercase }}
     </span>
     <span class="person-tracker-locname">{{ locationLabel }}</span>
   </div>

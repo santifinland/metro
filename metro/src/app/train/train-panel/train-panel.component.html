@@ -7,7 +7,7 @@
   </div>
   <div class="stn-panel-row">
     <span class="k">OCUPACIÓN</span>
-    <span class="v">{{ inspectMode ? state.personsInTrain.length : t.people }} / {{ t.capacity }}</span>
+    <span class="v">{{ inspectMode ? state.personsInTrain().length : t.people }} / {{ t.capacity }}</span>
   </div>
   <div class="train-occ-bar">
     <div class="train-occ-fill"
@@ -19,10 +19,10 @@
 
   @if (inspectMode) {
     <div class="stn-panel-sep">
-      <span>PASAJEROS · {{ state.personsInTrain.length }}</span>
+      <span>PASAJEROS · {{ state.personsInTrain().length }}</span>
     </div>
     <div class="train-persons-list">
-      @for (group of groupByDest(state.personsInTrain); track group.destination) {
+      @for (group of groupByDest(state.personsInTrain()); track group.destination) {
         <button class="train-dest-btn"
                 (mousedown)="$event.stopPropagation()"
                 (click)="expandedTrainDest = expandedTrainDest === group.destination ? null : group.destination">

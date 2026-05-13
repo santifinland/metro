@@ -25,10 +25,10 @@
       <span class="section-meta">{{ peakLabel() }}</span>
     </div>
     <div class="kpi">
-      <div class="kpi-val amber">{{ formatCount(state.simulationPeople) }}<span class="unit">PAX</span></div>
+      <div class="kpi-val amber">{{ formatCount(state.simulationPeople()) }}<span class="unit">PAX</span></div>
       <div class="kpi-sub">
-        <span>IN METRO <span class="kpi-sub-v">{{ formatCount(state.metroPeople) }}</span></span>
-        <span>· EXT <span class="kpi-sub-v">{{ formatCount(state.simulationPeople - state.metroPeople) }}</span></span>
+        <span>IN METRO <span class="kpi-sub-v">{{ formatCount(state.metroPeople()) }}</span></span>
+        <span>· EXT <span class="kpi-sub-v">{{ formatCount(state.simulationPeople() - state.metroPeople()) }}</span></span>
       </div>
     </div>
     <div class="sparkline-wrap">
@@ -47,15 +47,15 @@
     </div>
     <div class="stat-row">
       <span class="row-name">IN TRAINS</span>
-      <span class="row-val" style="color:var(--cyan)">{{ formatCount(state.trainsPeople) }}</span>
+      <span class="row-val" style="color:var(--cyan)">{{ formatCount(state.trainsPeople()) }}</span>
     </div>
     <div class="stat-row">
       <span class="row-name">PLATFORMS</span>
-      <span class="row-val">{{ formatCount(allPeople(state.platformsPeople)) }}</span>
+      <span class="row-val">{{ formatCount(allPeople(state.platformsPeople())) }}</span>
     </div>
     <div class="stat-row">
       <span class="row-name">STATION HALL</span>
-      <span class="row-val">{{ formatCount(allPeople(state.stationsPeople)) }}</span>
+      <span class="row-val">{{ formatCount(allPeople(state.stationsPeople())) }}</span>
     </div>
   </div>
 

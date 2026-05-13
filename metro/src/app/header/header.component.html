@@ -11,8 +11,8 @@
   <div class="topbar-center">
     <div class="topbar-meta"><span>NODE</span><span class="v">MAD-001</span></div>
     <div class="topbar-meta"><span>SESSION</span><span class="v">{{ sessionId }}</span></div>
-    <div class="topbar-meta"><span>TICK</span><span class="v">{{ state.paused ? 'HOLD' : 'LIVE' }}</span></div>
-    <div class="topbar-meta"><span>×</span><span class="v">{{ state.timeMultiplier.toFixed(2) }}</span></div>
+    <div class="topbar-meta"><span>TICK</span><span class="v">{{ state.paused() ? 'HOLD' : 'LIVE' }}</span></div>
+    <div class="topbar-meta"><span>×</span><span class="v">{{ state.timeMultiplier().toFixed(2) }}</span></div>
   </div>
 
   <nav class="topbar-nav">

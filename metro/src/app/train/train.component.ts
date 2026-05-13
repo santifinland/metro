@@ -340,7 +340,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       const dt = this.lastRafTimestamp > 0 ? timestamp - this.lastRafTimestamp : 0;
       this.lastRafTimestamp = timestamp;
-      if (!this.state.paused) {
+      if (!this.state.paused()) {
         this.time += dt * this.localSpeed;
       }
 
@@ -354,12 +354,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       this.drawTrains(timestamp);
       this.updateStationsOverlay();
       this.updateTrainPanel();
-      this.state.dirty      = false;
       this.needsTrainRedraw = false;
 
       if (timestamp - this.lastCdTick >= 200) {
         this.lastCdTick = timestamp;
-        this.peopleHistory.push(this.state.metroPeople);
+        this.peopleHistory.push(this.state.metroPeople());
         this.peopleHistory.shift();
         this.ngZone.run(() => {});
       }
@@ -430,7 +429,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private findNearestTrain(cx: number, cy: number, hitPx = 24): string | null {
     let best: string | null = null;
     let bestDist = hitPx * hitPx;
-    for (const t of this.state.trains) {
+    for (const t of this.state.trains()) {
       const tx = t.x * this.currentScale + this.panX;
       const ty = t.y * this.currentScale + this.panY;
       const d2 = (cx - tx) ** 2 + (cy - ty) ** 2;
@@ -523,10 +522,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   selectPerson(personId: string): void {
-    this.state.trackedPersonId = personId;
-    this.state.trackedPersonNodes = [];
-    this.state.trackedPersonLocType = '';
-    this.state.trackedPersonLocId = '';
+    this.state.trackPerson(personId);
     this.wsService.trackPerson(personId);
     this.wsService.resume();
   }
@@ -595,13 +591,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private resolveLocToPos(): { x: number; y: number } | null {
-    const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
-    if (lt === 'platform') {
-      const seg = this.metroData.paths.find(p => p.id === lid);
+    const loc = this.state.tracked()?.loc;
+    if (!loc) return null;
+    if (loc.type === 'platform') {
+      const seg = this.metroData.paths.find(p => p.id === loc.id);
       return seg ? seg.position : null;
     }
-    if (lt === 'station') {
-      const s = this.metroData.stationsByCode.get(NodeId.parse(lid)?.code ?? lid);
+    if (loc.type === 'station') {
+      const s = this.metroData.stationsByCode.get(NodeId.parse(loc.id)?.code ?? loc.id);
       return s ? s.position : null;
     }
     return null;
@@ -655,7 +652,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const rawRatio      = TrainComponent.PATH_WIDTH_PX * 1.4 / (WAGON_H * this.currentScale);
     const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
 
-    for (const train of this.state.trains) {
+    for (const train of this.state.trains()) {
       const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
       const stride    = WAGON_W + WAGON_GAP;
       const halfLen   = (wagons - 1) / 2 * stride;
@@ -782,8 +779,9 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     }
 
-    if (this.state.trackedPersonId) {
-      const railPoints = this.buildPersonRailPath(this.state.trackedPersonNodes);
+    const _tracked = this.state.tracked();
+    if (_tracked?.id) {
+      const railPoints = this.buildPersonRailPath(_tracked.nodes);
       if (railPoints.length >= 2) {
         ctx.save();
         ctx.beginPath();
@@ -1023,7 +1021,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const newSpeed = this.localSpeed;
     const now = performance.now();
     const ratio = oldSpeed / newSpeed;
-    for (const train of this.state.trains) {
+    for (const train of this.state.trains()) {
       if (train.travelMs > 0) {
         const elapsed = now - train.departedAt;
         if (elapsed < train.travelMs) {
@@ -1063,14 +1061,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return `×${(this.currentScale / this.fitScale).toFixed(2)}`;
   }
 
-  get telemetryTrains(): number   { return this.state.trains.length; }
+  get telemetryTrains(): number   { return this.state.trains().length; }
   get telemetrySegments(): number { return this.metroData.paths.length; }
   get telemetryStations(): number { return this.metroData.stations.length; }
   get telemetryUptime(): number   { return Math.floor(this.time / 60_000) % 999; }
 
   get stationLabelItems() {
     const transitByName = new Map<string, number>();
-    this.state.stationIdPeople.forEach((count, stationId) => {
+    this.state.stationIdPeople().forEach((count, stationId) => {
       const s = this.metroData.stationsByCode.get(NodeId.parse(stationId)?.code ?? stationId);
       if (s) transitByName.set(s.name, (transitByName.get(s.name) ?? 0) + count);
     });
@@ -1082,7 +1080,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         const line = lines[idx] ?? '';
         const destination = this.metroData.lineDestinations.get(`${line}/${pe.sentido}`) ?? '';
         return { id: pe.id, line, sentido: pe.sentido, destination,
-                 total: this.state.andenPeople.get(parseInt(pe.id, 10)) ?? 0 };
+                 total: this.state.andenPeople().get(parseInt(pe.id, 10)) ?? 0 };
       });
       const destCount = new Map<string, number>();
       platforms.forEach(p => destCount.set(p.destination, (destCount.get(p.destination) ?? 0) + 1));

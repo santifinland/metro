@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { TrainComponent } from './train.component';
@@ -23,18 +23,17 @@ describe('TrainComponent', () => {
     lineDestinations: new Map<string, string>(),
   };
   const mockSimulationStateService = {
-    trains: [],
-    simulationPeople: 0,
-    metroPeople: 0,
-    trainsPeople: 0,
-    timeMultiplier: 1,
-    dirty: false,
-    paused: true,
-    platformsPeople: new Map<string, number>(),
-    stationsPeople: new Map<string, number>(),
-    andenPeople: new Map<number, number>(),
-    stationIdPeople: new Map<string, number>(),
-    trackedPersonId: null,
+    trains: signal([] as any[]),
+    simulationPeople: signal(0),
+    metroPeople: signal(0),
+    trainsPeople: signal(0),
+    timeMultiplier: signal(1),
+    paused: signal(true),
+    platformsPeople: signal(new Map<string, number>()),
+    stationsPeople: signal(new Map<string, number>()),
+    andenPeople: signal(new Map<number, number>()),
+    stationIdPeople: signal(new Map<string, number>()),
+    tracked: signal(null),
     initLines: jasmine.createSpy('initLines'),
     process: jasmine.createSpy('process'),
     getTrain: jasmine.createSpy('getTrain'),
@@ -182,12 +181,13 @@ describe('TrainComponent', () => {
 describe('TelemetryPanelComponent helpers', () => {
   let panel: TelemetryPanelComponent;
 
+  const mockPlatformsMap = new Map<string, number>();
   const mockSimulationStateService = {
-    platformsPeople: new Map<string, number>(),
-    stationsPeople: new Map<string, number>(),
-    simulationPeople: 0,
-    metroPeople: 0,
-    trainsPeople: 0,
+    platformsPeople: signal(mockPlatformsMap),
+    stationsPeople: signal(new Map<string, number>()),
+    simulationPeople: signal(0),
+    metroPeople: signal(0),
+    trainsPeople: signal(0),
   };
 
   beforeEach(async () => {
@@ -224,8 +224,9 @@ describe('TelemetryPanelComponent helpers', () => {
   // ── linePeople / allPeople ───────────────────────────────────────────────
 
   it('linePeople should return entries sorted by line name', () => {
-    mockSimulationStateService.platformsPeople.set('2', 30);
-    mockSimulationStateService.platformsPeople.set('1', 10);
+    mockPlatformsMap.set('2', 30);
+    mockPlatformsMap.set('1', 10);
+    mockSimulationStateService.platformsPeople.set(new Map(mockPlatformsMap));
     const result = panel.linePeople();
     expect(result[0][0]).toBe('1');
     expect(result[1][0]).toBe('2');
@@ -242,13 +243,12 @@ describe('TelemetryPanelComponent helpers', () => {
   // ── linePercent ──────────────────────────────────────────────────────────
 
   it('linePercent should return 100 for the maximum value', () => {
-    mockSimulationStateService.platformsPeople.clear();
-    mockSimulationStateService.platformsPeople.set('1', 50);
+    mockSimulationStateService.platformsPeople.set(new Map([['1', 50]]));
     expect(panel.linePercent(50)).toBe(100);
   });
 
   it('linePercent should return 0 when count is 0', () => {
-    mockSimulationStateService.platformsPeople.clear();
+    mockSimulationStateService.platformsPeople.set(new Map());
     expect(panel.linePercent(0)).toBe(0);
   });
 });

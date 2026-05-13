@@ -43,7 +43,7 @@
   </section>
 
   <!-- ── Result ─────────────────────────────────────────────────────── -->
-  @if (state.pathQueryResult; as r) {
+  @if (state.pathQueryResult(); as r) {
     <section class="result" [ngClass]="r.found ? 'found' : 'not-found'">
 
       <!-- status bar -->

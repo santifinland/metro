@@ -43,7 +43,7 @@ export class ControlPanelComponent {
   ) {}
 
   gaugeCells(): string[] {
-    const filled = Math.round(this.state.simLoad * this.gaugeCount);
+    const filled = Math.round(this.state.simLoad() * this.gaugeCount);
     return Array.from({ length: this.gaugeCount }, (_, i) => {
       if (i >= filled) return '';
       if (i >= 14) return 'over';
@@ -58,10 +58,10 @@ export class ControlPanelComponent {
   }
 
   playPause(): void {
-    if (this.state.paused) {
-      this.wsService.send({ message: 'resume' });
+    if (this.state.paused()) {
+      this.wsService.resume();
     } else {
-      this.wsService.send({ message: 'pause' });
+      this.wsService.pause();
     }
   }
 

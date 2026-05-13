@@ -46,7 +46,7 @@
                 }
                 @if (inspectedPlatformId === p.id) {
                   <div class="platform-inspect">
-                    @let platPersons = state.personsInPlatform.get(p.id);
+                    @let platPersons = state.personsInPlatform().get(p.id);
                     @if (platPersons) {
                       @for (group of groupByDest(platPersons); track group.destination) {
                         <button class="train-dest-btn"
@@ -95,7 +95,7 @@
   }
 
   <!-- Person tracker -->
-  @if (state.trackedPersonId) {
+  @if (state.tracked()?.id) {
     <app-person-tracker />
   }
 

@@ -1,6 +1,6 @@
 import { Injectable, DestroyRef, inject } from '@angular/core';
 import { BehaviorSubject, Observable, timer } from 'rxjs';
-import { retry, timeout } from 'rxjs/operators';
+import { retry, share, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { webSocket } from 'rxjs/webSocket';
 
@@ -30,7 +30,7 @@ export class WebSocketService {
     });
 
     this.messages$ = this.socket$.pipe(
-      timeout({ each: 30_000 }),
+      timeout({ each: 120_000 }),
       retry({
         count: 30,
         delay: (_error, _count) => {
@@ -39,6 +39,7 @@ export class WebSocketService {
         },
       }),
       takeUntilDestroyed(this.destroyRef),
+      share(),
     );
   }
 

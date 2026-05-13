@@ -33,17 +33,17 @@ export class TelemetryPanelComponent {
   }
 
   linePeople(): [string, number][] {
-    return Array.from(this.state.platformsPeople.entries())
+    return Array.from(this.state.platformsPeople().entries())
       .sort((a, b) => a[0].localeCompare(b[0], 'es', { numeric: true }));
   }
 
-  allPeople(recipient: Map<string, number>): number {
+  allPeople(recipient: ReadonlyMap<string, number>): number {
     const values = Array.from(recipient.values());
     return values.length === 0 ? 0 : values.reduce((p, c) => p + c);
   }
 
   linePercent(count: number): number {
-    const max = Math.max(...Array.from(this.state.platformsPeople.values()), 1);
+    const max = Math.max(...Array.from(this.state.platformsPeople().values()), 1);
     return Math.round((count / max) * 100);
   }
 

@@ -77,11 +77,11 @@
   <div class="section">
     <div class="section-head">
       <span class="section-title">SIMULATION</span>
-      <span class="section-meta">{{ state.paused ? 'PAUSED' : 'RUNNING' }}</span>
+      <span class="section-meta">{{ state.paused() ? 'PAUSED' : 'RUNNING' }}</span>
     </div>
     <div class="sim-controls">
-      <button class="btn-play" [class.paused]="state.paused" (click)="playPause()">
-        @if (state.paused) {
+      <button class="btn-play" [class.paused]="state.paused()" (click)="playPause()">
+        @if (state.paused()) {
           <svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 2 L10 6 L3 10 Z"/></svg>
         } @else {
           <svg viewBox="0 0 12 12" fill="currentColor">
@@ -148,18 +148,18 @@
           <div class="gauge-bar" [class]="cls"></div>
         }
       </div>
-      <div class="gauge-val" [class.warn]="state.simLoad > 0.7 && state.simLoad <= 0.85"
-                             [class.crit]="state.simLoad > 0.85">
-        {{ (state.simLoad * 100).toFixed(0) }}<span class="gauge-pct">%</span>
+      <div class="gauge-val" [class.warn]="state.simLoad() > 0.7 && state.simLoad() <= 0.85"
+                             [class.crit]="state.simLoad() > 0.85">
+        {{ (state.simLoad() * 100).toFixed(0) }}<span class="gauge-pct">%</span>
       </div>
     </div>
     <div class="stat-row">
       <span class="row-name">EVENTS / TICK</span>
-      <span class="row-val">{{ state.eventsPerTick }}</span>
+      <span class="row-val">{{ state.eventsPerTick() }}</span>
     </div>
     <div class="stat-row">
       <span class="row-name">QUEUE</span>
-      <span class="row-val">{{ state.queueSize }}</span>
+      <span class="row-val">{{ state.queueSize() }}</span>
     </div>
   </div>
 

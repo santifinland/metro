@@ -22,8 +22,9 @@ export class PersonTrackerComponent {
   ) {}
 
   get locationLabel(): string {
-    const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
-    if (!lt || !lid) return '';
+    const tracked = this.state.tracked();
+    if (!tracked?.loc) return '';
+    const { type: lt, id: lid } = tracked.loc;
     if (lt === 'station') {
       const code = NodeId.parse(lid)?.code ?? lid;
       return this.metroData.stationsByCode.get(code)?.name ?? code;
@@ -39,9 +40,11 @@ export class PersonTrackerComponent {
   }
 
   get progress(): number {
-    const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
-    const nodes = this.state.trackedPersonNodes;
-    if (!nodes.length || !lt || !lid) return 0;
+    const tracked = this.state.tracked();
+    if (!tracked?.loc) return 0;
+    const nodes = tracked.nodes;
+    const { type: lt, id: lid } = tracked.loc;
+    if (!nodes.length) return 0;
     const nodeId = lt === 'station' ? lid : lt === 'platform' ? NodeId.platform(lid) : null;
     if (!nodeId) return 0;
     const idx = nodes.indexOf(nodeId);
@@ -49,7 +52,7 @@ export class PersonTrackerComponent {
   }
 
   stopTracking(): void {
-    this.state.trackedPersonId = null;
+    this.state.untrackPerson();
     this.wsService.untrackPerson();
   }
 }

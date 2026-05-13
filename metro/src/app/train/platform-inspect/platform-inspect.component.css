@@ -1,0 +1,52 @@
+/* ── Platform inspect panel ───────────────────────────────── */
+.platform-inspect {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 2px 0 4px 20px;
+  border-left: 1px solid var(--line-2);
+  padding-left: 6px;
+}
+.platform-inspect-loading {
+  font-size: 9px;
+  color: var(--t-4);
+  padding: 4px 6px;
+  font-style: italic;
+}
+
+/* ── Destination groups ───────────────────────────────────── */
+.train-dest-btn {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
+  font-size: 8px;
+  font-family: var(--mono, monospace);
+  letter-spacing: 0.04em;
+  padding: 3px 6px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: color .1s, border-color .1s;
+}
+.train-dest-btn:hover { color: var(--amber); border-color: var(--amber-dim); }
+.train-dest-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.train-dest-count { color: var(--cyan); font-weight: 600; }
+.train-dest-arrow { color: var(--t-4); font-size: 7px; }
+
+.train-person-btn {
+  background: var(--bg-3);
+  border: 1px solid var(--line-2);
+  color: var(--t-2);
+  font-size: 9px;
+  font-family: var(--mono, monospace);
+  letter-spacing: 0.06em;
+  padding: 3px 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: color .1s, background .1s, border-color .1s;
+}
+.train-person-btn:hover { color: var(--cyan); border-color: var(--cyan); background: var(--bg-2); }

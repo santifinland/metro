@@ -1,8 +1,10 @@
-import { Component, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input } from '@angular/core';
 
 @Component({
   selector: 'app-bottom-telemetry',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./bottom-telemetry.component.css'],
   template: `
     <div class="telemetry" [style.--p]="(progress() * 100).toFixed(1) + '%'">
       <span class="telemetry-tag">▸ NET</span>

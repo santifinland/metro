@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, output } from '@angular/core';
 
 import { PersonEntry } from '../../messages';
 import { StationLabelItem } from '../station-label-item';
@@ -8,6 +8,8 @@ import { lineColor, fmtCount } from '../../utils/format';
 @Component({
   selector: 'app-station-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./station-card.component.css'],
   imports: [PlatformInspectComponent],
   template: `
     <div class="stn-label">

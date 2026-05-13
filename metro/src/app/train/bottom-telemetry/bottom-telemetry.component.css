@@ -1,0 +1,36 @@
+.telemetry {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  right: 56px;
+  height: 30px;
+  background: rgba(12, 14, 17, 0.88);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(8px);
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto auto;
+  align-items: center;
+  padding: 0 14px;
+  gap: 16px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--t-2);
+  z-index: 18;
+  pointer-events: none;
+}
+.telemetry-tag { color: var(--amber); font-weight: 600; }
+.telemetry-track {
+  position: relative;
+  height: 2px;
+  background: var(--line-1);
+  overflow: hidden;
+}
+.telemetry-track::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--p, 0%);
+  background: var(--amber);
+}
+.telemetry-stat .k { color: var(--t-3); }
+.telemetry-stat .v { color: var(--t-1); margin-left: 5px; font-variant-numeric: tabular-nums; }

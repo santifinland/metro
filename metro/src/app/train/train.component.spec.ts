@@ -158,23 +158,23 @@ describe('TrainComponent', () => {
 
   it('toggleShowAllPanels first click should set showAllPanels to true', () => {
     component.toggleShowAllPanels();
-    expect(component.showAllPanels).toBeTrue();
-    expect((component as any).stationsHidden).toBeFalse();
+    expect(component.showAllPanels()).toBeTrue();
+    expect(component.stationsHidden()).toBeFalse();
   });
 
   it('toggleShowAllPanels second click should hide all and set stationsHidden', () => {
     component.toggleShowAllPanels();
     component.toggleShowAllPanels();
-    expect(component.showAllPanels).toBeFalse();
-    expect((component as any).stationsHidden).toBeTrue();
+    expect(component.showAllPanels()).toBeFalse();
+    expect(component.stationsHidden()).toBeTrue();
   });
 
   it('toggleShowAllPanels third click should show all again', () => {
     component.toggleShowAllPanels();
     component.toggleShowAllPanels();
     component.toggleShowAllPanels();
-    expect(component.showAllPanels).toBeTrue();
-    expect((component as any).stationsHidden).toBeFalse();
+    expect(component.showAllPanels()).toBeTrue();
+    expect(component.stationsHidden()).toBeFalse();
   });
 });
 

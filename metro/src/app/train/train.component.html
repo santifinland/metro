@@ -1,6 +1,6 @@
 <div class="map-root">
 
-  <!-- Canvas layers -->
+  <!-- Canvas layers + interaction directive -->
   <div class="canvas-container" #canvasContainer appMapInteraction
     (mapZoom)="onMapZoom($event)"
     (mapPan)="onMapPan($event)"
@@ -12,78 +12,22 @@
     <canvas #canvas_stations class="canvas-layer"></canvas>
     <canvas #canvas_trains   class="canvas-layer"></canvas>
 
-    <!-- Station labels overlay (HTML, positioned via RAF) -->
-    <div #stationsOverlay class="station-labels">
-      @for (item of stationLabelItems; track item.name; let idx = $index) {
-        <div class="stn-label-wrap" [class.is-interchange]="item.lines.length >= 2">
-          <div class="stn-label">
-            <div class="stn-name"
-                 (mousedown)="$event.stopPropagation()"
-                 (click)="onStationLabelClick(idx)">
-              <span class="stn-tick"></span>
-              <span class="stn-text">{{ item.name }}</span>
-            </div>
-            <div class="stn-panel">
-              <div class="stn-panel-row stn-total">
-                <span class="k">TOTAL</span>
-                <span class="v">{{ fmtCount(item.total) }}</span>
-              </div>
-              <div class="stn-panel-row stn-transit">
-                <span class="k">↳ TRANSIT</span>
-                <span class="v">{{ fmtCount(item.transit) }}</span>
-              </div>
-              <div class="stn-panel-sep">
-                <span>{{ item.lines.length === 1 ? 'PLATFORM' : 'PLATFORMS · ' + item.lines.length }}</span>
-              </div>
-              @for (p of item.platforms; track p.id) {
-                <div class="stn-platform">
-                  <span class="line-chip" [style.background]="lineColors(p.line)"
-                        [style.color]="p.line === 'R' ? '#000' : '#fff'">{{ p.line }}</span>
-                  <span class="stn-direction">→ {{ p.destination }}</span>
-                  <span class="stn-platform-count">{{ fmtCount(p.total) }}</span>
-                </div>
-                @if (inspectedPlatformId !== p.id) {
-                  <button class="train-inspect-btn"
-                          (mousedown)="$event.stopPropagation()"
-                          (click)="togglePlatformInspect(p.id)">
-                    INSPECCIONAR
-                  </button>
-                }
-                @if (inspectedPlatformId === p.id) {
-                  <div class="platform-inspect">
-                    @let platPersons = state.personsInPlatform().get(p.id);
-                    @if (platPersons) {
-                      @for (group of groupByDest(platPersons); track group.destination) {
-                        <button class="train-dest-btn"
-                                (mousedown)="$event.stopPropagation()"
-                                (click)="expandedPlatformDest = expandedPlatformDest === group.destination ? null : group.destination">
-                          <span class="train-dest-label">→ {{ group.destination || '?' }}</span>
-                          <span class="train-dest-count">{{ group.ids.length }}</span>
-                          <span class="train-dest-arrow">{{ expandedPlatformDest === group.destination ? '▴' : '▾' }}</span>
-                        </button>
-                        @if (expandedPlatformDest === group.destination) {
-                          @for (pid of group.ids; track pid) {
-                            <button class="train-person-btn"
-                                    (mousedown)="$event.stopPropagation()"
-                                    (click)="selectPerson(pid)">
-                              {{ pid.slice(0, 8) }}
-                            </button>
-                          }
-                        }
-                      }
-                      <button class="train-inspect-btn"
-                              (mousedown)="$event.stopPropagation()"
-                              (click)="togglePlatformInspect(p.id)">
-                        CERRAR
-                      </button>
-                    } @else {
-                      <div class="platform-inspect-loading">cargando…</div>
-                    }
-                  </div>
-                }
-              }
-            </div>
-          </div>
+    <!-- Station labels overlay — positioned via Angular bindings (#103) -->
+    <div class="station-labels" [ngClass]="overlayClasses()">
+      @for (item of stationLabelItems(); track item.name; let idx = $index) {
+        <div class="stn-label-wrap"
+             [class.is-interchange]="item.lines.length >= 2"
+             [class.is-selected]="selectedStationIdx() === idx"
+             [class.is-hover]="hoveredStationIdx() === idx"
+             [style.left.px]="item.x * viewport.scale() + viewport.panX()"
+             [style.top.px]="item.y * viewport.scale() + viewport.panY()">
+          <app-station-card
+            [item]="item"
+            [inspectedPlatformId]="inspectedPlatformId()"
+            [personsInPlatform]="state.personsInPlatform()"
+            (labelClick)="onStationLabelClick(idx)"
+            (platformInspect)="togglePlatformInspect($event)"
+            (personSelect)="selectPerson($event)" />
         </div>
       }
     </div>
@@ -106,10 +50,8 @@
 
   <!-- Corner brackets -->
   <div class="corners" aria-hidden="true">
-    <div class="corner tl"></div>
-    <div class="corner tr"></div>
-    <div class="corner bl"></div>
-    <div class="corner br"></div>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
   </div>
 
   <!-- Scope crosshair -->
@@ -137,17 +79,15 @@
   <app-telemetry-panel
     [peakLabel]="peakLabel"
     [peopleHistory]="peopleHistory"
-    [showAllPanels]="showAllPanels"
+    [showAllPanels]="showAllPanels()"
     (toggleShowAllPanels)="toggleShowAllPanels()" />
 
-  <!-- Bottom telemetry strip -->
-  <div class="telemetry" [style.--p]="((dayProgress) * 100).toFixed(1) + '%'">
-    <span class="telemetry-tag">▸ NET</span>
-    <div class="telemetry-track"></div>
-    <div class="telemetry-stat"><span class="k">TRAINS</span><span class="v">{{ telemetryTrains }}</span></div>
-    <div class="telemetry-stat"><span class="k">SEGMENTS</span><span class="v">{{ telemetrySegments }}</span></div>
-    <div class="telemetry-stat"><span class="k">STATIONS</span><span class="v">{{ telemetryStations }}</span></div>
-    <div class="telemetry-stat"><span class="k">UPTIME</span><span class="v">{{ telemetryUptime }}m</span></div>
-  </div>
+  <!-- Bottom telemetry strip (#101) -->
+  <app-bottom-telemetry
+    [trains]="telemetryTrains"
+    [segments]="telemetrySegments"
+    [stations]="telemetryStations"
+    [uptime]="telemetryUptime"
+    [progress]="dayProgress" />
 
 </div>

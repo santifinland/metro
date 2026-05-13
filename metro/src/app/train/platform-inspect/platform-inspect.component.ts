@@ -1,10 +1,12 @@
-import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, output, signal } from '@angular/core';
 
 import { PersonEntry } from '../../messages';
 
 @Component({
   selector: 'app-platform-inspect',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrls: ['./platform-inspect.component.css'],
   template: `
     <div class="platform-inspect">
       @if (persons(); as ps) {

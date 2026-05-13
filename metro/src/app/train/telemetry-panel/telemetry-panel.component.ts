@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, input, output } from '@angular/core';
 
 import { SimulationStateService } from '../../services/simulation-state.service';
 import { lineColor, fmtCount } from '../../utils/format';
@@ -8,7 +8,7 @@ import { lineColor, fmtCount } from '../../utils/format';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'class': 'panel panel-right',
-    '[class.panel--collapsed]': 'collapsed',
+    '[class.panel--collapsed]': 'collapsed()',
   },
   templateUrl: './telemetry-panel.component.html',
   styleUrls: ['./telemetry-panel.component.css'],
@@ -20,7 +20,7 @@ export class TelemetryPanelComponent {
 
   toggleShowAllPanels = output<void>();
 
-  collapsed = false;
+  readonly collapsed = signal(false);
 
   constructor(readonly state: SimulationStateService) {}
 

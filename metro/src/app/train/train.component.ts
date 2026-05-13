@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectorRef, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, OnDestroy, OnInit, NgZone, ChangeDetectionStrategy, signal, computed, viewChild } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { Subject } from 'rxjs';
@@ -38,11 +38,11 @@ import { StationLabelItem } from './station-label-item';
 })
 export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
-  @ViewChild('canvasContainer', { static: false, read: ElementRef }) canvasContainer!: ElementRef;
-  @ViewChild('canvas_tiles',    { static: false, read: ElementRef }) canvasTiles!: ElementRef;
-  @ViewChild('canvas_stations', { static: false, read: ElementRef }) canvasStations!: ElementRef;
-  @ViewChild('canvas_paths',    { static: false, read: ElementRef }) canvasPaths!: ElementRef;
-  @ViewChild('canvas_trains',   { static: false, read: ElementRef }) canvasTrains!: ElementRef;
+  readonly canvasContainer = viewChild.required<ElementRef<HTMLElement>>('canvasContainer');
+  readonly canvasTiles     = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas_tiles');
+  readonly canvasStations  = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas_stations');
+  readonly canvasPaths     = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas_paths');
+  readonly canvasTrains    = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas_trains');
 
   private _mouseContainerX = -1;
   private _mouseContainerY = -1;
@@ -103,7 +103,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   trainPanelY = 0;
   readonly inspectedPlatformId = signal<string | null>(null);
 
-  readonly peopleHistory: number[] = Array(40).fill(0);
+  readonly peopleHistory = signal<number[]>(Array(40).fill(0));
 
   private static readonly PATH_WIDTH_PX      = 6;
   private static readonly DOT_RADIUS_PX      = 5;
@@ -115,7 +115,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   constructor(
     private readonly wsService: WebSocketService,
     private readonly ngZone: NgZone,
-    private readonly cd: ChangeDetectorRef,
     readonly metroData: MetroDataService,
     readonly state: SimulationStateService,
     readonly cfg: SimulationConfigService,
@@ -136,10 +135,10 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.resizeCanvases();
 
-    this.ctxTiles    = this.canvasTiles.nativeElement.getContext('2d')!;
-    this.ctxStations = this.canvasStations.nativeElement.getContext('2d')!;
-    this.ctxPaths    = this.canvasPaths.nativeElement.getContext('2d')!;
-    this.ctxTrains   = this.canvasTrains.nativeElement.getContext('2d')!;
+    this.ctxTiles    = this.canvasTiles().nativeElement.getContext('2d')!;
+    this.ctxStations = this.canvasStations().nativeElement.getContext('2d')!;
+    this.ctxPaths    = this.canvasPaths().nativeElement.getContext('2d')!;
+    this.ctxTrains   = this.canvasTrains().nativeElement.getContext('2d')!;
 
     this.viewport.init(this.dpr);
     this.computeFit();
@@ -178,7 +177,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
             }
           }
         }
-        this.cd.markForCheck();
       });
 
     this.ngZone.runOutsideAngular(() => this.startRenderLoop());
@@ -194,11 +192,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   // ── Canvas sizing ────────────────────────────────────────────
 
   private resizeCanvases(): void {
-    const el = this.canvasContainer.nativeElement as HTMLElement;
+    const el = this.canvasContainer().nativeElement as HTMLElement;
     const W  = el.clientWidth;
     const H  = el.clientHeight;
     for (const ref of [this.canvasTiles, this.canvasPaths, this.canvasStations, this.canvasTrains]) {
-      const c = ref.nativeElement as HTMLCanvasElement;
+      const c = ref().nativeElement as HTMLCanvasElement;
       c.width  = W * this.dpr;
       c.height = H * this.dpr;
       c.style.width  = `${W}px`;
@@ -209,7 +207,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   // ── Fit computation ──────────────────────────────────────────
 
   private computeFit(): void {
-    const container = this.canvasContainer.nativeElement as HTMLElement;
+    const container = this.canvasContainer().nativeElement as HTMLElement;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     for (const s of this.metroData.paths) {
       for (const p of s.path) {
@@ -244,7 +242,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this._mouseContainerX = e.x;
     this._mouseContainerY = e.y;
     this.hoveredStationIdx.set(this.findNearestStation(e.x, e.y, 14));
-    const container = this.canvasContainer.nativeElement as HTMLElement;
+    const container = this.canvasContainer().nativeElement as HTMLElement;
     const nearTrain = this.findNearestTrain(e.x, e.y, 40);
     if (nearTrain) { container.style.cursor = 'pointer'; return; }
     container.style.cursor = this.hoveredStationIdx() >= 0 ? 'pointer' : 'grab';
@@ -257,7 +255,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   onMapLeave(): void {
     this._mouseContainerX = -1;
     this._mouseContainerY = -1;
-    (this.canvasContainer.nativeElement as HTMLElement).style.cursor = 'grab';
+    (this.canvasContainer().nativeElement as HTMLElement).style.cursor = 'grab';
   }
 
   onMapResize(): void {
@@ -268,8 +266,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // ── Zoom controls ────────────────────────────────────────────
 
-  zoomIn(): void  { this.viewport.zoomAt(1.3,       this.canvasContainer.nativeElement.clientWidth / 2, this.canvasContainer.nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
-  zoomOut(): void { this.viewport.zoomAt(1 / 1.3,   this.canvasContainer.nativeElement.clientWidth / 2, this.canvasContainer.nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
+  zoomIn(): void  { this.viewport.zoomAt(1.3,       this.canvasContainer().nativeElement.clientWidth / 2, this.canvasContainer().nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
+  zoomOut(): void { this.viewport.zoomAt(1 / 1.3,   this.canvasContainer().nativeElement.clientWidth / 2, this.canvasContainer().nativeElement.clientHeight / 2); this.needsStaticRedraw = true; this.needsTrainRedraw = true; }
 
   zoomReset(): void {
     this.computeFit();
@@ -303,9 +301,8 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
       if (timestamp - this.lastCdTick >= 200) {
         this.lastCdTick = timestamp;
-        this.peopleHistory.push(this.state.metroPeople());
-        this.peopleHistory.shift();
-        this.ngZone.run(() => {});
+        const next = this.state.metroPeople();
+        this.peopleHistory.update(h => [...h.slice(1), next]);
       }
 
       this.rafId = requestAnimationFrame(loop);
@@ -514,7 +511,6 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.clock.resetTo(this.resetTime);
     this.state.reset();
     this.wsService.reset();
-    this.cd.markForCheck();
   }
 
   // ── Formatting helpers ────────────────────────────────────────

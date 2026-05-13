@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 
 import { Train } from '../../train';
 import { SimulationStateService } from '../../services/simulation-state.service';
@@ -8,6 +8,7 @@ import { lineColor, groupByDest } from '../../utils/format';
 
 @Component({
   selector: 'app-train-panel',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './train-panel.component.html',
   styleUrls: ['./train-panel.component.css'],
   host: {

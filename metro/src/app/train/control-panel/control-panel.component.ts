@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, input, output } from '@angular/core';
 
 import { SimulationStateService } from '../../services/simulation-state.service';
 import { SimulationConfigService } from '../../services/simulation-config.service';
@@ -9,7 +9,7 @@ import { WebSocketService } from '../../services/websocket.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'class': 'panel panel-left',
-    '[class.panel--collapsed]': 'collapsed',
+    '[class.panel--collapsed]': 'collapsed()',
   },
   templateUrl: './control-panel.component.html',
   styleUrls: ['./control-panel.component.css'],
@@ -32,7 +32,7 @@ export class ControlPanelComponent {
   zoomReset       = output<void>();
   resetSim        = output<void>();
 
-  collapsed = false;
+  readonly collapsed = signal(false);
 
   readonly gaugeCount = 16;
 

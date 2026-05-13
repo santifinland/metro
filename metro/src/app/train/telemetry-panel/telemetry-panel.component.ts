@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 
-import { LINE_COLORS } from '../../constants';
 import { SimulationStateService } from '../../services/simulation-state.service';
+import { lineColor, fmtCount } from '../../utils/format';
 
 @Component({
   selector: 'app-telemetry-panel',
@@ -24,12 +24,7 @@ export class TelemetryPanelComponent {
 
   constructor(readonly state: SimulationStateService) {}
 
-  formatCount(n: number): string {
-    if (n >= 100_000) return `${Math.round(n / 1000)}k`;
-    if (n >= 10_000)  return `${(n / 1000).toFixed(1)}k`;
-    if (n >= 1_000)   return `${(n / 1000).toFixed(2)}k`;
-    return String(n);
-  }
+  formatCount(n: number): string { return fmtCount(n); }
 
   sparklinePoints(values: number[]): string {
     const w = 100, h = 22;
@@ -52,7 +47,5 @@ export class TelemetryPanelComponent {
     return Math.round((count / max) * 100);
   }
 
-  lineColors(line: string): string {
-    return LINE_COLORS[line] ?? '#6b7488';
-  }
+  lineColors(line: string): string { return lineColor(line); }
 }

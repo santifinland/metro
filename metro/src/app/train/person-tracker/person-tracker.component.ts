@@ -4,6 +4,7 @@ import { UpperCasePipe } from '@angular/common';
 import { SimulationStateService } from '../../services/simulation-state.service';
 import { MetroDataService } from '../../services/metro-data.service';
 import { WebSocketService } from '../../services/websocket.service';
+import { NodeId } from '../../utils/node-id';
 
 @Component({
   selector: 'app-person-tracker',
@@ -24,7 +25,7 @@ export class PersonTrackerComponent {
     const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
     if (!lt || !lid) return '';
     if (lt === 'station') {
-      const code = lid.replace('Station_', '');
+      const code = NodeId.parse(lid)?.code ?? lid;
       return this.metroData.stationsByCode.get(code)?.name ?? code;
     }
     if (lt === 'platform') {
@@ -41,7 +42,7 @@ export class PersonTrackerComponent {
     const { trackedPersonLocType: lt, trackedPersonLocId: lid } = this.state;
     const nodes = this.state.trackedPersonNodes;
     if (!nodes.length || !lt || !lid) return 0;
-    const nodeId = lt === 'station' ? lid : lt === 'platform' ? 'Platform_' + lid : null;
+    const nodeId = lt === 'station' ? lid : lt === 'platform' ? NodeId.platform(lid) : null;
     if (!nodeId) return 0;
     const idx = nodes.indexOf(nodeId);
     return idx < 0 ? 0 : Math.round((idx / (nodes.length - 1)) * 100);
@@ -49,6 +50,6 @@ export class PersonTrackerComponent {
 
   stopTracking(): void {
     this.state.trackedPersonId = null;
-    this.wsService.send({ message: 'untrackPerson' } as any);
+    this.wsService.untrackPerson();
   }
 }

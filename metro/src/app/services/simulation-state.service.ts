@@ -180,8 +180,8 @@ export class SimulationStateService {
    * @param from  Origin station name (partial, case-insensitive), e.g. "empalme".
    * @param to    Destination station name (partial, case-insensitive), e.g. "batan".
    */
-  queryPath(ws: { send(msg: object): void }, from: string, to: string): void {
-    ws.send({ message: 'queryPath', from, to });
+  queryPath(ws: { queryPath(from: string, to: string): void }, from: string, to: string): void {
+    ws.queryPath(from, to);
   }
 
   /**

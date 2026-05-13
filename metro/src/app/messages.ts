@@ -158,6 +158,29 @@ export interface PathResult {
   nodes: PathNode[];
 }
 
+// ── Outgoing messages (client → server) ──────────────────────────────────────
+
+export interface MsgPause             { message: 'pause'; }
+export interface MsgResume            { message: 'resume'; }
+export interface MsgReset             { message: 'reset'; }
+export interface MsgSetSpeed          { message: 'setSpeed'; factor: number; }
+export interface MsgTrackPerson       { message: 'trackPerson'; personId: string; }
+export interface MsgUntrackPerson     { message: 'untrackPerson'; }
+export interface MsgRequestPlatformPersons { message: 'requestPlatformPersons'; platformId: string; }
+export interface MsgRequestTrainPersons   { message: 'requestTrainPersons';    trainId: string; }
+export interface MsgQueryPath         { message: 'queryPath'; from: string; to: string; }
+
+export type OutgoingMessage =
+  | MsgPause
+  | MsgResume
+  | MsgReset
+  | MsgSetSpeed
+  | MsgTrackPerson
+  | MsgUntrackPerson
+  | MsgRequestPlatformPersons
+  | MsgRequestTrainPersons
+  | MsgQueryPath;
+
 export type SimulationMessage =
   | MoveTrain
   | PeopleInLinePlatforms

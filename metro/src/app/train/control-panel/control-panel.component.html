@@ -1,15 +1,15 @@
-@if (!collapsed) {
+@if (!collapsed()) {
   <div class="panel-head">
     <span class="panel-head-title">CONTROL · INPUT</span>
     <span class="panel-head-id">CH·01</span>
-    <button class="panel-toggle" (click)="collapsed = true">
+    <button class="panel-toggle" (click)="collapsed.set(true)">
       <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="7.5,2.5 4,6 7.5,9.5"/>
       </svg>
     </button>
   </div>
 } @else {
-  <button class="panel-toggle panel-toggle--solo" (click)="collapsed = false">
+  <button class="panel-toggle panel-toggle--solo" (click)="collapsed.set(false)">
     <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="4.5,2.5 8,6 4.5,9.5"/>
     </svg>

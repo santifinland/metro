@@ -30,7 +30,7 @@ export class PersonTrackerComponent {
       return this.metroData.stationsByCode.get(code)?.name ?? code;
     }
     if (lt === 'platform') {
-      return this.metroData.paths.find(p => p.id === lid)?.name ?? `andén ${lid}`;
+      return this.metroData.segments.find(p => p.id === lid)?.name ?? `andén ${lid}`;
     }
     if (lt === 'train') {
       const t = this.state.getTrain(lid);

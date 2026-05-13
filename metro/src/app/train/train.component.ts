@@ -13,7 +13,7 @@ import { PathGeometryService } from '../services/path-geometry.service';
 import { MetroRendererService } from '../services/metro-renderer.service';
 import { SimulationClockService } from '../services/simulation-clock.service';
 import { TileService } from '../services/tile.service';
-import { TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP } from '../constants';
+import { TRAIN_WAGONS, DEFAULT_WAGONS, WAGON_W, WAGON_H, WAGON_GAP, TRAIN_HIT_PX, STATION_HIT_PX, CD_TICK_MS } from '../constants';
 import { lineColor, fmtCount, groupByDest } from '../utils/format';
 import { NodeId } from '../utils/node-id';
 import { computeArcLens } from '../utils/path-geometry';
@@ -124,7 +124,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     private readonly renderer: MetroRendererService,
     private readonly tileService: TileService,
   ) {
-    const lines = new Set(this.metroData.paths.map(p => p.line));
+    const lines = new Set(this.metroData.segments.map(p => p.line));
     this.state.initLines(Array.from(lines));
   }
 
@@ -161,19 +161,20 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
         this.state.process(msg);
         if ((msg.message === 'newTrain' || msg.message === 'moveTrain') && msg.anden != null) {
           const train = this.state.getTrain(msg.train);
-          if (train) {
-            const seg = this.metroData.paths.find(s => s.id === String(msg.anden));
+          const view  = this.state.getTrainView(msg.train);
+          if (train && view) {
+            const seg = this.metroData.segments.find(s => s.id === String(msg.anden));
             if (seg && seg.path.length >= 2) {
               const { path, segStart, segEnd } = this.pathGeo.buildCompositePath(seg);
-              train.pathPoints    = path;
-              train.pathArcLens   = computeArcLens(path);
-              train.pathSegStart  = segStart;
-              train.pathSegEnd    = segEnd;
-              train.line = seg.line;
+              view.pathPoints   = path;
+              view.pathArcLens  = computeArcLens(path);
+              view.pathSegStart = segStart;
+              view.pathSegEnd   = segEnd;
+              train.line     = seg.line;
               train.capacity = (TRAIN_WAGONS[seg.line] ?? DEFAULT_WAGONS) * this.cfg.config.wagonCapacity;
               const last = path[path.length - 1];
               const prev = path[path.length - 2];
-              train.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
+              view.heading = Math.atan2(last.y - prev.y, last.x - prev.x);
             }
           }
         }
@@ -209,7 +210,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   private computeFit(): void {
     const container = this.canvasContainer().nativeElement as HTMLElement;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    for (const s of this.metroData.paths) {
+    for (const s of this.metroData.segments) {
       for (const p of s.path) {
         if (p.x < minX) minX = p.x;
         if (p.y < minY) minY = p.y;
@@ -299,7 +300,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
       this.updateTrainPanel();
       this.needsTrainRedraw = false;
 
-      if (timestamp - this.lastCdTick >= 200) {
+      if (timestamp - this.lastCdTick >= CD_TICK_MS) {
         this.lastCdTick = timestamp;
         const next = this.state.metroPeople();
         this.peopleHistory.update(h => [...h.slice(1), next]);
@@ -347,7 +348,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private drawPaths(): void { this.renderer.drawPaths(this.ctxPaths); }
 
-  private findNearestStation(cx: number, cy: number, hitPx = 14): number {
+  private findNearestStation(cx: number, cy: number, hitPx = STATION_HIT_PX): number {
     const scale = this.viewport.scale();
     const panX  = this.viewport.panX();
     const panY  = this.viewport.panY();
@@ -361,17 +362,17 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     return bestIdx;
   }
 
-  private findNearestTrain(cx: number, cy: number, hitPx = 24): string | null {
+  private findNearestTrain(cx: number, cy: number, hitPx = TRAIN_HIT_PX): string | null {
     const scale = this.viewport.scale();
     const panX  = this.viewport.panX();
     const panY  = this.viewport.panY();
     let best: string | null = null;
     let bestDist = hitPx * hitPx;
-    for (const t of this.state.trains()) {
-      const tx = t.x * scale + panX;
-      const ty = t.y * scale + panY;
+    for (const v of this.state.getTrainViews().values()) {
+      const tx = v.x * scale + panX;
+      const ty = v.y * scale + panY;
       const d2 = (cx - tx) ** 2 + (cy - ty) ** 2;
-      if (d2 < bestDist) { bestDist = d2; best = t.id; }
+      if (d2 < bestDist) { bestDist = d2; best = v.id; }
     }
     return best;
   }
@@ -401,12 +402,12 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private updateTrainPanel(): void {
-    this.hoveredTrainId = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY, 40);
+    this.hoveredTrainId = this.findNearestTrain(this._mouseContainerX, this._mouseContainerY);
     if (!this.selectedTrainId) return;
-    const t = this.state.getTrain(this.selectedTrainId);
-    if (!t) { this.selectedTrainId = null; return; }
-    this.trainPanelX = t.x * this.viewport.scale() + this.viewport.panX();
-    this.trainPanelY = t.y * this.viewport.scale() + this.viewport.panY();
+    const v = this.state.getTrainView(this.selectedTrainId);
+    if (!v) { this.selectedTrainId = null; return; }
+    this.trainPanelX = v.x * this.viewport.scale() + this.viewport.panX();
+    this.trainPanelY = v.y * this.viewport.scale() + this.viewport.panY();
   }
 
   selectPerson(personId: string): void {
@@ -436,7 +437,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const lineMap   = new Map<string, string[]>();
     const platformMap = new Map<string, { id: string; sentido: string }[]>();
     const seen = new Map<string, Set<string>>();
-    for (const p of this.metroData.paths) {
+    for (const p of this.metroData.segments) {
       const dirKey = p.line + '/' + p.sentido;
       if (!seen.has(p.name)) seen.set(p.name, new Set());
       if (!seen.get(p.name)!.has(dirKey)) {
@@ -474,6 +475,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.renderer.drawTrains(
       this.ctxTrains,
       this.state.trains(),
+      this.state.getTrainViews(),
       now,
       this.hoveredTrainId,
       this.selectedTrainId,
@@ -494,11 +496,11 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     const newSpeed = this.localSpeed;
     const now = performance.now();
     const ratio = oldSpeed / newSpeed;
-    for (const train of this.state.trains()) {
-      if (train.travelMs > 0) {
-        const elapsed = now - train.departedAt;
-        if (elapsed < train.travelMs) {
-          train.travelMs = elapsed + (train.travelMs - elapsed) * ratio;
+    for (const view of this.state.getTrainViews().values()) {
+      if (view.travelMs > 0) {
+        const elapsed = now - view.departedAt;
+        if (elapsed < view.travelMs) {
+          view.travelMs = elapsed + (view.travelMs - elapsed) * ratio;
         }
       }
     }
@@ -532,7 +534,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
 
   get telemetryTrains(): number   { return this.state.trains().length; }
 
-  get telemetrySegments(): number { return this.metroData.paths.length; }
+  get telemetrySegments(): number { return this.metroData.segments.length; }
   get telemetryStations(): number { return this.metroData.stations.length; }
   get telemetryUptime(): number   { return this.clock.uptime(); }
 

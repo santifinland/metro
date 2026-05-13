@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 
 import { Train } from '../train';
+import { TrainView, makeTrainView } from '../train-view';
 import { PathResult, SimulationMessage } from '../messages';
 import { pathQuerySummary } from '../utils/path-summary';
 
@@ -13,12 +14,17 @@ export interface TrackedPerson {
 @Injectable({ providedIn: 'root' })
 export class SimulationStateService {
 
-  // ── Trains ─────────────────────────────────────────────────────────────────
+  // ── Trains (domain) ────────────────────────────────────────────────────────
   private readonly _trainsMap = new Map<string, Train>();
   private readonly _trainsSignal = signal<ReadonlyMap<string, Train>>(new Map());
   readonly trains = computed(() => Array.from(this._trainsSignal().values()));
 
   getTrain(id: string): Train | undefined { return this._trainsMap.get(id); }
+
+  // ── Train views (render state, mutable by renderer) ────────────────────────
+  private readonly _trainViewsMap = new Map<string, TrainView>();
+  getTrainView(id: string): TrainView | undefined { return this._trainViewsMap.get(id); }
+  getTrainViews(): ReadonlyMap<string, TrainView> { return this._trainViewsMap; }
 
   // ── People counts ──────────────────────────────────────────────────────────
   readonly simulationPeople = signal(0);
@@ -73,6 +79,7 @@ export class SimulationStateService {
 
   reset(): void {
     this._trainsMap.clear();
+    this._trainViewsMap.clear();
     this._trainsSignal.set(new Map());
     this.simulationPeople.set(0);
     this.metroPeople.set(0);
@@ -96,13 +103,14 @@ export class SimulationStateService {
     switch (msg.message) {
       case 'moveTrain': {
         const train = this._trainsMap.get(msg.train);
-        if (train) {
-          train.fromX = train.x;
-          train.fromY = train.y;
-          train.targetX = msg.x;
-          train.targetY = msg.y;
-          train.departedAt = performance.now();
-          train.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier();
+        const view  = this._trainViewsMap.get(msg.train);
+        if (train && view) {
+          view.fromX = view.x;
+          view.fromY = view.y;
+          view.targetX = msg.x;
+          view.targetY = msg.y;
+          view.departedAt = performance.now();
+          view.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier();
           if (msg.people   !== undefined) train.people   = msg.people;
           if (msg.capacity !== undefined) train.capacity = msg.capacity;
           if (msg.anden    !== undefined) train.anden    = msg.anden;
@@ -112,26 +120,29 @@ export class SimulationStateService {
       }
       case 'newTrain': {
         const existing = this._trainsMap.get(msg.train);
-        if (existing) {
-          existing.fromX = existing.x;
-          existing.fromY = existing.y;
-          existing.targetX = msg.x;
-          existing.targetY = msg.y;
-          existing.departedAt = performance.now();
-          existing.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier();
+        const viewExisting = this._trainViewsMap.get(msg.train);
+        if (existing && viewExisting) {
+          viewExisting.fromX = viewExisting.x;
+          viewExisting.fromY = viewExisting.y;
+          viewExisting.targetX = msg.x;
+          viewExisting.targetY = msg.y;
+          viewExisting.departedAt = performance.now();
+          viewExisting.travelMs = msg.travelMs ?? 135_000 * this.timeMultiplier();
           if (msg.people   !== undefined) existing.people   = msg.people;
           if (msg.capacity !== undefined) existing.capacity = msg.capacity;
           if (msg.anden    !== undefined) existing.anden    = msg.anden;
         } else {
-          const t = new Train(msg.train, msg.x, msg.y, msg.people ?? 0, msg.capacity ?? 600);
+          const t = new Train(msg.train, msg.people ?? 0, msg.capacity ?? 600);
           if (msg.anden !== undefined) t.anden = msg.anden;
           this._trainsMap.set(msg.train, t);
+          this._trainViewsMap.set(msg.train, makeTrainView(msg.train, msg.x, msg.y));
         }
         this._trainsSignal.set(new Map(this._trainsMap));
         break;
       }
       case 'removeTrain': {
         this._trainsMap.delete(msg.train);
+        this._trainViewsMap.delete(msg.train);
         this._trainsSignal.set(new Map(this._trainsMap));
         break;
       }

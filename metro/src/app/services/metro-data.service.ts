@@ -1,22 +1,22 @@
 import { Injectable } from '@angular/core';
 
-import { Madrid } from '../madrid';
-import { Station } from '../station';
+import { Madrid, StationInfo } from '../madrid';
+import { Segment } from '../domain/segment';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants';
 import rawPaths from '../../assets/tramos.json';
 
 @Injectable({ providedIn: 'root' })
 export class MetroDataService {
 
-  readonly stations: Station[];
-  readonly paths: Station[];
-  readonly stationsByCode: Map<string, Station>;
+  readonly stations: StationInfo[];
+  readonly segments: Segment[];
+  readonly stationsByCode: Map<string, StationInfo>;
   readonly lineDestinations: Map<string, string>;
 
   constructor() {
     const madrid = new Madrid(CANVAS_WIDTH, CANVAS_HEIGHT);
     this.stations = madrid.stations;
-    this.paths = madrid.paths;
+    this.segments = madrid.segments;
     this.stationsByCode = madrid.stationsByCode;
 
     // Build map: "line/sentido" → terminal station name (highest NUMEROORDEN)

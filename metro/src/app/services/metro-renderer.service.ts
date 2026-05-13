@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { Train } from '../train';
+import { TrainView } from '../train-view';
 import { TrackedPerson } from './simulation-state.service';
 import { MetroDataService } from './metro-data.service';
 import { SimulationConfigService } from './simulation-config.service';
@@ -47,7 +48,7 @@ export class MetroRendererService {
     const scale  = this.viewport.scale();
 
     ctx.globalAlpha = 0.18;
-    for (const seg of this.metroData.paths) {
+    for (const seg of this.metroData.segments) {
       if (seg.path.length < 2) continue;
       ctx.beginPath();
       ctx.moveTo(seg.path[0].x, seg.path[0].y);
@@ -59,7 +60,7 @@ export class MetroRendererService {
     ctx.globalAlpha = 1;
 
     ctx.lineWidth = PATH_WIDTH_PX / scale;
-    for (const seg of this.metroData.paths) {
+    for (const seg of this.metroData.segments) {
       if (seg.path.length < 2) continue;
       ctx.beginPath();
       ctx.moveTo(seg.path[0].x, seg.path[0].y);
@@ -91,6 +92,7 @@ export class MetroRendererService {
   drawTrains(
     ctx:      CanvasRenderingContext2D,
     trains:   Train[],
+    views:    ReadonlyMap<string, TrainView>,
     now:      number,
     hovered:  string | null,
     selected: string | null,
@@ -107,6 +109,8 @@ export class MetroRendererService {
     const trainSizeRatio = Math.max(1.0, Math.min(rawRatio, capRatio));
 
     for (const train of trains) {
+      const view = views.get(train.id);
+      if (!view) continue;
       const wagons    = TRAIN_WAGONS[train.line] ?? DEFAULT_WAGONS;
       const stride    = WAGON_W + WAGON_GAP;
       const halfLen   = (wagons - 1) / 2 * stride;
@@ -118,40 +122,40 @@ export class MetroRendererService {
       const r         = WAGON_H * 0.3;
       const inset     = 0.25;
 
-      const hasPath = train.pathPoints.length >= 2 && train.pathArcLens.length >= 2;
+      const hasPath = view.pathPoints.length >= 2 && view.pathArcLens.length >= 2;
 
       let centerArc = 0;
       let centerSegIdx = 1;
       if (hasPath) {
-        const segStart  = train.pathSegStart;
-        const segEnd    = train.pathSegEnd;
-        const lensTotal = train.pathArcLens[train.pathArcLens.length - 1];
-        if (train.travelMs > 0) {
-          const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
+        const segStart  = view.pathSegStart;
+        const segEnd    = view.pathSegEnd;
+        const lensTotal = view.pathArcLens[view.pathArcLens.length - 1];
+        if (view.travelMs > 0) {
+          const t    = Math.min(1, (now - view.departedAt) / view.travelMs);
           const ease = t * t * (3 - 2 * t);
           centerArc  = segStart + ease * (segEnd - segStart);
         } else {
           centerArc = segEnd;
         }
         centerArc = Math.max(effHalf, Math.min(lensTotal - effHalf, centerArc));
-        const c = positionAtArc(train.pathPoints, train.pathArcLens, centerArc);
-        train.x = c.x; train.y = c.y; train.heading = c.heading;
+        const c = positionAtArc(view.pathPoints, view.pathArcLens, centerArc);
+        view.x = c.x; view.y = c.y; view.heading = c.heading;
         centerSegIdx = c.segIdx;
-      } else if (train.travelMs > 0) {
-        const t    = Math.min(1, (now - train.departedAt) / train.travelMs);
+      } else if (view.travelMs > 0) {
+        const t    = Math.min(1, (now - view.departedAt) / view.travelMs);
         const ease = t * t * (3 - 2 * t);
-        train.x = train.fromX + (train.targetX - train.fromX) * ease;
-        train.y = train.fromY + (train.targetY - train.fromY) * ease;
+        view.x = view.fromX + (view.targetX - view.fromX) * ease;
+        view.y = view.fromY + (view.targetY - view.fromY) * ease;
       }
 
       for (let i = wagons - 1; i >= 0; i--) {
         const arcOffset = (i - (wagons - 1) / 2) * effStride;
         let wx: number, wy: number, wh: number;
         if (hasPath) {
-          const p = positionAtArc(train.pathPoints, train.pathArcLens, centerArc + arcOffset, centerSegIdx);
+          const p = positionAtArc(view.pathPoints, view.pathArcLens, centerArc + arcOffset, centerSegIdx);
           wx = p.x; wy = p.y; wh = p.heading;
         } else {
-          wx = train.x; wy = train.y; wh = train.heading;
+          wx = view.x; wy = view.y; wh = view.heading;
         }
 
         ctx.save();
@@ -179,12 +183,12 @@ export class MetroRendererService {
       const arrowArc = centerArc + trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
       let ax: number, ay: number, ah: number;
       if (hasPath) {
-        const ap = positionAtArc(train.pathPoints, train.pathArcLens, arrowArc, centerSegIdx);
+        const ap = positionAtArc(view.pathPoints, view.pathArcLens, arrowArc, centerSegIdx);
         ax = ap.x; ay = ap.y; ah = ap.heading;
       } else {
-        ax = train.x + Math.cos(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
-        ay = train.y + Math.sin(train.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
-        ah = train.heading;
+        ax = view.x + Math.cos(view.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
+        ay = view.y + Math.sin(view.heading) * trainSizeRatio * (halfLen + WAGON_W / 2 + arrowH);
+        ah = view.heading;
       }
       ctx.save();
       ctx.translate(ax, ay); ctx.rotate(ah); ctx.scale(trainSizeRatio, trainSizeRatio);
@@ -197,7 +201,7 @@ export class MetroRendererService {
 
     // Hover ring
     if (hovered && hovered !== selected) {
-      const ht = trains.find(t => t.id === hovered);
+      const ht = views.get(hovered);
       if (ht) {
         ctx.save();
         ctx.beginPath();
@@ -211,7 +215,7 @@ export class MetroRendererService {
 
     // Selected ring
     if (selected) {
-      const st = trains.find(t => t.id === selected);
+      const st = views.get(selected);
       if (st) {
         ctx.save();
         ctx.beginPath();

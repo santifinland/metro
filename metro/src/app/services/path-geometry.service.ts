@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { TrackedPerson } from './simulation-state.service';
 import { MetroDataService } from './metro-data.service';
+import { Segment } from '../domain/segment';
 import { NodeId } from '../utils/node-id';
 import { computeArcLens } from '../utils/path-geometry';
-
-type Segment = MetroDataService['paths'][number];
+import { CONNECT_SQ } from '../constants';
 
 @Injectable({ providedIn: 'root' })
 export class PathGeometryService {
@@ -14,14 +14,13 @@ export class PathGeometryService {
   buildCompositePath(
     seg: Segment,
   ): { path: { x: number; y: number }[]; segStart: number; segEnd: number } {
-    const CONNECT_SQ = 4;
     const usedIds = new Set<string>([seg.id]);
 
     let prepended: { x: number; y: number }[] = [];
     let searchFrom = seg.path[0];
     for (let k = 0; k < 2; k++) {
       let best = CONNECT_SQ, prev: Segment | null = null;
-      for (const s of this.metroData.paths) {
+      for (const s of this.metroData.segments) {
         if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
         if (usedIds.has(s.id) || s.path.length < 2) continue;
         const e = s.path[s.path.length - 1];
@@ -38,7 +37,7 @@ export class PathGeometryService {
     const segTail = seg.path[seg.path.length - 1];
     {
       let best = CONNECT_SQ, next: Segment | null = null;
-      for (const s of this.metroData.paths) {
+      for (const s of this.metroData.segments) {
         if (s.line !== seg.line || s.sentido !== seg.sentido) continue;
         if (usedIds.has(s.id) || s.path.length < 2) continue;
         const d = (s.path[0].x - segTail.x) ** 2 + (s.path[0].y - segTail.y) ** 2;
@@ -59,7 +58,7 @@ export class PathGeometryService {
     for (const node of nodes) {
       if (!NodeId.isPlatform(node)) continue;
       const code = NodeId.parse(node)!.code;
-      const tramo = this.metroData.paths.find(p => p.id === code);
+      const tramo = this.metroData.segments.find(p => p.id === code);
       if (!tramo || tramo.path.length < 2) continue;
       if (points.length === 0) {
         points.push(...tramo.path);
@@ -84,7 +83,7 @@ export class PathGeometryService {
       return s ? s.position : null;
     }
     if (parsed?.kind === 'platform') {
-      const seg = this.metroData.paths.find(p => p.id === parsed.code);
+      const seg = this.metroData.segments.find(p => p.id === parsed.code);
       return seg ? seg.position : null;
     }
     return null;
@@ -94,7 +93,7 @@ export class PathGeometryService {
     const loc = tracked?.loc;
     if (!loc) return null;
     if (loc.type === 'platform') {
-      const seg = this.metroData.paths.find(p => p.id === loc.id);
+      const seg = this.metroData.segments.find(p => p.id === loc.id);
       return seg ? seg.position : null;
     }
     if (loc.type === 'station') {

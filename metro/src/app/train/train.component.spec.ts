@@ -19,7 +19,7 @@ describe('TrainComponent', () => {
   };
   const mockMetroDataService = {
     stations: [],
-    paths: [],
+    segments: [],
     lineDestinations: new Map<string, string>(),
   };
   const mockSimulationStateService = {

@@ -18,6 +18,16 @@ export const WAGON_W    = 1.15;
 export const WAGON_H    = 0.70;
 export const WAGON_GAP  = 0.12;
 
+// Hit-test radii (screen pixels)
+export const TRAIN_HIT_PX   = 40;
+export const STATION_HIT_PX = 14;
+
+// Render loop and change-detection intervals (ms)
+export const CD_TICK_MS = 200;
+
+// Path-geometry: squared distance threshold to consider two tramo endpoints connected
+export const CONNECT_SQ = 4;
+
 // Colors per metro line (key = line identifier used in simulation messages)
 export const LINE_COLORS: Record<string, string> = {
   '1': '#0097C9',

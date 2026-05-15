@@ -82,6 +82,10 @@ object UI {
           WebSocket.sendText(s"""{"message": "personLocation", "person": "$personId", "locType": "$locType", "locId": "$locId"}""")
           Behaviors.same
 
+        case PersonTrackedArrived(personId) =>
+          WebSocket.sendText(s"""{"message": "personArrived", "person": "$personId"}""")
+          Behaviors.same
+
         case PlatformOvercrowded(platformId, people) =>
           scribe.debug(s"There are $people people in platform $platformId")
           WebSocket.sendText(

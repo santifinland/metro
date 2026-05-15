@@ -241,7 +241,7 @@ export class MetroRendererService {
         ctx.stroke();
         ctx.restore();
       }
-      const locPos = this.pathGeo.resolveLocToPos(tracked);
+      const locPos = this.pathGeo.resolveLocToPos(tracked, views);
       if (locPos) {
         const r = 7 / scale;
         ctx.save();

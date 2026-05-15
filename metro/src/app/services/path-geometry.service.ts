@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { TrackedPerson } from './simulation-state.service';
 import { MetroDataService } from './metro-data.service';
+import { TrainView } from '../train-view';
 import { Segment } from '../domain/segment';
 import { NodeId } from '../utils/node-id';
 import { computeArcLens } from '../utils/path-geometry';
@@ -89,7 +90,10 @@ export class PathGeometryService {
     return null;
   }
 
-  resolveLocToPos(tracked: TrackedPerson | null): { x: number; y: number } | null {
+  resolveLocToPos(
+    tracked: TrackedPerson | null,
+    trainViews?: ReadonlyMap<string, TrainView>,
+  ): { x: number; y: number } | null {
     const loc = tracked?.loc;
     if (!loc) return null;
     if (loc.type === 'platform') {
@@ -99,6 +103,10 @@ export class PathGeometryService {
     if (loc.type === 'station') {
       const s = this.metroData.stationsByCode.get(NodeId.parse(loc.id)?.code ?? loc.id);
       return s ? s.position : null;
+    }
+    if (loc.type === 'train' && trainViews) {
+      const v = trainViews.get(loc.id);
+      return v ? { x: v.x, y: v.y } : null;
     }
     return null;
   }

@@ -1,18 +1,21 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 
 import { Train } from '../train';
 import { TrainView, makeTrainView } from '../train-view';
 import { PathResult, SimulationMessage } from '../messages';
 import { pathQuerySummary } from '../utils/path-summary';
+import { SimulationClockService } from './simulation-clock.service';
 
 export interface TrackedPerson {
   id: string;
   nodes: string[];
   loc: { type: 'station' | 'platform' | 'train'; id: string } | null;
+  arrivedAtMs?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class SimulationStateService {
+  private readonly clock = inject(SimulationClockService);
 
   // ── Trains (domain) ────────────────────────────────────────────────────────
   private readonly _trainsMap = new Map<string, Train>();
@@ -69,8 +72,8 @@ export class SimulationStateService {
     this.stationsPeople.set(new Map(this._stationsPeople));
   }
 
-  trackPerson(id: string): void {
-    this.tracked.set({ id, nodes: [], loc: null });
+  trackPerson(id: string, initialLoc: TrackedPerson['loc'] = null): void {
+    this.tracked.set({ id, nodes: [], loc: initialLoc });
   }
 
   untrackPerson(): void {
@@ -204,6 +207,13 @@ export class SimulationStateService {
         const t = this.tracked();
         if (t && msg.person === t.id) {
           this.tracked.set({ ...t, loc: { type: msg.locType, id: msg.locId } });
+        }
+        break;
+      }
+      case 'personArrived': {
+        const t = this.tracked();
+        if (t && msg.person === t.id) {
+          this.tracked.set({ ...t, arrivedAtMs: this.clock.ms() });
         }
         break;
       }

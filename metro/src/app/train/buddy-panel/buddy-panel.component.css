@@ -1,0 +1,139 @@
+/* ── Host: barra horizontal centrada encima del telemetry strip ── */
+:host {
+  position: absolute;
+  bottom: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70vw;
+  max-width: calc(100vw - 40px);
+  min-width: 500px;
+  background: rgba(12, 14, 17, 0.92);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(12px) saturate(140%);
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 62px;
+  pointer-events: all;
+}
+
+/* ── Segmento genérico ────────────────────────────────────── */
+.bp-seg {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border-right: 1px solid var(--line-2);
+  flex-shrink: 0;
+  gap: 8px;
+}
+.bp-seg:last-child { border-right: none; }
+
+.bp-seg-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+/* ── Etiqueta de sección ─────────────────────────────────── */
+.bp-label {
+  font-size: 7px;
+  letter-spacing: 0.28em;
+  color: var(--t-4);
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ── ID ──────────────────────────────────────────────────── */
+.bp-seg-id { padding-left: 10px; padding-right: 14px; }
+.bp-live {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 5px var(--amber);
+  flex-shrink: 0;
+}
+.bp-id {
+  font-size: 10px; font-family: var(--mono);
+  color: var(--t-1); letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Ubicación ───────────────────────────────────────────── */
+.bp-seg-loc { min-width: 0; flex: 2 1 130px; }
+.bp-loc-row { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.bp-badge {
+  font-size: 6.5px; letter-spacing: 0.14em; font-weight: 700;
+  padding: 1px 4px; border-radius: 2px; flex-shrink: 0; line-height: 1.5;
+}
+.bp-badge-station  { background: rgba(245,180,84,0.12); color: var(--amber); border: 1px solid var(--amber-dim); }
+.bp-badge-platform { background: rgba(106,217,217,0.10); color: var(--cyan);  border: 1px solid var(--cyan-dim); }
+.bp-badge-train    { background: rgba(74,222,128,0.10);  color: var(--ok);    border: 1px solid rgba(74,222,128,0.35); }
+.bp-loc-name {
+  font-size: 10px; color: var(--t-1); font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Trayecto ────────────────────────────────────────────── */
+.bp-seg-route { flex: 2 1 160px; min-width: 0; }
+.bp-route { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.bp-origin, .bp-dest {
+  font-size: 10px; font-family: var(--mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1 1 0; min-width: 0;
+}
+.bp-origin { color: var(--t-2); }
+.bp-dest   { color: var(--cyan); }
+.bp-arrow  { font-size: 10px; color: var(--t-4); flex-shrink: 0; }
+
+/* ── Progreso + tiempo ───────────────────────────────────── */
+.bp-seg-progress { width: 120px; flex-shrink: 0; }
+.bp-prog-head { display: flex; justify-content: space-between; align-items: baseline; }
+.bp-elapsed { font-size: 9px; color: var(--amber); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+.bp-prog-row { display: flex; align-items: center; gap: 6px; }
+.bp-prog-track {
+  flex: 1; height: 2px;
+  background: var(--line-2); border-radius: 1px; overflow: hidden;
+}
+.bp-prog-fill {
+  height: 100%; background: var(--amber); border-radius: 1px;
+  transition: width .5s ease;
+  box-shadow: 0 0 5px rgba(245,180,84,0.5);
+}
+.bp-pct {
+  font-size: 9px; color: var(--t-3);
+  font-variant-numeric: tabular-nums; min-width: 26px; text-align: right;
+}
+
+/* ── Próximas paradas ────────────────────────────────────── */
+.bp-seg-stops { flex: 4 1 180px; min-width: 0; }
+.bp-stops { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bp-stop {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9px; font-family: var(--mono);
+  color: var(--t-3); opacity: 0.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bp-stop-current { color: var(--t-1); opacity: 1; }
+.bp-stop-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  border: 1px solid var(--t-4); flex-shrink: 0;
+}
+.bp-stop-current .bp-stop-dot { background: var(--amber); border-color: var(--amber); }
+
+/* ── Botón liberar ───────────────────────────────────────── */
+.bp-seg-action { padding: 0 10px; flex-shrink: 0; border-right: none; }
+.bp-btn-release {
+  padding: 5px 10px; height: 28px;
+  font-size: 7.5px; letter-spacing: 0.2em;
+  color: var(--t-3); background: var(--bg-1);
+  border: 1px solid var(--line-2);
+  cursor: pointer; font-family: var(--mono);
+  white-space: nowrap;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.bp-btn-release:hover {
+  color: var(--crit);
+  border-color: rgba(248,113,113,0.4);
+  background: rgba(248,113,113,0.06);
+}

@@ -23,7 +23,7 @@ export class TrainPanelComponent {
   panelY   = input.required<number>();
 
   close        = output<void>();
-  selectPerson = output<string>();
+  selectPerson = output<{ personId: string; trainId: string }>();
 
   inspectMode       = false;
   expandedTrainDest: string | null = null;
@@ -55,7 +55,7 @@ export class TrainPanelComponent {
 
   onSelectPerson(personId: string): void {
     this.inspectMode = false;
-    this.selectPerson.emit(personId);
+    this.selectPerson.emit({ personId, trainId: this.train()?.id ?? '' });
   }
 
   onClose(): void {

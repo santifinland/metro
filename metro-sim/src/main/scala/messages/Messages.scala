@@ -79,6 +79,7 @@ object Messages {
   case class PersonsInPlatform(anderId: String, persons: List[(String, String)]) extends UIMessage
   case class PersonPlanPath(personId: String, nodes: List[String]) extends UIMessage
   case class PersonTrackerUpdate(personId: String, locType: String, locId: String) extends UIMessage
+  case class PersonTrackedArrived(personId: String) extends UIMessage
 
   // ─── Simulator messages (sent TO the Simulator actor) ────────────────────
   sealed trait SimulatorMessage

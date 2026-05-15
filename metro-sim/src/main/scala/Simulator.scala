@@ -135,6 +135,10 @@ object Simulator {
           case ArrivedToDestination(person) =>
             scribe.debug(s"Person ${person.path.name} arrived to destination")
             people.remove(person.path.name)
+            if (trackedPerson.exists(_.path.name == person.path.name)) {
+              ui ! PersonTrackedArrived(person.path.name)
+              trackedPerson = None
+            }
             Behaviors.same
 
           case TrackPerson(personId) =>

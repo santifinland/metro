@@ -18,7 +18,7 @@ import { lineColor, fmtCount, groupByDest } from '../utils/format';
 import { NodeId } from '../utils/node-id';
 import { computeArcLens } from '../utils/path-geometry';
 
-import { PersonTrackerComponent } from './person-tracker/person-tracker.component';
+import { BuddyPanelComponent } from './buddy-panel/buddy-panel.component';
 import { TrainPanelComponent } from './train-panel/train-panel.component';
 import { TelemetryPanelComponent } from './telemetry-panel/telemetry-panel.component';
 import { ControlPanelComponent } from './control-panel/control-panel.component';
@@ -30,7 +30,7 @@ import { StationLabelItem } from './station-label-item';
 @Component({
   selector: 'app-train',
   standalone: true,
-  imports: [NgClass, PersonTrackerComponent, TrainPanelComponent, TelemetryPanelComponent, ControlPanelComponent, MapInteractionDirective, StationCardComponent, BottomTelemetryComponent],
+  imports: [NgClass, BuddyPanelComponent, TrainPanelComponent, TelemetryPanelComponent, ControlPanelComponent, MapInteractionDirective, StationCardComponent, BottomTelemetryComponent],
   templateUrl: './train.component.html',
   styleUrls: ['./train.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -410,10 +410,14 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
     this.trainPanelY = v.y * this.viewport.scale() + this.viewport.panY();
   }
 
-  selectPerson(personId: string): void {
-    this.state.trackPerson(personId);
+  selectPerson(personId: string, initialLoc?: { type: 'station' | 'platform' | 'train'; id: string }): void {
+    this.state.trackPerson(personId, initialLoc ?? null);
     this.wsService.trackPerson(personId);
     this.wsService.resume();
+  }
+
+  selectPersonFromTrain(event: { personId: string; trainId: string }): void {
+    this.selectPerson(event.personId, { type: 'train', id: event.trainId });
   }
 
   togglePlatformInspect(anderId: string): void {
@@ -520,7 +524,7 @@ export class TrainComponent implements AfterViewInit, OnDestroy, OnInit {
   lineColors(line: string): string { return lineColor(line); }
   fmtCount(n: number): string { return fmtCount(n); }
 
-  private resolveDestLabel(code: string): string {
+  resolveDestLabel(code: string): string {
     return this.metroData.stationsByCode.get(code)?.name ?? code;
   }
 

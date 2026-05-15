@@ -49,6 +49,8 @@ import { lineColor, fmtCount } from '../../utils/format';
           @if (inspectedPlatformId() === p.id) {
             <app-platform-inspect
               [persons]="personsInPlatform()?.get(p.id)"
+              [platformId]="p.id"
+              [destResolver]="destResolver()"
               (closeInspect)="platformInspect.emit(p.id)"
               (personSelect)="personSelect.emit($event)" />
           }
@@ -61,10 +63,11 @@ export class StationCardComponent {
   item               = input.required<StationLabelItem>();
   inspectedPlatformId = input<string | null>(null);
   personsInPlatform  = input<ReadonlyMap<string, PersonEntry[]> | null>(null);
+  destResolver       = input<(code: string) => string>(code => code);
 
   labelClick     = output<void>();
   platformInspect = output<string>();
-  personSelect   = output<string>();
+  personSelect   = output<{ personId: string; platformId: string }>();
 
   lineColor = lineColor;
   fmt       = fmtCount;

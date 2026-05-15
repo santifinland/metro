@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, ViewEncapsulation, input, output, signal } from '@angular/core';
 
 import { PersonEntry } from '../../messages';
+import { groupByDest } from '../../utils/format';
 
 @Component({
   selector: 'app-platform-inspect',
@@ -22,7 +23,7 @@ import { PersonEntry } from '../../messages';
             @for (pid of group.ids; track pid) {
               <button class="train-person-btn"
                       (mousedown)="$event.stopPropagation()"
-                      (click)="personSelect.emit(pid)">
+                      (click)="personSelect.emit({ personId: pid, platformId: platformId() })">
                 {{ pid.slice(0, 8) }}
               </button>
             }
@@ -40,10 +41,12 @@ import { PersonEntry } from '../../messages';
   `,
 })
 export class PlatformInspectComponent {
-  persons = input.required<PersonEntry[] | undefined>();
+  persons      = input.required<PersonEntry[] | undefined>();
+  platformId   = input.required<string>();
+  destResolver = input<(code: string) => string>(code => code);
 
   closeInspect = output<void>();
-  personSelect = output<string>();
+  personSelect = output<{ personId: string; platformId: string }>();
 
   readonly expandedDest = signal<string | null>(null);
 
@@ -52,13 +55,6 @@ export class PlatformInspectComponent {
   }
 
   groupByDest(persons: PersonEntry[]): Array<{ destination: string; ids: string[] }> {
-    const map = new Map<string, string[]>();
-    for (const p of persons) {
-      if (!map.has(p.destination)) map.set(p.destination, []);
-      map.get(p.destination)!.push(p.id);
-    }
-    return Array.from(map.entries())
-      .map(([destination, ids]) => ({ destination, ids }))
-      .sort((a, b) => b.ids.length - a.ids.length);
+    return groupByDest(persons, this.destResolver());
   }
 }

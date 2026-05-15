@@ -25,9 +25,10 @@
             [item]="item"
             [inspectedPlatformId]="inspectedPlatformId()"
             [personsInPlatform]="state.personsInPlatform()"
+            [destResolver]="resolveDestLabel.bind(this)"
             (labelClick)="onStationLabelClick(idx)"
             (platformInspect)="togglePlatformInspect($event)"
-            (personSelect)="selectPerson($event)" />
+            (personSelect)="selectPerson($event.personId, { type: 'platform', id: $event.platformId })" />
         </div>
       }
     </div>
@@ -40,12 +41,12 @@
       [panelX]="trainPanelX"
       [panelY]="trainPanelY"
       (close)="selectedTrainId = null"
-      (selectPerson)="selectPerson($event)" />
+      (selectPerson)="selectPersonFromTrain($event)" />
   }
 
-  <!-- Person tracker -->
+  <!-- Buddy panel -->
   @if (state.tracked()?.id) {
-    <app-person-tracker />
+    <app-buddy-panel />
   }
 
   <!-- Corner brackets -->

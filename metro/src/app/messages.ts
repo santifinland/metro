@@ -129,6 +129,11 @@ export interface PersonLocation {
   locId: string;
 }
 
+export interface PersonArrived {
+  message: 'personArrived';
+  person: string;
+}
+
 // ── Path-query debug types ────────────────────────────────────────────────────
 
 /** A single node returned in a pathResult response. */
@@ -203,4 +208,5 @@ export type SimulationMessage =
   | PersonsInPlatform
   | PersonPath
   | PersonLocation
+  | PersonArrived
   | PathResult;

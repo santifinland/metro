@@ -74,10 +74,3 @@ Simulation time multiplier is set in `metro-sim/src/main/resources/application.c
 ```
 time-multiplier = 10  # Higher = faster simulation
 ```
-
-## GitHub
-- Avoid making commits and pull requests util I say "Haz pr" or similar command. This avoids extra github ci billing.
-
-## GitHub Style
-- Branch naming: `feature/*` for new features, `fix/*` for bug fixes
-- Avoid the Generated with Claude Code disclaimer
